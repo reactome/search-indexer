@@ -1,0 +1,48 @@
+package uk.ac.ebi.reactome.solr.indexer.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
+ */
+public class ReactomeSummary {
+
+    private List<String> reactomeId;
+    private List<String> reactomeName;
+
+    public ReactomeSummary() {
+
+    }
+
+    public List<String> getReactomeName() {
+        return reactomeName;
+    }
+
+    public void setReactomeName(List<String> reactomeName) {
+        this.reactomeName = reactomeName;
+    }
+
+    public List<String> getReactomeId() {
+        return reactomeId;
+    }
+
+    public void setReactomeId(List<String> reactomeId) {
+        this.reactomeId = reactomeId;
+    }
+
+    public void addId(String id){
+        if(reactomeId == null){
+            reactomeId = new ArrayList<>();
+        }
+        reactomeId.add(id);
+    }
+
+
+    public void addName(String name){
+        if(reactomeName == null){
+            reactomeName = new ArrayList<>();
+        }
+        reactomeName.add(name);
+    }
+}

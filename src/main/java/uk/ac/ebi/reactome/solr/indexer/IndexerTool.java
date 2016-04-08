@@ -7,19 +7,19 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.server.tools.interactors.database.InteractorsDatabase;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.impl.Indexer;
 import uk.ac.ebi.reactome.solr.indexer.util.MailUtil;
 import uk.ac.ebi.reactome.solr.indexer.util.PreemptiveAuthInterceptor;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creates the Solr documents and the ebeye.xml file
@@ -27,105 +27,91 @@ import java.sql.SQLException;
  */
 public class IndexerTool {
 
-    private static final Logger logger = Logger.getLogger(IndexerTool.class);
     private static final String FROM = "reactome-indexer@reactome.org";
 
-    public static void main(String[] args) throws JSAPException, SQLException {
+    public static void main(String[] args) throws JSAPException, SQLException, IndexerException {
         long startTime = System.currentTimeMillis();
 
         SimpleJSAP jsap = new SimpleJSAP(
                 IndexerTool.class.getName(),
                 "A tool for generating a Solr Index", //TODO
                 new Parameter[]{
-                        new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'h', "host",
-                        "The database host")
-                        , new FlaggedOption("database", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "database",
-                        "The reactome database name to connect to")
-                        , new FlaggedOption("dbuser", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'u', "dbuser",
-                        "The database user")
-                        , new FlaggedOption("dbpassword", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'p', "dbpassword",
-                        "The password to connect to the database")
-                        , new FlaggedOption("solruser", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "solruser",
-                        "The solr user")
-                        , new FlaggedOption("solrpassword", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'a', "solrpassword",
-                        "The password to connect to solr")
-                        , new FlaggedOption("solrurl", JSAP.STRING_PARSER, "http://localhost:8983/solr/reactome", JSAP.REQUIRED, 's', "solrurl",
-                        "Url of the running Solr server")
-                        , new FlaggedOption("output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'o', "output",
-                        "XML output file for the EBeye")
-                        , new FlaggedOption("release", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'r', "release",
-                        "Release version number")
-                        , new QualifiedSwitch("verbose", JSAP.BOOLEAN_PARSER, null, JSAP.NOT_REQUIRED, 'v', "verbose",
-                        "Requests verbose output.")
-                        , new FlaggedOption("addInterval", JSAP.INTEGER_PARSER, "1000", JSAP.NOT_REQUIRED, 'i', "addInterval",
-                        "Release version number")
-                        , new FlaggedOption("mail-smtp", JSAP.STRING_PARSER, "smtp.oicr.on.ca", JSAP.NOT_REQUIRED, 'm', "mail-smtp",
-                        "SMTP Mail host")
-                        , new FlaggedOption("mail-port", JSAP.INTEGER_PARSER, "25", JSAP.NOT_REQUIRED, 't', "mail-port",
-                        "SMTP Mail port")
-                        , new FlaggedOption("mail-destination", JSAP.STRING_PARSER, "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mail-destination",
-                        "Mail Destination")
-
+                        new FlaggedOption("dbHost",     JSAP.STRING_PARSER,  "localhost",       JSAP.NOT_REQUIRED,  'h', "dbHost",  "The reactome mysql database host"),
+                        new FlaggedOption("dbPort",     JSAP.INTSIZE_PARSER, "3306",            JSAP.NOT_REQUIRED,  'p', "dbPort",  "The reactome mysql database port"),
+                        new FlaggedOption("dbName",     JSAP.STRING_PARSER,  "reactome",        JSAP.NOT_REQUIRED,  'n', "dbName",  "The reactome mysql database name"),
+                        new FlaggedOption("dbUser",     JSAP.STRING_PARSER,  "reactome",        JSAP.REQUIRED,      'u', "dbUser",  "The reactome mysql database user"),
+                        new FlaggedOption("dbPw",       JSAP.STRING_PARSER,  JSAP.NO_DEFAULT,   JSAP.REQUIRED,      'v', "dbPw",    "The reactome mysql database password"),
+                        new FlaggedOption("solrUrl",    JSAP.STRING_PARSER,  "http://localhost:8983/solr/reactome", JSAP.REQUIRED, 's', "solrUrl", "Url of the running Solr server"),
+                        new FlaggedOption("solrUser",   JSAP.STRING_PARSER,  "admin",           JSAP.NOT_REQUIRED,  'e', "solrUser",    "The Solr user"),
+                        new FlaggedOption("solrPw",     JSAP.STRING_PARSER,  JSAP.NO_DEFAULT,   JSAP.REQUIRED,      'a', "solrPw",      "The Solr password"),
+                        new FlaggedOption("iDbPath",    JSAP.STRING_PARSER,  JSAP.NO_DEFAULT,   JSAP.REQUIRED,      'i', "iDbPath",     "Interactor Database Path"),
+                        new FlaggedOption("mailSmtp",   JSAP.STRING_PARSER,  "smtp.oicr.on.ca", JSAP.NOT_REQUIRED,  'm', "mailSmtp",    "SMTP Mail host"),
+                        new FlaggedOption("mailPort",   JSAP.INTEGER_PARSER, "25",              JSAP.NOT_REQUIRED,  't', "mailPort",    "SMTP Mail port"),
+                        new FlaggedOption("mailDest",   JSAP.STRING_PARSER,  "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mailDest", "Mail Destination"),
+                        new QualifiedSwitch("xml",      JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,   JSAP.NOT_REQUIRED,  'x', "xml",         "XML output file for the EBeye")
                 }
         );
 
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
 
-        String user = config.getString("solruser");
-        String password = config.getString("solrpassword");
-        String url = config.getString("solrurl");
-        int addInterval = config.getInt("addInterval");
+//        Reactome Mysql database properties
+        String dbHost = config.getString("dbHost");
+        Integer dbPort = config.getInt("dbPort");
+        String dbName = config.getString("dbName");
+        String dbUser = config.getString("dbUser");
+        String dbPw = config.getString("dbPw");
 
-        String release = config.getString("release");
-        Boolean verbose = config.getBoolean("verbose");
+//        Reactome Solr properties
+        String solrUrl = config.getString("solrUrl");
+        String solrUser = config.getString("solrUser");
+        String solrPw = config.getString("solrPw");
 
-        MySQLAdaptor dba = new MySQLAdaptor(
-                config.getString("host"),
-                config.getString("database"),
-                config.getString("dbuser"),
-                config.getString("dbpassword")
-        );
+//        Reactome Interactors database properties
+        String iDbPath = config.getString("iDbPath");
 
-        File output = null;
-        if (config.getString("output") != null) { // There was a typo here causing the issue on ebeye.xml wasn't created. Fixed
-            output = new File(config.getString("output"));
-        }
+//        Reactome SMTP properties
+        String mailSmtp = config.getString("mailSmtp");
+        Integer mailPort = config.getInt("mailPort");
+        String mailDest = config.getString("mailDest");
 
-        SolrClient solrClient = getSolrClient(user, password, url);
+        Boolean xml = config.getBoolean("xml");
 
-        Indexer indexer = new Indexer(dba, solrClient, addInterval, output, release, verbose);
-        MailUtil mail = new MailUtil(config.getString("mail-smtp"), config.getInt("mail-port"));
+
+        MySQLAdaptor dba = new MySQLAdaptor(dbHost,dbName,dbUser,dbPw,dbPort);
+        SolrClient solrClient = getSolrClient(solrUser, solrPw, solrUrl);
+        InteractorsDatabase interactorsDatabase = new InteractorsDatabase(iDbPath);
+        Indexer indexer = new Indexer(dba, solrClient, xml, interactorsDatabase);
+        MailUtil mail = new MailUtil(mailSmtp,mailPort);
 
         try {
             indexer.index();
 
             long stopTime = System.currentTimeMillis();
             long ms = stopTime - startTime;
-            int seconds = (int) (ms / 1000) % 60;
-            int minutes = (int) ((ms / (1000 * 60)) % 60);
 
-            if (verbose) {
-                System.out.println("Indexing was successful within: " + minutes + "minutes " + seconds + "seconds ");
-            }
+            long hour = TimeUnit.MILLISECONDS.toHours(ms);
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
 
-            // Send an email by the end of indexer.
-            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + minutes + "minutes " + seconds + "seconds");
+            // Send an error notification by the end of indexer.
+//            mail.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
 
         } catch (IndexerException e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             String exceptionAsString = sw.toString();
+            @SuppressWarnings("StringBufferReplaceableByString")
             StringBuilder body = new StringBuilder();
             body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
-            body.append("Message: " + e.getMessage());
+            body.append("Message: ").append(e.getMessage());
             body.append("\n");
-            body.append("Cause: " + e.getCause());
+            body.append("Cause: ").append(e.getCause());
             body.append("\n");
-            body.append("Stacktrace: " + exceptionAsString);
+            body.append("Stacktrace: ").append(exceptionAsString);
 
             // Send an error notification by the end of indexer.
-            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );
+//            mail.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );
         }
     }
 

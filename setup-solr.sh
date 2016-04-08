@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 
 #-----------------------------------------------------------
 # Script that automates the Reactome Solr initial setup.
@@ -34,7 +35,15 @@ where:
     -m  Solr Password
     -n  Solr Version                DEFAULT: 5.3.1
 
-    -o  Indexer Github Branch       DEFAULT: master"
+    -o  Interactors databae path    DEFAULT: /home/flo/interactors.db
+
+    -p  Mail Smtp server            DEFAULT: smtp.oicr.on.ca
+    -q  Mail Smtp port              DEFAULT: 25
+    -r  Mail Smtp destination       DEFAULT: reactome-developer@reactome.org
+
+    -s  XML output for EBeye        DEFAULT: false
+
+    -t  Indexer Github Branch       DEFAULT: master"
 
 
 _INSTALL_SOLR=false
@@ -55,13 +64,19 @@ _SOLR_USER="admin"
 _SOLR_PASSWORD=""
 _SOLR_VERSION="5.5.0"
 
+_INTERACTORS_DB="/home/flo/interactors.db"
+
+_MAIL_SMTP="smtp.oicr.on.ca"
+_MAIL_PORT="25"
+_MAIL_DEST="reactome-developer@reactome.org"
+
+_XML=false
+
 _GIT_BRANCH="master"
 
 _PROBLEMS=0
-_CWD=$(pwd)
 
-# :h (help) should be at the very end of the while loop
-while getopts ":d:e:f:g:h:i:j:k:l:m:n:oabch" option; do
+while getopts ":d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:tsabch" option; do
     case "$option" in
         h) echo "$usage"
             exit
@@ -94,7 +109,17 @@ while getopts ":d:e:f:g:h:i:j:k:l:m:n:oabch" option; do
             ;;
         n) _SOLR_VERSION=$OPTARG
             ;;
-        o) _GIT_BRANCH=$OPTARG
+        o) _INTERACTORS_DB=$OPTARG
+            ;;
+        p) _MAIL_SMTP=$OPTARG
+            ;;
+        q) _MAIL_PORT=$OPTARG
+            ;;
+        r) _MAIL_DEST=$OPTARG
+            ;;
+        s) _XML=true
+            ;;
+        t) _GIT_BRANCH=$OPTARG
             ;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2
             echo "$usage" >&2
@@ -108,27 +133,9 @@ while getopts ":d:e:f:g:h:i:j:k:l:m:n:oabch" option; do
 done
 shift $((OPTIND - 1))
 
-echo ${_INSTALL_SOLR}
-echo ${_UPDATE_SOLR_CORE}
-echo ${_IMPORT_DATA}
+echo $PWD
+echo $(pwd)
 
-echo ${_REACTOME_HOST}
-echo ${_REACTOME_PORT}
-echo ${_REACTOME_NAME}
-echo ${_REACTOME_USER}
-echo ${_REACTOME_PASSWORD}
-
-echo ${_SOLR_HOME}
-
-echo ${_SOLR_CORE}
-echo ${_SOLR_PORT}
-echo ${_SOLR_USER}
-echo ${_SOLR_PASSWORD}
-echo ${_SOLR_VERSION}
-
-echo ${_GIT_BRANCH}
-
-cd
 if ${_INSTALL_SOLR} = true; then
     if [ -z $_SOLR_PASSWORD ]; then
         echo "missing argument for -i <password>"
@@ -269,16 +276,13 @@ if ${_IMPORT_DATA} = true; then
         exit 1;
     fi
 
-    exit
-
     echo "Checking if current directory is valid project"
     if ! mvn -q clean package -DskipTests; then
-        if [ ! -f /target/DatabaseImporter-jar-with-dependencies.jar ]; then
+        if [ ! -f /target/Indexer-jar-with-dependencies.jar ]; then
             echo "Cloning new repo from git"
-            git clone https://github.com/reactome/Search.git
-            git -C ./graph-reactome/ fetch && git -C ./graph-reactome/  checkout master
-            _PATH="/graph-reactome"
-
+            git clone https://fkorn@bitbucket.org/fkorn/indexer.git
+            git -C ./indexer/ fetch && git -C ./indexer/  checkout $_GIT_BRANCH
+            _PATH="/indexer"
             echo "Started packaging reactome project"
             if ! mvn -q -f .${_PATH}/pom.xml clean package -DskipTests; then
                 echo "An error occurred when packaging the project"
@@ -287,8 +291,9 @@ if ${_IMPORT_DATA} = true; then
         fi
     fi
 
-    _SOLR_URL = http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
-     if ! java -jar .${_PATH}/target/DatabaseImporter-jar-with-dependencies.jar -h ${_REACTOME_HOST} -s ${_REACTOME_PORT} -d ${_REACTOME_DATABASE} -u ${_REACTOME_USER} -p ${_REACTOME_PASSWORD} -s  ${_SOLR_URL}  -e ${_SOLR_USER} -a ${_SOLR_PASSWORD} ; then
+    _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
+
+     if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -h ${_REACTOME_HOST} -s ${_REACTOME_PORT} -d ${_REACTOME_NAME} -u ${_REACTOME_USER} -p ${_REACTOME_PASSWORD} -s  ${_SOLR_URL}  -e ${_SOLR_USER} -a ${_SOLR_PASSWORD} -g ${_INTERACTORS_DB} ; then
         echo "An error occurred during the dataimport import process"
         exit 1
     fi
@@ -297,5 +302,6 @@ if ${_IMPORT_DATA} = true; then
             echo "It appears that Solr is not running properly"
             exit 1;
      fi
-
 fi
+
+echo "DONE"

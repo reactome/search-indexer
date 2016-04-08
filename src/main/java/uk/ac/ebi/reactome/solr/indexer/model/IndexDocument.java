@@ -12,7 +12,7 @@ import java.util.List;
 public class IndexDocument {
 
     @Field
-    private Long dbId;
+    private String dbId;
     @Field
     private String stId;
     @Field
@@ -112,7 +112,20 @@ public class IndexDocument {
     @Field
     private List<String> referenceOtherIdentifier;
     @Field
+    private List<String> referenceSecondaryIdentifier;
+    @Field
     private List<String> referenceGeneNames;
+
+    @Field
+    private List<String> reactomeInteractorIds;
+    @Field
+    private List<String> interactionsIds;
+    @Field
+    private List<Double> scores;
+    @Field
+    private List<String> interactorAccessions;
+    @Field
+    private List<String> reactomeInteractorNames;
 
 
     // Auto Generated Getters Setters
@@ -253,11 +266,11 @@ public class IndexDocument {
         this.regulator = regulator;
     }
 
-    public Long getDbId() {
+    public String getDbId() {
         return dbId;
     }
 
-    public void setDbId(Long dbId) {
+    public void setDbId(String dbId) {
         this.dbId = dbId;
     }
 
@@ -475,5 +488,53 @@ public class IndexDocument {
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+    }
+
+    public List<String> getReactomeInteractorIds() {
+        return reactomeInteractorIds;
+    }
+
+    public void setReactomeInteractorIds(List<String> reactomeInteractorIds) {
+        this.reactomeInteractorIds = reactomeInteractorIds;
+    }
+
+    public List<String> getInteractionsIds() {
+        return interactionsIds;
+    }
+
+    public void setInteractionsIds(List<String> interactionsIds) {
+        this.interactionsIds = interactionsIds;
+    }
+
+    public List<Double> getScores() {
+        return scores;
+    }
+
+    public void setScores(List<Double> scores) {
+        this.scores = scores;
+    }
+
+    public List<String> getInteractorAccessions() {
+        return interactorAccessions;
+    }
+
+    public void setInteractorAccessions(List<String> interactorAccessions) {
+        this.interactorAccessions = interactorAccessions;
+    }
+
+    public List<String> getReactomeInteractorNames() {
+        return reactomeInteractorNames;
+    }
+
+    public void setReactomeInteractorNames(List<String> reactomeInteractorNames) {
+        this.reactomeInteractorNames = reactomeInteractorNames;
+    }
+
+    public List<String> getReferenceSecondaryIdentifier() {
+        return referenceSecondaryIdentifier;
+    }
+
+    public void setReferenceSecondaryIdentifier(List<String> referenceSecondaryIdentifier) {
+        this.referenceSecondaryIdentifier = referenceSecondaryIdentifier;
     }
 }

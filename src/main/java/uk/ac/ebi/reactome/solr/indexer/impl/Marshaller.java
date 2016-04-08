@@ -20,15 +20,13 @@ public class Marshaller {
 
     private final String name;
     private final String description;
-    private final String release;
 
     private Writer writer;
 
 
-    public Marshaller( File output, String name, String description, String release ) {
+    public Marshaller( File output, String name, String description ) {
         this.name = name;
         this.description = description;
-        this.release = release;
 
         if ( output == null ) {
             throw new IllegalArgumentException( "output file must not be null." );
@@ -55,13 +53,13 @@ public class Marshaller {
     }
 
 
-    public void writeHeader() throws IndexerException {
+    public void writeHeader(int releaseNumber) throws IndexerException {
         try {
             writer.write( "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" + NEW_LINE );
             writer.write("<database>" + NEW_LINE);
             writer.write( INDENT + "<name>" + name + "</name>" + NEW_LINE );
             writer.write( INDENT + "<description>" + description + "</description>" + NEW_LINE );
-            writer.write( INDENT + "<release>" + release + "</release>" + NEW_LINE );
+            writer.write( INDENT + "<release>" + releaseNumber + "</release>" + NEW_LINE );
             writer.write( INDENT + "<release_date>" + getCurrentDate() + "</release_date>" + NEW_LINE );
             writer.write( INDENT + "<entries>" + NEW_LINE );
         } catch ( IOException e ) {

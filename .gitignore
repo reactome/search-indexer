@@ -3,4 +3,7 @@
 .idea
 logs
 
+ebeye.xml
+*.log*
+
 *target*

@@ -132,7 +132,7 @@ public class Converter {
      */
     private void setGeneralAttributes(IndexDocument document, GKInstance instance) {
 
-        document.setDbId(instance.getDBID());
+        document.setDbId(instance.getDBID().toString());
         setNameAndSynonyms(document, instance);
         if (keywords!=null) {
             document.setKeywords(getKeywordsFromName(document.getName()));
@@ -478,6 +478,10 @@ public class Converter {
 
             if (hasValues(referenceEntity, ReactomeJavaConstants.otherIdentifier)){
                 document.setReferenceOtherIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
+            }
+
+            if (hasValues(referenceEntity, ReactomeJavaConstants.secondaryIdentifier)){
+                document.setReferenceSecondaryIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.secondaryIdentifier));
             }
 
             if (hasValue(referenceEntity, ReactomeJavaConstants.referenceDatabase)){

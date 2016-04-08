@@ -4,7 +4,7 @@ package uk.ac.ebi.reactome.solr.indexer.exception;
  * Exception Class for Indexer and Converter
  * Created by flo on 4/29/14.
  */
-
+@SuppressWarnings("unused")
 public class IndexerException extends Exception {
 
     public IndexerException() {
