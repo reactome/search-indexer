@@ -1,8 +1,5 @@
 package uk.ac.ebi.reactome.solr.indexer.model;
 
-/**
- * Created by flo on 7/29/14.
- */
 public class CrossReference {
     private String dbName;
     private String id;

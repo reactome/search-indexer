@@ -1,14 +1,12 @@
 package uk.ac.ebi.reactome.solr.indexer.model;
 
-/**
- * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
- */
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Helper class
+ *
+ * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 public class InteractorSummary {
 

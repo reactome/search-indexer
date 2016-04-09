@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <groupId>Indexer</groupId>
     <artifactId>Indexer</artifactId>
 
@@ -11,97 +10,106 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>Indexer</name>
 
-    <dependencies>
+    <description>
+        The Indexer Project is used to import Reactome and Interactor data into Solr and optionally create a reduced version of this data as xml.
+    </description>
+    <!--todo <url>//</url>-->
+    <organization>
+        <name>The European Bioinformatics Institute</name>
+        <url>http://www.ebi.ac.uk/</url>
+    </organization>
+    <developers>
+        <developer>
+            <id>fkorn</id>
+            <name>Florian Korninger</name>
+            <email>fkorn@ebi.ac.uk</email>
+            <organization>http://www.ebi.ac.uk/</organization>
+        </developer>
+        <developer>
+            <id>gviteri</id>
+            <name>Guilherme S Viteri</name>
+            <email>gviteri@ebi.ac.uk</email>
+            <organization>http://www.ebi.ac.uk/</organization>
+        </developer>
+    </developers>
 
+    <properties>
+        <reactome.version>1.2.4</reactome.version>
+        <interactors.version>0.0.9-SNAPSHOT</interactors.version>
+        <solr.version>5.5.0</solr.version>
+        <jasp.version>2.1</jasp.version>
+        <mail.version>1.5.4</mail.version>
+        <json.version>20090211</json.version>
+        <logging.version>1.1.7</logging.version>
+
+        <maven.compiler.version>3.5.1</maven.compiler.version>
+        <jdk.version>1.7</jdk.version>
+        <maven.javadoc.version>2.10.3</maven.javadoc.version>
+        <maven.site.version>3.4</maven.site.version>
+        <maven.info.report.version>2.8.1</maven.info.report.version>
+        <jackrabbit.version>2.10</jackrabbit.version>
+        <pmd.version>3.6</pmd.version>
+    </properties>
+
+    <dependencies>
         <!-- reactome-base for MYSQL Adapter -->
         <dependency>
             <groupId>org.reactome.base</groupId>
             <artifactId>reactome-base</artifactId>
-            <version>1.2.4</version>
+            <version>${reactome.version}</version>
         </dependency>
-
-        <!--&lt;!&ndash; Log4j &ndash;&gt;-->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-
-        <!-- Solr 5.3.1 -->
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-core</artifactId>
-            <version>5.5.0</version>
-        </dependency>
-        
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-api</artifactId>-->
-            <!--<version>1.7.5</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>jcl-over-slf4j</artifactId>-->
-            <!--<version>1.7.5</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>jul-to-slf4j</artifactId>-->
-            <!--<version>1.7.5</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-log4j12</artifactId>-->
-            <!--<version>1.7.5</version>-->
-        <!--</dependency>-->
-
-        <!-- JSAP command line parameters parser -->
-        <dependency>
-            <groupId>com.martiansoftware</groupId>
-            <artifactId>jsap</artifactId>
-            <version>2.1</version>
-        </dependency>
-
-        <!--&lt;!&ndash; JUnit &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>junit</groupId>-->
-            <!--<artifactId>junit</artifactId>-->
-            <!--<version>4.10</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
-
-        <!-- Mail Service -->
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
         <!-- Reactome Interactor-core -->
         <dependency>
             <groupId>org.reactome.server.tools</groupId>
             <artifactId>interactor-core</artifactId>
-            <version>0.0.9-SNAPSHOT</version>
+            <version>${interactors.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
-        <!-- Org json importer -->
+        <!-- Solr-->
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId>
+            <version>${solr.version}</version>
+        </dependency>
+        <!-- JSAP command line parameters parser -->
+        <dependency>
+            <groupId>com.martiansoftware</groupId>
+            <artifactId>jsap</artifactId>
+            <version>${jasp.version}</version>
+        </dependency>
+        <!-- Mail Service -->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>javax.mail-api</artifactId>
+            <version>${mail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>${mail.version}</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>javax.activation</groupId>-->
+            <!--<artifactId>activation</artifactId>-->
+            <!--<version>1.1.1</version>-->
+        <!--</dependency>-->
+         <!--Org json importer-->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20090211</version>
+            <version>${json.version}</version>
         </dependency>
-
-
+        <!--Logging: will trasitively add logback core and slf4j-api-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logging.version}</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -135,19 +143,10 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-
     </repositories>
 
     <build>
         <finalName>${project.name}</finalName>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -164,41 +163,79 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <id>Indexer</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
-
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
-                    <compilerVersion>1.7</compilerVersion>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-source-plugin</artifactId>-->
-                <!--<version>2.2.1</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>attach-sources</id>-->
-                        <!--<goals>-->
-                            <!--<goal>jar</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-webdav-jackrabbit</artifactId>
+                        <version>${jackrabbit.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
-
     </build>
+    <!--Configures the distribution to nexus repository -->
+    <distributionManagement>
+        <site>
+            <id>nexus-site</id>
+            <url>dav:http://localhost:8081/nexus/content/sites/site/</url>
+        </site>
+    </distributionManagement>
+    <!--Maven site-->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.version}</version>
+                <configuration>
+                    <quiet>true</quiet>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven.info.report.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${pmd.version}</version>
+                <configuration>
+                    <skipEmptyReport>false</skipEmptyReport>
+                    <linkXRef>false</linkXRef>
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <targetJdk>${jdk.version}</targetJdk>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
 </project>

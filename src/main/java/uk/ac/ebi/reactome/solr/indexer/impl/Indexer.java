@@ -1,8 +1,6 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -21,6 +19,8 @@ import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.interactors.service.InteractorService;
 import org.reactome.server.tools.interactors.util.InteractorConstant;
 import org.reactome.server.tools.interactors.util.Toolbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 import uk.ac.ebi.reactome.solr.indexer.model.InteractorSummary;
@@ -44,23 +44,25 @@ import java.util.*;
  * @version 1.0
  */
 public class Indexer {
-    private static final Logger logger = Logger.getLogger(Indexer.class);
+
+    private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private static SolrClient solrClient;
     private static MySQLAdaptor dba;
-    private Converter converter;
-    private Marshaller marshaller;
+    private static Converter converter;
+    private static Marshaller marshaller;
 
-    private Boolean xml;
-    private static final String CONTROLLED_VOCABULARY = "controlledvocabulary.csv";
+    private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
     private static final String EBEYE_NAME = "Reactome";
     private static final String EBEYE_DESCRIPTION = "Reactome is a free, open-source, curated and peer reviewed pathway " +
             "database. Our goal is to provide intuitive bioinformatics tools for the visualization, interpretation and " +
             "analysis of pathway knowledge to support basic research, genome analysis, modeling, systems biology and " +
             "education.";
 
-    private InteractorService interactorService;
-    private InteractionService interactionService;
+    private static InteractorService interactorService;
+    private static InteractionService interactionService;
+
+    private static  Boolean xml;
 
     private static final int addInterval = 1000;
     private static final int width = 100;
@@ -75,26 +77,30 @@ public class Indexer {
     /**
      * Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
      */
-    private Map<String, ReactomeSummary> accessionMap = new HashMap<>();
-    private Map<Integer, String> taxonomyMap = new HashMap<>();
+    private final Map<String, ReactomeSummary> accessionMap = new HashMap<>();
+    private final Map<Integer, String> taxonomyMap = new HashMap<>();
 
     public Indexer(MySQLAdaptor dba, SolrClient solrClient, Boolean xml, InteractorsDatabase interactorsDatabase) {
 
-        this.dba = dba;
-        this.solrClient = solrClient;
-        this.xml = xml;
+        Indexer.dba = dba;
+        Indexer.solrClient = solrClient;
+        Indexer.xml = xml;
         converter = new Converter(CONTROLLED_VOCABULARY);
+        interactorService = new InteractorService(interactorsDatabase);
+        interactionService = new InteractionService(interactorsDatabase);
+
         if (xml) {
-            marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+            marshaller = new Marshaller(new File("target/ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
         }
-        this.interactorService = new InteractorService(interactorsDatabase);
-        this.interactionService = new InteractionService(interactorsDatabase);
     }
 
     public void index() throws IndexerException {
 
         try {
             cleanSolrIndex();
+            totalCount();
+            int entriesCount = 0;
+
             if (xml) {
                 int releaseNumber = 0;
                 try {
@@ -104,9 +110,8 @@ public class Indexer {
                 }
                 marshaller.writeHeader(releaseNumber);
             }
+
             System.out.println("Started importing Reactome data to Solr");
-            totalCount();
-            int entriesCount = 0;
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
             commitSolrServer();
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
@@ -116,15 +121,15 @@ public class Indexer {
                 marshaller.writeFooter(entriesCount);
             }
             commitSolrServer();
-            System.out.println("Finished importing Reactome data to Solr");
-            /** Interactor **/
-            System.out.println("Started importing Interactors data to Solr");
-            indexInteractors();
+
+            System.out.println("\nStarted importing Interactors data to Solr");
+            entriesCount += indexInteractors();
             commitSolrServer();
-            System.out.println("Finished importing Interactors data to Solr");
+
+            System.out.println("\nData Import finished with " + entriesCount + " entries imported");
 
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("An error occurred during the data import",e);
             e.printStackTrace();
             throw new IndexerException(e);
         } finally {
@@ -158,24 +163,8 @@ public class Indexer {
         System.out.printf(format, percent, progress, rotators[((done - 1) % (rotators.length * 100)) /100]);
     }
 
-
-    private boolean hasValue(GKInstance instance, String fieldName) {
-        if (instance.getSchemClass().isValidAttribute(fieldName)) {
-            try {
-                if (instance.getAttributeValue(fieldName) != null) {
-                    return true;
-                }
-            } catch (Exception e) {
-                // will never happen because i check it above
-                logger.error(e.getMessage(), e);
-            }
-        }
-        logger.info(instance.getDBID() + " has no value: " + fieldName);
-        return false;
-    }
-
     private String getReactomeId(GKInstance instance) throws Exception {
-        if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)) {
+        if (Converter.hasValue(instance, ReactomeJavaConstants.stableIdentifier)) {
             return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
         } else {
             logger.error("No ST_ID for " + instance.getDBID() + " >> " + instance.getDisplayName());
@@ -189,6 +178,8 @@ public class Indexer {
      * @throws IndexerException
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
+
+        System.out.println("Creating accession set");
         int progress = 0;
 
         /**
@@ -196,7 +187,6 @@ public class Indexer {
          * collection. The final collection will hold those accessions that are not present in Reactome.
          */
         accessionsNoReactome.addAll(accessionList);
-
         Collection<?> instances;
 
         try {
@@ -204,11 +194,6 @@ public class Indexer {
             total = instances.size();
             logger.info("Retrieving accessions from Reactome -- Accession list has [" + accessionList.size() + "] entries and [" + instances.size() + "] ReferenceEntities");
             for (Object object : instances) {
-
-                progress++;
-                if(progress % 15000 == 0){
-                    logger.info("  >> querying accessions in GKInstance [" + progress + "]");
-                }
 
                 if(progress % 100 == 0){
                    updateProgressBar(progress);
@@ -245,6 +230,7 @@ public class Indexer {
                         accessionMap.put(identifier, summary);
                     }
                 }
+                progress++;
             }
 
             logger.info("  >> querying accessions in GKInstance [" + progress + "]");
@@ -282,15 +268,14 @@ public class Indexer {
              * Removing accession identifier that are not Uniprot/CHEBI accession Identifier.
              * The intact file keeps the same Intact id in this case.
              */
-            Iterator<String> iter = accessionsList.iterator();
-            while (iter.hasNext()) {
-                String str = iter.next();
+            Iterator<String> iterator = accessionsList.iterator();
+            while (iterator.hasNext()) {
+                String str = iterator.next();
                 if (str.startsWith("EBI-")) {
-                    iter.remove();
+                    iterator.remove();
                 }
             }
 
-            System.out.println("Creating accession set");
             createAccessionSet(accessionsList);
 
             /**
@@ -298,7 +283,8 @@ public class Indexer {
              * Keep in mind that we are only saving interactions having score higher than InteractorConstant.MINIMUM_VALID_SCORE
              */
 
-            System.out.println("Adding to solr");
+            System.out.println("\nStarted adding data to solr");
+
             Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, InteractorConstant.STATIC);
 
             logger.info("Preparing SolR documents for Interactors [" + interactions.size() + "]");
@@ -435,7 +421,7 @@ public class Indexer {
 
     }
 
-    public String getTaxonomyLineage(Integer taxId, Integer original){
+    private String getTaxonomyLineage(Integer taxId, Integer original){
         if(taxId == 1 || taxId == 0 || taxId == -1){
             return "Entries without species";
         }
@@ -451,11 +437,11 @@ public class Indexer {
             String StringFromInputStream = IOUtils.toString(response, "UTF-8");
             JSONObject jsonObject = new JSONObject(StringFromInputStream);
 
-            int parentTaxid = jsonObject.getJSONObject("parent").getInt("id");
+            int parentTaxId = jsonObject.getJSONObject("parent").getInt("id");
 
-            if (taxonomyMap.containsKey(parentTaxid)){
+            if (taxonomyMap.containsKey(parentTaxId)){
 
-                String species = taxonomyMap.get(parentTaxid);
+                String species = taxonomyMap.get(parentTaxId);
                 taxonomyMap.put(original, species);
                 return species;
             }
@@ -464,7 +450,7 @@ public class Indexer {
             /**
              * taking too long to execute.
              */
-//            getTaxonomyLineage(parentTaxid,original);
+//            getTaxonomyLineage(parentTaxId,original);
 
         }catch (IOException | JSONException e){
             e.printStackTrace();
@@ -555,7 +541,7 @@ public class Indexer {
                         logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());
                     }
                 }
-                logger.error("Could not add documenst", e);
+                logger.error("Could not add document", e);
             }
         } else {
             logger.error("Solr Documents are null or empty");
@@ -581,7 +567,7 @@ public class Indexer {
     /**
      * Closes connection to Solr Server
      */
-    public static void closeSolrServer() {
+    private static void closeSolrServer() {
         try {
             solrClient.close();
             logger.info("SolrServer shutdown");
@@ -606,7 +592,7 @@ public class Indexer {
     }
 
     /**
-     * Saving a List into a multivalue field in SolR, but calling toString the final result will
+     * Saving a List into a multivalued field in SolR, but calling toString the final result will
      * be a comma-separated list. When parsing this List in the client (splitting by comma) then it may split
      * other identifiers which has comma as part of its name.
      * e.g Reactome names has comma on it.
@@ -617,11 +603,11 @@ public class Indexer {
      * This parser retrieve the list as String using # as delimiter.
      */
     private String parseList(List<String> list){
-        String delim = "";
+        String delimiter = "";
         StringBuilder sb = new StringBuilder();
         for (String s : list) {
-            sb.append(delim);
-            delim = "#";
+            sb.append(delimiter);
+            delimiter = "#";
             sb.append(s);
         }
         return sb.toString();

@@ -48,7 +48,8 @@ public class IndexerTool {
                         new FlaggedOption("mailSmtp",   JSAP.STRING_PARSER,  "smtp.oicr.on.ca", JSAP.NOT_REQUIRED,  'm', "mailSmtp",    "SMTP Mail host"),
                         new FlaggedOption("mailPort",   JSAP.INTEGER_PARSER, "25",              JSAP.NOT_REQUIRED,  't', "mailPort",    "SMTP Mail port"),
                         new FlaggedOption("mailDest",   JSAP.STRING_PARSER,  "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mailDest", "Mail Destination"),
-                        new QualifiedSwitch("xml",      JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,   JSAP.NOT_REQUIRED,  'x', "xml",         "XML output file for the EBeye")
+                        new QualifiedSwitch("xml",      JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,   JSAP.NOT_REQUIRED,  'x', "xml",         "XML output file for the EBeye"),
+                        new QualifiedSwitch("mail",     JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,   JSAP.NOT_REQUIRED,  'y', "mail",        "Activates mail option")
                 }
         );
 
@@ -76,42 +77,41 @@ public class IndexerTool {
         String mailDest = config.getString("mailDest");
 
         Boolean xml = config.getBoolean("xml");
-
+        Boolean mail = config.getBoolean("mail");
 
         MySQLAdaptor dba = new MySQLAdaptor(dbHost,dbName,dbUser,dbPw,dbPort);
         SolrClient solrClient = getSolrClient(solrUser, solrPw, solrUrl);
         InteractorsDatabase interactorsDatabase = new InteractorsDatabase(iDbPath);
         Indexer indexer = new Indexer(dba, solrClient, xml, interactorsDatabase);
-        MailUtil mail = new MailUtil(mailSmtp,mailPort);
+        MailUtil mailUtil = new MailUtil(mailSmtp,mailPort);
 
         try {
             indexer.index();
-
-            long stopTime = System.currentTimeMillis();
-            long ms = stopTime - startTime;
-
-            long hour = TimeUnit.MILLISECONDS.toHours(ms);
-            long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
-            long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
-
-            // Send an error notification by the end of indexer.
-//            mail.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
-
+            if (mail) {
+                long stopTime = System.currentTimeMillis();
+                long ms = stopTime - startTime;
+                long hour = TimeUnit.MILLISECONDS.toHours(ms);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
+                // Send an error notification by the end of indexer.
+                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
+            }
         } catch (IndexerException e) {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            @SuppressWarnings("StringBufferReplaceableByString")
-            StringBuilder body = new StringBuilder();
-            body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
-            body.append("Message: ").append(e.getMessage());
-            body.append("\n");
-            body.append("Cause: ").append(e.getCause());
-            body.append("\n");
-            body.append("Stacktrace: ").append(exceptionAsString);
-
-            // Send an error notification by the end of indexer.
-//            mail.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );
+            if (mail) {
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw));
+                String exceptionAsString = sw.toString();
+                @SuppressWarnings("StringBufferReplaceableByString")
+                StringBuilder body = new StringBuilder();
+                body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
+                body.append("Message: ").append(e.getMessage());
+                body.append("\n");
+                body.append("Cause: ").append(e.getCause());
+                body.append("\n");
+                body.append("Stacktrace: ").append(exceptionAsString);
+                // Send an error notification by the end of indexer.
+                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has thrown exception", body.toString());
+            }
         }
     }
 

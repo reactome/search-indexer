@@ -1,9 +1,9 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
@@ -20,17 +20,13 @@ import java.util.List;
  * access it
  * Created by flo on 3/27/14.
  */
+class Converter {
 
-public class Converter {
+    private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
-    private static final Logger logger = Logger.getLogger(Converter.class);
     private final List<String> keywords;
-    /**
-     * Constructor
-     */
-    public Converter(String controlledVocabulary) {
-        logger.setLevel(Level.ERROR);
-//        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
+
+    Converter(String controlledVocabulary) {
         keywords = loadFile(controlledVocabulary);
         if (keywords==null) {
             logger.error("No keywords available");
@@ -42,7 +38,7 @@ public class Converter {
      * @param instance GkInstance
      * @return IndexDocument
      */
-    public IndexDocument buildDocumentFromGkInstance (GKInstance instance) {
+    IndexDocument buildDocumentFromGkInstance (GKInstance instance) {
         if (instance != null && instance.getDBID()!= null){
             IndexDocument document = new IndexDocument();
 
@@ -212,16 +208,17 @@ public class Converter {
             }
 
             if(hasValues(instance, "relatedSpecies")){ //TODO: use the ReactomeJavaConstants.relatedSpecies when available
-                List<String> relatedSpeciess = new LinkedList<>();
+                List<String> relatedSpecies = new LinkedList<>();
                 for (Object aux : instance.getAttributeValuesList("relatedSpecies")) { //TODO: use the ReactomeJavaConstants.relatedSpecies when available
-                    GKInstance relatedSpecies = (GKInstance) aux;
-                    relatedSpeciess.add(relatedSpecies.getDisplayName());
+                    GKInstance species = (GKInstance) aux;
+                    relatedSpecies.add(species.getDisplayName());
                 }
-                document.setRelatedSpecies(relatedSpeciess);
+                document.setRelatedSpecies(relatedSpecies);
             }
 
             if (hasValues(instance, ReactomeJavaConstants.literatureReference)){
 
+                @SuppressWarnings("unchecked")
                 List<GKInstance> literature = instance.getAttributeValuesList(ReactomeJavaConstants.literatureReference);
                 document.setLiteratureReferenceTitle(getLiteratureAttributes(literature, ReactomeJavaConstants.title));
                 document.setLiteratureReferencePubMedId(getLiteratureAttributes(literature, ReactomeJavaConstants.pubMedIdentifier));
@@ -243,7 +240,7 @@ public class Converter {
         return list;
     }
 
-    public void setCrossReference(IndexDocument document, GKInstance instance)  {
+    private void setCrossReference(IndexDocument document, GKInstance instance)  {
         try {
             List<?> crossReferenceInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.crossReference);
             List<String> identifiers = new ArrayList<>();
@@ -362,6 +359,7 @@ public class Converter {
      * @param document IndexDocument
      * @param instance GkInstance
      */
+    @SuppressWarnings("unchecked")
     private void setNameAndSynonyms(IndexDocument document, GKInstance instance) {
         try {
             if (hasValues(instance, ReactomeJavaConstants.name)){
@@ -473,14 +471,17 @@ public class Converter {
             }
 
             if (hasValues(referenceEntity, ReactomeJavaConstants.geneName)){
+                //noinspection unchecked
                 document.setReferenceGeneNames(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.geneName));
             }
 
             if (hasValues(referenceEntity, ReactomeJavaConstants.otherIdentifier)){
+                //noinspection unchecked
                 document.setReferenceOtherIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
             }
 
             if (hasValues(referenceEntity, ReactomeJavaConstants.secondaryIdentifier)){
+                //noinspection unchecked
                 document.setReferenceSecondaryIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.secondaryIdentifier));
             }
 
@@ -565,7 +566,10 @@ public class Converter {
             List<String> goMolecularFunctionName = new ArrayList<>();
             for (Object object : catalystActivity) {
                 GKInstance gkInstance = (GKInstance) object;
-                goMolecularFunctionAccession.addAll(getGoTermAccession(gkInstance, ReactomeJavaConstants.activity));
+                List<String> goTerms = getGoTermAccession(gkInstance, ReactomeJavaConstants.activity);
+                if (goTerms != null) {
+                    goMolecularFunctionAccession.addAll(goTerms);
+                }
                 goMolecularFunctionName.add(getGoTermName(gkInstance, ReactomeJavaConstants.activity));
             }
             document.setGoMolecularFunctionAccession(goMolecularFunctionAccession);
@@ -581,6 +585,7 @@ public class Converter {
      * @param document IndexDocument
      * @param instance GkInstance
      */
+    @SuppressWarnings("unchecked")
     private void setReferenceNameAndSynonyms (IndexDocument document, GKInstance instance) {
         try {
             if (hasValues(instance, ReactomeJavaConstants.name)){
@@ -645,7 +650,7 @@ public class Converter {
      * @param fieldName name of the InstanceField
      * @return true if field has values
      */
-    private boolean hasValue(GKInstance instance, String fieldName)  {
+    static boolean hasValue(GKInstance instance, String fieldName)  {
         if(instance.getSchemClass().isValidAttribute(fieldName)) {
             try {
                 if (instance.getAttributeValue(fieldName) != null) {

@@ -6,9 +6,10 @@ import java.util.List;
 
 /**
  * JAVA BEAN representing the Document that is going to be Indexed into Solr
- * @Field marks a Solr Field
+ * Field marks a Solr Field
  * Created by flo on 4/29/14.
  */
+@SuppressWarnings("unused")
 public class IndexDocument {
 
     @Field

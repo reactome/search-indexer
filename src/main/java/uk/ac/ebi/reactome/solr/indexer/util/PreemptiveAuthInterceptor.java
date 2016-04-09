@@ -16,7 +16,11 @@ import org.apache.http.protocol.HttpCoreContext;
 import java.io.IOException;
 
 /**
- * Created by flo on 16.10.15.
+ * Authentication Interceptor is used for providing credentials to Solr
+ *
+ * Created by:
+ * @author Florian Korninger (florian.korninger@ebi.ac.uk)
+ * @since 16.01.16.
  */
 public class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
 
@@ -25,13 +29,13 @@ public class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
         AuthState authState = (AuthState) context.getAttribute(HttpClientContext.TARGET_AUTH_STATE);
 
         if (authState.getAuthScheme() == null) {
-            CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(HttpClientContext.CREDS_PROVIDER);
+            CredentialsProvider credentialsProvider = (CredentialsProvider) context.getAttribute(HttpClientContext.CREDS_PROVIDER);
             HttpHost targetHost = (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
-            Credentials creds = credsProvider.getCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()));
-            if (creds == null) {
+            Credentials credentials = credentialsProvider.getCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()));
+            if (credentials == null) {
                 throw new HttpException("No credentials for preemptive authentication");
             }
-            request.addHeader(new BasicScheme().authenticate(creds,request,context));
+            request.addHeader(new BasicScheme().authenticate(credentials,request,context));
         }
     }
 }

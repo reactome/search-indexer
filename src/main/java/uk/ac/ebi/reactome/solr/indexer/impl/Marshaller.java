@@ -11,20 +11,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by flo on 5/28/14.
+ * Created by:
+ * @author Florian Korninger (florian.korninger@ebi.ac.uk)
+ * @since 28.05.14.
  */
-public class Marshaller {
+class Marshaller {
 
-    public static final String INDENT = "  ";
-    public static final String NEW_LINE = "\n";
+    private static final String INDENT = "  ";
+    private static final String NEW_LINE = "\n";
 
     private final String name;
     private final String description;
 
     private Writer writer;
 
-
-    public Marshaller( File output, String name, String description ) {
+    Marshaller(File output, String name, String description ) {
         this.name = name;
         this.description = description;
 
@@ -32,8 +33,10 @@ public class Marshaller {
             throw new IllegalArgumentException( "output file must not be null." );
         }
 
+
         if ( !output.exists() ) {
             try {
+                //noinspection ResultOfMethodCallIgnored
                 output.createNewFile();
             } catch ( IOException e ) {
                 throw new IllegalArgumentException( "Could not create a new output file.", e );
@@ -53,7 +56,7 @@ public class Marshaller {
     }
 
 
-    public void writeHeader(int releaseNumber) throws IndexerException {
+    void writeHeader(int releaseNumber) throws IndexerException {
         try {
             writer.write( "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" + NEW_LINE );
             writer.write("<database>" + NEW_LINE);
@@ -66,7 +69,8 @@ public class Marshaller {
             throw new IndexerException( e );
         }
     }
-    public void writeEntry(IndexDocument document) throws IndexerException {
+
+    void writeEntry(IndexDocument document) throws IndexerException {
         final String i = INDENT + INDENT;
         final String ii = INDENT + INDENT+ INDENT;
         final String iii = INDENT + INDENT + INDENT + INDENT;
@@ -77,7 +81,7 @@ public class Marshaller {
             String escaped = StringEscapeUtils.escapeXml(document.getName());
             writer.write( ii + "<name>" + escaped + "</name>" + NEW_LINE );
             if (document.getSummation()!= null) {
-                String noHTMLString = document.getSummation().replaceAll("\\<.*?\\>", "");
+                String noHTMLString = document.getSummation().replaceAll("<.*?>", "");
                 String noHtmlAndEscaped = StringEscapeUtils.escapeXml(noHTMLString);
                 writer.write( ii +"<description>" + noHtmlAndEscaped + "</description>" + NEW_LINE );
             }
@@ -220,7 +224,7 @@ public class Marshaller {
                 }
             }
             if (document.getInferredSummation() != null) {
-                String noHTMLString = document.getInferredSummation().replaceAll("\\<.*?\\>", "");
+                String noHTMLString = document.getInferredSummation().replaceAll("<.*?>", "");
                 writeField("inferred_summation", noHTMLString, iii);
                 }
 
@@ -232,7 +236,7 @@ public class Marshaller {
         }
     }
 
-    public void writeFooter(int entriesCount) throws IndexerException {
+    void writeFooter(int entriesCount) throws IndexerException {
         try {
             writer.write(INDENT + "</entries>" + NEW_LINE);
             writer.write(INDENT + "<entry_count>" + entriesCount + "</entry_count>" + NEW_LINE);
@@ -242,7 +246,8 @@ public class Marshaller {
             throw new IndexerException(e);
         }
     }
-    public void flush() throws IOException {
+
+    void flush() throws IOException {
         writer.flush();
     }
 
@@ -263,7 +268,7 @@ public class Marshaller {
         }
     }
 
-    public String getCurrentDate() {
+    private String getCurrentDate() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         return(dateFormat.format(date));
