@@ -207,8 +207,8 @@
             <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -229,10 +229,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		        referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -274,8 +275,8 @@
             <!--no search results returned because we are only interested in faceting information-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -296,10 +297,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		        referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -328,10 +330,10 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
 
-            <str name="qf">
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -352,10 +354,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		        referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -402,10 +405,10 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
 
-            <str name="qf">
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -426,10 +429,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		        referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -517,6 +521,88 @@
         <arr name="components">
             <str>suggest</str>
         </arr>
+    </requestHandler>
+
+
+   <requestHandler name="/intactdetail" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <int name="start">0</int>
+            <int name="rows">1</int>
+            <str name="mm">100%</str>
+            <str name="df">dbId</str>
+            <str name="qf">dbId^1.0</str>
+            <str name="fq">exactType:Interactor</str>
+        </lst>
+    </requestHandler>
+
+    <!--this request handler is used for searching on FIRE -->
+    <requestHandler name="/fireworks" class="solr.SearchHandler">
+
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+
+            <!-- general Parameters -->
+            <str name="mm">50%</str>
+            <str name="q.alt">*:*</str>
+            <str name="df">name</str>
+
+            <str name="qf">
+                dbId^100.0
+                oldStId^90.0
+                stId^80.0
+                name_exact^2000000.0
+                name^2000000.0
+                keywords^0.1
+                species^1.0
+                relatedSpecies^1.0
+                type^1.0
+                synonyms^1.0
+                goBiologicalProcessName^1.0
+                goCellularComponentName^1.0
+                goMolecularFunctionName^1.0
+                goBiologicalProcessAccessions^1.0
+                goCellularComponentAccessions^1.0
+                goMolecularFunctionAccession^1.0
+                referenceName^1.0
+                referenceIdentifiers^1.0
+                referenceSynonyms^710
+                referenceOtherIdentifier^510
+                referenceGeneNames^1.0
+                crossReferences^1.0
+                referenceCrossReferences^1.0
+                regulator^1.0
+                regulatedEntity^1.0
+                diseaseId^1.0
+                diseaseName^1.0
+                diseaseSynonyms^1.0
+            </str>
+
+            <!-- Highlighting -->
+            <str name="hl">true</str>
+            <!-- activates highlighting-->
+            <str name="hl.fl">name, referenceName, referenceIdentifiers, regulator, regulatedEntity</str>
+            <!-- fields that should be highlighted-->
+            <str name="hl.requireFieldMatch">true</str>
+            <!-- a field will only be highlighted if the query matched in this particular field-->
+            <str name="hl.preserveMulti">true</str>
+            <!-- Preserve order of values in a multiValued list. -->
+            <str name="hl.fragsize">0</str>
+            <!-- The size, in characters, of the snippets (aka fragments) created by the highlighter. In the original Highlighter, "0" indicates that the whole field value should be used with no fragmenting-->
+            <str name="hl.simple.pre">&lt;span class=&quot;highlighting&quot; &gt;</str>
+            <!--The text which appears before and after a highlighted term when using the simple formatter.-->
+            <str name="hl.simple.post">&lt;/span&gt;</str>
+            <!--The text which appears before and after a highlighted term when using the simple formatter.-->
+
+            <str name="facet">on</str>
+            <!-- activates Faceting-->
+            <str name="facet.mincount">1</str>
+            <!--minimum count of a facet field to be returned (eliminates null values)-->
+            <str name="facet.field">{!ex=tf}type_facet</str>
+            <!--fields selected for faceting, {!ex=tf} excludes type filter when faceting for types-->
+        </lst>
     </requestHandler>
 
     <requestHandler name="/update" class="solr.UpdateRequestHandler"></requestHandler>
