@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer.model;
+package org.reactome.server.tools.indexer.model;
 
 import java.util.ArrayList;
 import java.util.List;

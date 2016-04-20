@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer.model;
+package org.reactome.server.tools.indexer.model;
 
 import org.apache.solr.client.solrj.beans.Field;
 

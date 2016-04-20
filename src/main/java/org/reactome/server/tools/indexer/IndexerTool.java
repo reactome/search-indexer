@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer;
+package org.reactome.server.tools.indexer;
 
 import com.martiansoftware.jsap.*;
 import org.apache.http.auth.AuthScope;
@@ -10,11 +10,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.persistence.MySQLAdaptor;
-import org.reactome.server.tools.interactors.database.InteractorsDatabase;
-import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
-import uk.ac.ebi.reactome.solr.indexer.impl.Indexer;
-import uk.ac.ebi.reactome.solr.indexer.util.MailUtil;
-import uk.ac.ebi.reactome.solr.indexer.util.PreemptiveAuthInterceptor;
+import org.reactome.server.tools.indexer.impl.Indexer;
+import org.reactome.server.tools.indexer.util.MailUtil;
+import org.reactome.server.tools.indexer.util.PreemptiveAuthInterceptor;
+import org.reactome.server.interactors.database.InteractorsDatabase;
+import org.reactome.server.tools.indexer.exception.IndexerException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

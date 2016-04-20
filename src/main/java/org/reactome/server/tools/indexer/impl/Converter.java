@@ -1,11 +1,11 @@
-package uk.ac.ebi.reactome.solr.indexer.impl;
+package org.reactome.server.tools.indexer.impl;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
+import org.reactome.server.tools.indexer.model.CrossReference;
+import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
-import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
 import java.io.BufferedReader;
 import java.io.IOException;

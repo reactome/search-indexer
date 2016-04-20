@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer.util;
+package org.reactome.server.tools.indexer.util;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;

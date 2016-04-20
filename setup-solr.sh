@@ -35,7 +35,7 @@ where:
     -m  Solr Password
     -n  Solr Version                DEFAULT: 5.3.1
 
-    -o  Interactors databae path    DEFAULT: /home/flo/interactors.db
+    -o  Interactors database path   DEFAULT: /interactors.db
 
     -p  Mail Smtp server            DEFAULT: smtp.oicr.on.ca
     -q  Mail Smtp port              DEFAULT: 25
@@ -290,6 +290,7 @@ if ${_UPDATE_SOLR_CORE} = true; then
     echo "Starting Solr"
     if ! sudo service solr start >/dev/null 2>&1; then
         echo "Could not start Solr server"
+        exit 1;
     fi
 
     echo "Successfully installed Solr"

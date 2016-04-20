@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer.exception;
+package org.reactome.server.tools.indexer.exception;
 
 /**
  * Exception Class for Indexer and Converter

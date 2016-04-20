@@ -35,10 +35,11 @@
 
     <properties>
         <reactome.version>1.2.4</reactome.version>
-        <interactors.version>0.0.9-SNAPSHOT</interactors.version>
+        <interactors.version>1.0.0-SNAPSHOT</interactors.version>
         <solr.version>5.5.0</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.4</mail.version>
+        <activation.version>1.1.1</activation.version>
         <json.version>20090211</json.version>
         <logging.version>1.1.7</logging.version>
 
@@ -60,7 +61,7 @@
         </dependency>
         <!-- Reactome Interactor-core -->
         <dependency>
-            <groupId>org.reactome.server.tools</groupId>
+            <groupId>org.reactome.server.interactors</groupId>
             <artifactId>interactor-core</artifactId>
             <version>${interactors.version}</version>
             <exclusions>
@@ -93,11 +94,11 @@
             <artifactId>javax.mail</artifactId>
             <version>${mail.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>javax.activation</groupId>-->
-            <!--<artifactId>activation</artifactId>-->
-            <!--<version>1.1.1</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${activation.version}</version>
+        </dependency>
          <!--Org json importer-->
         <dependency>
             <groupId>org.json</groupId>
@@ -131,7 +132,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-
         <repository>
             <id>nexus-ebi-repo</id>
             <name>The EBI internal repository</name>
@@ -154,7 +154,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.ebi.reactome.solr.indexer.IndexerTool</mainClass>
+                            <mainClass>org.reactome.server.tools.indexer.IndexerTool</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -1,9 +1,9 @@
-package uk.ac.ebi.reactome.solr.indexer.impl;
+package org.reactome.server.tools.indexer.impl;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
-import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
-import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
+import org.reactome.server.tools.indexer.exception.IndexerException;
+import org.reactome.server.tools.indexer.model.CrossReference;
+import org.reactome.server.tools.indexer.model.IndexDocument;
 
 import java.io.*;
 import java.text.DateFormat;

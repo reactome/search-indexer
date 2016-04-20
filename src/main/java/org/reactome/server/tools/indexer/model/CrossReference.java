@@ -1,4 +1,4 @@
-package uk.ac.ebi.reactome.solr.indexer.model;
+package org.reactome.server.tools.indexer.model;
 
 public class CrossReference {
     private String dbName;
