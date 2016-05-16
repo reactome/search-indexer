@@ -149,8 +149,7 @@
         <fieldType name="name_field" class="solr.TextField" positionIncrementGap="100" omitNorms="false" >
             <analyzer type="index">
                 <tokenizer class="solr.StandardTokenizerFactory"/>
-                <filter class="solr.EdgeNGramFilterFactory" minGramSize="3" maxGramSize="15" side="front"/>
-
+                <filter class="solr.EdgeNGramFilterFactory" minGramSize="3" maxGramSize="15" />
                 <filter class="solr.ClassicFilterFactory"/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
