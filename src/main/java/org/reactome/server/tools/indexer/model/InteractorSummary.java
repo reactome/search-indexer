@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helper class
+ * Interactor information which we are going to save in the SolrDocument
+ * It has the accession, score, evidences + all the reactome summary that will be linkable
+ * in the interactor intermediate page.
  *
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */

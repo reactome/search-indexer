@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class that holds information coming from Reactome
+ * It means a list of ReactomeStableIdentifier and the Name
+ * This is needed when we associate an accession that interacts with a
+ * protein in Reactome, then we have the StId and name
+ *
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 public class ReactomeSummary {
