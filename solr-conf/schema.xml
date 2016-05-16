@@ -6,7 +6,8 @@
         <field name="stId" 		    		        type="stId_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
         <field name="oldStId"	    			    type="oldStId_field"    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
         <field name="name" 	    			        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="true" 	multiValued="false"/>
-        <field name="name_gram" 	    		    type="gram_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="true" 	multiValued="false"/>
+        <field name="name_gram" 	    		    type="gram_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="true" 	multiValued="false"/>
+        <field name="name_stem" 		            type="stem_field"       indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
         <field name="name_exact" 		            type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
         <field name="keywords"			     	    type="text_field" 	    indexed="true" 	stored="false"  omitNorms="true"    required="false" 	multiValued="true"/>
         <field name="type" 			    	        type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
@@ -61,6 +62,7 @@
 
     <copyField source="name"                            dest="name_exact"/>
     <copyField source="name"                            dest="name_gram"/>
+    <copyField source="name"                            dest="name_stem"/>
 
     <copyField source="species" 			            dest="species_facet"/>
     <copyField source="relatedSpecies" 			        dest="species_facet"/>
@@ -141,7 +143,7 @@
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
-                <filter class="solr.KStemFilterFactory"/>
+                <!--<filter class="solr.KStemFilterFactory"/>-->
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
@@ -150,7 +152,7 @@
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
-                <filter class="solr.KStemFilterFactory"/>
+                <!--<filter class="solr.KStemFilterFactory"/>-->
             </analyzer>
         </fieldType>
 
@@ -171,6 +173,28 @@
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+            </analyzer>
+        </fieldType>
+
+
+        <fieldType name="stem_field" class="solr.TextField" positionIncrementGap="100" omitNorms="false" >
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.ClassicFilterFactory"/>
+                <filter class="solr.LengthFilterFactory" min="2" max="20"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+                <filter class="solr.KStemFilterFactory" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
+                <filter class="solr.LengthFilterFactory" min="2" max="20"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+                <filter class="solr.KStemFilterFactory"/>
+
             </analyzer>
         </fieldType>
 
