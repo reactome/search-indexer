@@ -65,7 +65,7 @@ public class Indexer {
     private static  Boolean xml;
 
     private static final int addInterval = 1000;
-    private static final int width = 100;
+    private static final int width = 50;
     private static int total;
 
     /**
@@ -112,14 +112,14 @@ public class Indexer {
             }
 
             System.out.println("Started importing Reactome data to Solr");
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
+//            if (xml) {
+//                marshaller.writeFooter(entriesCount);
+//            }
             commitSolrServer();
 
             System.out.println("\nStarted importing Interactors data to Solr");
@@ -151,16 +151,16 @@ public class Indexer {
     private void updateProgressBar(int done) {
         String format = "\r%3d%% %s %c";
         char[] rotators = {'|', '/', '—', '\\'};
-        int percent = (++done * 100) / total;
+        double percent = (double) done / total;
         StringBuilder progress = new StringBuilder(width);
         progress.append('|');
         int i = 0;
-        for (; i < percent; i++)
+        for (; i < (int) (percent*width); i++)
             progress.append("=");
         for (; i < width; i++)
             progress.append(" ");
         progress.append('|');
-        System.out.printf(format, percent, progress, rotators[((done - 1) % (rotators.length * 100)) /100]);
+        System.out.printf(format, (int) (percent*100), progress, rotators[((done - 1) % (rotators.length * 100)) /100]);
     }
 
     private String getReactomeId(GKInstance instance) throws Exception {
@@ -205,7 +205,7 @@ public class Indexer {
                 if(progress % 100 == 0){
                    updateProgressBar(progress);
                 }
-
+                progress++;
                 GKInstance instance = (GKInstance) object;
                 if (!instance.getSchemClass().isValidAttribute(ReactomeJavaConstants.identifier)) continue;
 
@@ -253,7 +253,7 @@ public class Indexer {
                         }
                     }
                 }
-                progress++;
+
             }
 
             logger.info("  >> querying accessions in GKInstance [" + progress + "]");
