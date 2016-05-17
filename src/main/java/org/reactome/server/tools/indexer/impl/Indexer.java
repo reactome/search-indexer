@@ -112,14 +112,14 @@ public class Indexer {
             }
 
             System.out.println("Started importing Reactome data to Solr");
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
             commitSolrServer();
 
             System.out.println("\nStarted importing Interactors data to Solr");
@@ -257,6 +257,8 @@ public class Indexer {
             }
 
             logger.info("  >> querying accessions in GKInstance [" + progress + "]");
+
+            updateProgressBar(100); // done
 
         } catch (Exception e) {
             logger.error("Fetching Instances by ClassName from the Database caused an error", e);
@@ -606,6 +608,9 @@ public class Indexer {
 //                System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
 //            }
         }
+
+        updateProgressBar(100); // done
+
         return numberOfDocuments;
     }
 
