@@ -258,7 +258,7 @@ public class Indexer {
 
             logger.info("  >> querying accessions in GKInstance [" + progress + "]");
 
-            updateProgressBar(100); // done
+            updateProgressBar(progress); // done
 
         } catch (Exception e) {
             logger.error("Fetching Instances by ClassName from the Database caused an error", e);
@@ -419,6 +419,8 @@ public class Indexer {
 
             logger.info(numberOfDocuments + " Interactor(s) have now been added to Solr");
 
+            updateProgressBar(preparingSolrDocuments);
+
         } catch (InvalidInteractionResourceException | SQLException e) {
             throw new IndexerException(e);
         }
@@ -572,6 +574,7 @@ public class Indexer {
         }
         int numberOfDocuments = 0;
         List<IndexDocument> collection = new ArrayList<>();
+        int count = 0;
         for (Object object : instances) {
             GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
@@ -595,7 +598,7 @@ public class Indexer {
 //                    System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
 //                }
             }
-            int count = previousCount + numberOfDocuments;
+            count = previousCount + numberOfDocuments;
             if (count % 100 == 0 ) {
                 updateProgressBar(count);
             }
@@ -609,7 +612,7 @@ public class Indexer {
 //            }
         }
 
-        updateProgressBar(100); // done
+        updateProgressBar(count); // done
 
         return numberOfDocuments;
     }
