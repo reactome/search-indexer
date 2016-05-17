@@ -621,9 +621,9 @@ class Converter {
                 return  rtn;
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Go Term: " + instance.getDBID() + " has no accession number");
         }
-        logger.error("Go Term: " + instance.getDBID() + "has no accession number");
+
         return null;
     }
 
@@ -638,9 +638,8 @@ class Converter {
             GKInstance goTerm = (GKInstance) instance.getAttributeValue(fieldName);
             return goTerm.getDisplayName();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Go Term: " + instance.getDBID() + " has no name");
         }
-        logger.error("Go Term: " + instance.getDBID() + "has no name");
         return null;
     }
 
