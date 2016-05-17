@@ -49,6 +49,7 @@
         <field name="databaseName" 			        type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="false"/>
         <field name="referenceSynonyms"  		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
         <field name="referenceOtherIdentifier"      type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="referenceSecondaryIdentifier"  type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="referenceGeneNames" 		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
         <field name="spellcheck" 			        type="suggest_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
 
