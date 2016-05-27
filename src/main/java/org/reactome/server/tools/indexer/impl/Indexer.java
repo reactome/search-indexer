@@ -112,6 +112,7 @@ public class Indexer {
             }
 
             System.out.println("Started importing Reactome data to Solr");
+
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
             commitSolrServer();
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
@@ -579,6 +580,7 @@ public class Indexer {
             GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
             collection.add(document);
+	instance.deflate();
             if (xml) {
                 marshaller.writeEntry(document);
             }
