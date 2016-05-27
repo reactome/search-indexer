@@ -320,16 +320,28 @@ updateSolrConfigFiles () {
     echo "Downloading latest Solr configuration from git"
     _SOLR_CORE_CONF_DIR=$_SOLR_HOME/data/$_SOLR_CORE/conf
 
-    sudo su - solr -c "wget -q --user=gviteri@ebi.ac.uk --ask-password https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
-    sudo su - solr -c "wget -q --user=gviteri@ebi.ac.uk --ask-password https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
-    sudo su - solr -c "wget -q --user=gviteri@ebi.ac.uk --ask-password https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
-    sudo su - solr -c "wget -q --user=gviteri@ebi.ac.uk --ask-password https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt"
+    read -p "[1] GitHub or [2] BitBucket: [1]" _GIT_OPTION
 
-    #sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
-    #sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
-    #sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
-    #sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt"
+    if [ $_GIT_OPTION = 2 ] ; then
 
+    	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
+    	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
+	
+	echo "Updating SolR Configuration files"
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml" >/dev/null 2>&1
+	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt" >/dev/null 2>&1
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" >/dev/null 2>&1
+
+    else 
+       echo "Updating SolR Configuration files"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt"
+       
+    fi
+ 
     #sudo bash -c " cp -fr /tmp/solr-conf/* $_SOLR_HOME/data/$_SOLR_CORE/conf"
 
     #sudo rm -r /tmp/solr-conf >/dev/null 2>&1
@@ -384,13 +396,13 @@ runIndexer () {
         if [ ! -f /target/Indexer-jar-with-dependencies.jar ]; then
             
             echo "Cloning new repo from GitHub"
-            echo "THIS REPO HAS TO BE CHANGED ---- https://fkorn@bitbucket.org/fkorn/indexer.git"
+            echo "THIS REPO HAS TO BE CHANGED"
 
             #git clone https://fkorn@bitbucket.org/fkorn/indexer.git
-echo "aaaaaaa" 
+
             git clone https://gsviteri@bitbucket.org/fkorn/indexer.git
-echo "bbbbbbb"
-            git -C ./indexer/ fetch && git -C ./indexer/  checkout $_GIT_BRANCH
+
+            git -C ./indexer/ fetch && git -C ./indexer/ checkout $_GIT_BRANCH
             _PATH="/indexer"
             
             echo "Started packaging reactome project"
