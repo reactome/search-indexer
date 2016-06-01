@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.SQLException;
@@ -90,7 +91,7 @@ public class Indexer {
         interactionService = new InteractionService(interactorsDatabase);
 
         if (xml) {
-            marshaller = new Marshaller(new File("target/ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+            marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
         }
     }
 
@@ -101,27 +102,27 @@ public class Indexer {
             totalCount();
             int entriesCount = 0;
 
-            if (xml) {
-                int releaseNumber = 0;
-                try {
-                    releaseNumber = dba.getReleaseNumber();
-                } catch (Exception e) {
-                    logger.error("An error occurred when trying to retrieve the release number from the database.");
-                }
-                marshaller.writeHeader(releaseNumber);
-            }
-
-            System.out.println("Started importing Reactome data to Solr");
-
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
-            commitSolrServer();
+//            if (xml) {
+//                int releaseNumber = 0;
+//                try {
+//                    releaseNumber = dba.getReleaseNumber();
+//                } catch (Exception e) {
+//                    logger.error("An error occurred when trying to retrieve the release number from the database.");
+//                }
+//                marshaller.writeHeader(releaseNumber);
+//            }
+//
+//            System.out.println("Started importing Reactome data to Solr");
+//
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
+//            if (xml) {
+//                marshaller.writeFooter(entriesCount);
+//            }
+//            commitSolrServer();
 
             System.out.println("\nStarted importing Interactors data to Solr");
             entriesCount += indexInteractors();
@@ -523,14 +524,37 @@ public class Indexer {
             return "Entries without species";
         }
 
-        InputStream response;
+        //InputStream response;
         try {
             String urlString = "http://rest.ensembl.org/taxonomy/id/" + taxId;
             URL url = new URL(urlString);
-            URLConnection conn = url.openConnection();
+//            URLConnection conn = url.openConnection();
+//
+//            conn.setRequestProperty("Content-Type", "application/json");
+//            response = conn.getInputStream();
 
-            conn.setRequestProperty("Content-Type", "application/json");
-            response = conn.getInputStream();
+            URLConnection connection = url.openConnection();
+            HttpURLConnection httpConnection = (HttpURLConnection)connection;
+            httpConnection.setRequestProperty("Content-Type", "application/json");
+
+            InputStream response = httpConnection.getInputStream();
+            int responseCode = httpConnection.getResponseCode();
+
+            if(responseCode != 200) {
+                if(responseCode == 429 && httpConnection.getHeaderField("Retry-After") != null) {
+                    double sleepFloatingPoint = Double.valueOf(httpConnection.getHeaderField("Retry-After"));
+                    double sleepMillis = 1000 * sleepFloatingPoint;
+
+                    try {
+                        Thread.sleep((long)sleepMillis);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    return getTaxonomyLineage(taxId);
+                }
+            }
+
             String StringFromInputStream = IOUtils.toString(response, "UTF-8");
             JSONObject jsonObject = new JSONObject(StringFromInputStream);
 
