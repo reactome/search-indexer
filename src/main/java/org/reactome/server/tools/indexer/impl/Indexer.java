@@ -69,6 +69,9 @@ public class Indexer {
     private static final int width = 50;
     private static int total;
 
+    private static int requestCount = 0;
+    private static long lastRequestTime = System.currentTimeMillis();
+
     /**
      * Collection that holds accessions from IntAct that are not in Reactome Data.
      * This collection will be used to keep interactions to those accession not in Reactome.
@@ -526,6 +529,23 @@ public class Indexer {
 
         //InputStream response;
         try {
+            if(requestCount == 15) { // check every 15
+                long currentTime = System.currentTimeMillis();
+                long diff = currentTime - lastRequestTime;
+                //if less than a second then sleep for the remainder of the second
+                if(diff < 1000) {
+                    try {
+                        Thread.sleep(1000 - diff);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //reset
+                lastRequestTime = System.currentTimeMillis();
+                requestCount = 0;
+            }
+
+
             String urlString = "http://rest.ensembl.org/taxonomy/id/" + taxId;
             URL url = new URL(urlString);
 //            URLConnection conn = url.openConnection();
@@ -536,6 +556,7 @@ public class Indexer {
             URLConnection connection = url.openConnection();
             HttpURLConnection httpConnection = (HttpURLConnection)connection;
             httpConnection.setRequestProperty("Content-Type", "application/json");
+            requestCount++;
 
             InputStream response = httpConnection.getInputStream();
             int responseCode = httpConnection.getResponseCode();
