@@ -524,15 +524,10 @@ public class Indexer {
             return "Entries without species";
         }
 
-        //InputStream response;
         try {
 
             String urlString = "http://rest.ensembl.org/taxonomy/id/" + taxId;
             URL url = new URL(urlString);
-//            URLConnection conn = url.openConnection();
-//
-//            conn.setRequestProperty("Content-Type", "application/json");
-//            response = conn.getInputStream();
 
             URLConnection connection = url.openConnection();
             HttpURLConnection httpConnection = (HttpURLConnection)connection;
@@ -555,6 +550,7 @@ public class Indexer {
 
         }catch (IOException | JSONException e){
             try {
+                // If we hammer ensembl server than we get an 429 STATUS CODE, if that occurs we just wait 50sec.
                 Thread.sleep(50000);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
@@ -562,6 +558,7 @@ public class Indexer {
 
             return getTaxonomyLineage(taxId);
         }
+
         return "Entries without species";
 
     }
