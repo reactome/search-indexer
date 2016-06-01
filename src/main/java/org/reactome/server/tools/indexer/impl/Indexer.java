@@ -560,7 +560,7 @@ public class Indexer {
 
             InputStream response = httpConnection.getInputStream();
             int responseCode = httpConnection.getResponseCode();
-
+            System.out.println(responseCode);
             if(responseCode != 200) {
                 if(responseCode == 429) {
                     System.out.println(httpConnection.getHeaderFields());
@@ -589,10 +589,6 @@ public class Indexer {
             }
 
             response.close();
-            /**
-             * taking too long to execute.
-             */
-//            getTaxonomyLineage(parentTaxId,original);
 
         }catch (IOException | JSONException e){
             e.printStackTrace();
