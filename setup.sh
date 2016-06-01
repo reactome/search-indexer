@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-
+﻿#!/usr/bin/env bash
 
 #-----------------------------------------------------------
 # Script that automates the Reactome Solr initial setup.
@@ -39,7 +38,7 @@ where:
     -k  Solr Port                   DEFAULT: 8983
     -l  Solr User                   DEFAULT: admin
     -m  Solr Password
-    -n  Solr Version                DEFAULT: 5.5.1
+    -n  Solr Version                DEFAULT: 6.0.1
 
     -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
 
@@ -69,7 +68,7 @@ _SOLR_CORE="reactome"
 _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
-_SOLR_VERSION="5.5.1"
+_SOLR_VERSION="6.0.1"
 
 _INTERACTORS_DB="/usr/local/reactomes/Reactome/production/ContentService/interactors.db"
 
@@ -227,8 +226,6 @@ installSolr () {
     rm install_solr_service.sh
 
     echo "Downloading latest Solr configuration from git"
-    #sudo rm -rf /tmp/solr-conf >/dev/null 2>&1
-    #mkdir /tmp/solr-conf
 
     # Default directory in SolR classpath to add the config files.
     _SOLR_DATA_DIR=$_SOLR_HOME/data
@@ -236,30 +233,39 @@ installSolr () {
     
     sudo mkdir -p $_SOLR_CORE_CONF_DIR
 
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt
+    # As we are maintaining two repositories, I will leave this option until we merge them
+    read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
+
+    if [ $_GIT_OPTION = 2 ] ; then
+
+    	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
+    	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
+	read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
+
+	echo "Updating SolR Configuration files based on BitBucket"
+    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+
+    else 
+       echo "Updating SolR Configuration files based on GitHub"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
+       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" 
+    fi
 
     sudo chown -R solr:solr $_SOLR_DATA_DIR/$_SOLR_CORE
 
-    #echo "Removing old Solr core if existing"
-    #sudo su - solr -c "/opt/solr/bin/solr delete -c $_SOLR_CORE" >/dev/null 2>&1
-
     echo "Creating new Solr core"
-    #if ! sudo su - solr -c "/opt/solr/bin/solr create_core -c $_SOLR_CORE -d reactome"; then
-    #    echo "Could not create new Solr core"
-    #    exit 1;
-    #fi
 
     _STATUS=$(curl --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/cores?action=CREATE&name=$_SOLR_CORE")
     if [ 200 != "$_STATUS" ]; then
         echo "Could not create new Solr core "$_SOLR_CORE" status is: "$_STATUS
         exit 1;
     fi
-
-    #echo "Deleting temporary solr-conf"
-    #sudo rm -r /tmp/solr-conf >/dev/null 2>&1
+    echo "Solr core has been created."
 
     echo "Enabling Solr admin authentication in Jetty"
     sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml
@@ -307,11 +313,6 @@ updateSolrConfigFiles () {
     echo "Shutting down Solr for updating the core"
     sudo service solr stop >/dev/null 2>&1
 
-
-
-    #rm -r /tmp/solr-conf >/dev/null 2>&1
-    #mkdir /tmp/solr-conf
-
     if sudo [ !  -d "$_SOLR_HOME/data/$_SOLR_CORE/conf" ]; then
         echo "Wrong Solr home path was specified please check again"
         exit 1;
@@ -320,21 +321,23 @@ updateSolrConfigFiles () {
     echo "Downloading latest Solr configuration from git"
     _SOLR_CORE_CONF_DIR=$_SOLR_HOME/data/$_SOLR_CORE/conf
 
-    read -p "[1] GitHub or [2] BitBucket: [1]" _GIT_OPTION
+    # As we are maintaining two repositories, I will leave this option until we merge them
+    read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
 
     if [ $_GIT_OPTION = 2 ] ; then
 
     	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
     	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
+        read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
 	
-	echo "Updating SolR Configuration files"
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml" >/dev/null 2>&1
-	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt" >/dev/null 2>&1
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/a612057bdc44a59aac4acd2caeb492776cdbac39/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" >/dev/null 2>&1
+	echo "Updating SolR Configuration files based on BitBucket"
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml" >/dev/null 2>&1
+	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt" >/dev/null 2>&1
+    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" >/dev/null 2>&1
 
     else 
-       echo "Updating SolR Configuration files"
+       echo "Updating SolR Configuration files based on GitHub"
        sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
        sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
        sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
@@ -342,10 +345,6 @@ updateSolrConfigFiles () {
        
     fi
  
-    #sudo bash -c " cp -fr /tmp/solr-conf/* $_SOLR_HOME/data/$_SOLR_CORE/conf"
-
-    #sudo rm -r /tmp/solr-conf >/dev/null 2>&1
-
     echo "Starting Solr"
     if ! sudo service solr start ; then
         echo "Could not start Solr server"
@@ -395,21 +394,26 @@ runIndexer () {
     if ! mvn -q clean package -DskipTests ; then
         if [ ! -f /target/Indexer-jar-with-dependencies.jar ]; then
             
-            echo "Cloning new repo from GitHub"
-            echo "THIS REPO HAS TO BE CHANGED"
+            echo "Cloning project from repository..."
+	    
+	    # As we are maintaining two repositories, I will leave this option until we merge them
+            read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
 
-            #git clone https://fkorn@bitbucket.org/fkorn/indexer.git
-
-            git clone https://gsviteri@bitbucket.org/fkorn/indexer.git
-
+            if [ $_GIT_OPTION = 2 ] ; then
+            	read -p "bitbucket.org username [not your email]: `echo $'\n> '`" _GIT_USER
+            	git clone https://$_GIT_USER@bitbucket.org/fkorn/indexer.git
+            else
+                git clone https://github.com/reactome/Search.git
+            fi
+            
             git -C ./indexer/ fetch && git -C ./indexer/ checkout $_GIT_BRANCH
             _PATH="/indexer"
             
             echo "Started packaging reactome project"
             if ! mvn -q -f .${_PATH}/pom.xml clean package -DskipTests >/dev/null 2>&1; then
-                echo "An error occurred when packaging the project."
-                exit 1
-            fi
+               echo "An error occurred when packaging the project."
+               exit 1
+	    fi
         fi
     fi
 
