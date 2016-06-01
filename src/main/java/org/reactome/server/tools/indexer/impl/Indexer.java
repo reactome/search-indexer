@@ -563,11 +563,12 @@ public class Indexer {
 
             if(responseCode != 200) {
                 if(responseCode == 429 && httpConnection.getHeaderField("Retry-After") != null) {
+                    System.out.println(httpConnection.getHeaderFields());
                     double sleepFloatingPoint = Double.valueOf(httpConnection.getHeaderField("Retry-After"));
                     double sleepMillis = 1000 * sleepFloatingPoint;
-
+                    System.out.println(sleepFloatingPoint);
                     try {
-                        Thread.sleep((long)sleepMillis);
+                        Thread.sleep(50000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
