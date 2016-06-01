@@ -562,7 +562,7 @@ public class Indexer {
             int responseCode = httpConnection.getResponseCode();
 
             if(responseCode != 200) {
-                if(responseCode == 429 && httpConnection.getHeaderField("Retry-After") != null) {
+                if(responseCode == 429) {
                     System.out.println(httpConnection.getHeaderFields());
                     double sleepFloatingPoint = Double.valueOf(httpConnection.getHeaderField("Retry-After"));
                     double sleepMillis = 1000 * sleepFloatingPoint;
