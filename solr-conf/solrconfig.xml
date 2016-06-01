@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <config>
-    <luceneMatchVersion>4.7</luceneMatchVersion>
-
-    <lib dir="../../../contrib/extraction/lib" regex=".*\.jar"/>
-    <lib dir="../../../dist/" regex="solr-cell-\d.*\.jar"/>
-    <lib dir="../../../contrib/clustering/lib/" regex=".*\.jar"/>
-    <lib dir="../../../dist/" regex="solr-clustering-\d.*\.jar"/>
-    <lib dir="../../../contrib/langid/lib/" regex=".*\.jar"/>
-    <lib dir="../../../dist/" regex="solr-langid-\d.*\.jar"/>
-    <lib dir="../../../contrib/velocity/lib" regex=".*\.jar"/>
-    <lib dir="../../../dist/" regex="solr-velocity-\d.*\.jar"/>
+    <luceneMatchVersion>6.0.1</luceneMatchVersion>
 
     <dataDir>${solr.data.dir:}</dataDir>
 
@@ -38,8 +29,10 @@
              will be allowed before they are merged into one.
              Default is 10 for both merge policies.
           -->
-
-        <mergeFactor>2</mergeFactor>
+        <!-- DEPRECATED -->
+        <!--
+            <mergeFactor>2</mergeFactor>
+        -->
 
 
         <lockType>${solr.lock.type:native}</lockType>
@@ -79,31 +72,6 @@
                        size="512"
                        initialSize="512"
                        autowarmCount="0"/>
-
-        <!--
-                        <filterCache
-                              class="solr.FastLRUCache"
-                              size="64"
-                              initialSize="64"
-                              autowarmCount="4"
-                              cleanupThread="true"
-                            />
-
-                        <queryResultCache
-                              class="solr.FastLRUCache"
-                              size="512"
-                              initialSize="512"
-                              autowarmCount="8"
-                              cleanupThread="true"
-                            />
-
-                        <documentCache
-                              class="solr.FastLRUCache"
-                              size="16384"
-                              initialSize="4096"
-                              cleanupThread="true"
-                            />  -->
-
         <cache name="perSegFilter"
                class="solr.search.LRUCache"
                size="10"
@@ -209,8 +177,10 @@
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
-                name_exact^2000000.0
-                name^2000000.0
+                name_exact^100.0
+                name^50.0
+                name_gram^1.0
+                name_stem^1.0
                 keywords^0.1
                 species^1.0
                 relatedSpecies^1.0
@@ -233,7 +203,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-		        referenceSecondaryIdentifier^20
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -277,8 +247,10 @@
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
-                name_exact^2000000.0
-                name^2000000.0
+                name_exact^100.0
+                name^50.0
+                name_gram^1.0
+                name_stem^1.0
                 keywords^0.1
                 species^1.0
                 relatedSpecies^1.0
@@ -301,7 +273,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-		        referenceSecondaryIdentifier^20
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -334,8 +306,10 @@
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
-                name_exact^2000000.0
-                name^2000000.0
+                name_exact^100.0
+                name^50.0
+                name_gram^1.0
+                name_stem^1.0
                 keywords^0.1
                 species^1.0
                 relatedSpecies^1.0
@@ -623,10 +597,6 @@
     <requestHandler name="/analysis/document"
                     class="solr.DocumentAnalysisRequestHandler"
                     startup="lazy"/>
-
-    <!-- Admin Handlers - This will register all the standard admin RequestHandlers. -->
-    <requestHandler name="/admin/"
-                    class="solr.admin.AdminHandlers"/>
 
     <!-- ping/healthcheck -->
     <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
