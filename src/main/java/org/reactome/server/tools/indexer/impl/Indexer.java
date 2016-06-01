@@ -580,7 +580,7 @@ public class Indexer {
             GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
             collection.add(document);
-	instance.deflate();
+	        instance.deflate();
             if (xml) {
                 marshaller.writeEntry(document);
             }
