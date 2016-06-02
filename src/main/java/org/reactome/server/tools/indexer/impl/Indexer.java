@@ -102,27 +102,27 @@ public class Indexer {
             totalCount();
             int entriesCount = 0;
 
-//            if (xml) {
-//                int releaseNumber = 0;
-//                try {
-//                    releaseNumber = dba.getReleaseNumber();
-//                } catch (Exception e) {
-//                    logger.error("An error occurred when trying to retrieve the release number from the database.");
-//                }
-//                marshaller.writeHeader(releaseNumber);
-//            }
-//
-//            System.out.println("Started importing Reactome data to Solr");
-//
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
-//            commitSolrServer();
+            if (xml) {
+                int releaseNumber = 0;
+                try {
+                    releaseNumber = dba.getReleaseNumber();
+                } catch (Exception e) {
+                    logger.error("An error occurred when trying to retrieve the release number from the database.");
+                }
+                marshaller.writeHeader(releaseNumber);
+            }
+
+            System.out.println("Started importing Reactome data to Solr");
+
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
+            commitSolrServer();
 
             System.out.println("\nStarted importing Interactors data to Solr");
             entriesCount += indexInteractors();
