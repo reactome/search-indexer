@@ -1,62 +1,63 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<schema name="example" version="1.5">
+<schema name="example" version="1.6">
     <fields>
-        <field name="_version_"			     	    type="version" 		    indexed="true" 	stored="true"	omitNorms="true"    required="false" 	multiValued="false"/>
-        <field name="dbId" 			    	        type="id" 		        indexed="true" 	stored="true"	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="_version_"				        type="version"		    indexed="true" 	stored="true"	omitNorms="true"	required="false" 	multiValued="false"/>
+        <field name="dbId" 				            type="id"		        indexed="true" 	stored="true"	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="stId" 		    		        type="stId_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
-        <field name="oldStId"	    			    type="oldStId_field"    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
-        <field name="name" 	    			        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="true" 	multiValued="false"/>
-        <field name="name_gram" 	    		    type="gram_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="true" 	multiValued="false"/>
-        <field name="name_stem" 		            type="stem_field"       indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
-        <field name="name_exact" 		            type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
-        <field name="keywords"			     	    type="text_field" 	    indexed="true" 	stored="false"  omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="oldStId"	    		        type="oldStId_field"    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
+        <field name="name" 	    			        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="true" 	multiValued="false"/>
+        <field name="name_gram" 	    	        type="gram_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="true" 	multiValued="false"/>
+        <field name="name_stem" 		            type="stem_field"       indexed="true" 	stored="false" 	omitNorms="false"	required="true"  	multiValued="false"/>
+        <field name="name_exact" 		            type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"	required="true"  	multiValued="false"/>
+        <field name="keywords"			            type="text_field" 	    indexed="true" 	stored="false"  omitNorms="true"	required="false" 	multiValued="true"/>
         <field name="type" 			    	        type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="exactType"     			    type="facet_field"	    indexed="true" 	stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="species" 			    	    type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="relatedSpecies"	    	    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
+        <field name="exactType"     		        type="facet_field"	    indexed="true" 	stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="species" 			            type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="relatedSpecies"	       	    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="isDisease"   	    		    type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="diseaseId"      			    type="keyword_field" 	indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="diseaseName"      			    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
         <field name="diseaseSynonyms"  			    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
         <field name="regulator"      			    type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatedEntity"   	        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
-        <field name="regulatorId"      			    type="stId_field"       indexed="true"  stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="regulatorId"      			    type="stId_field"   	indexed="true"  stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="regulatedEntityId"   	        type="stId_field" 	    indexed="true"  stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="type_facet" 		    	    type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="species_facet"     		    type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
-        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="keywords_facet"		        type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="synonyms" 			    	    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
-        <field name="summation" 			        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="false" 	multiValued="false"/>
-        <field name="inferredSummation" 		    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"    required="false" 	multiValued="false"/>
-        <field name="literatureReferenceTitle" 		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
+        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false" 	multiValued="true"/>
+        <field name="keywords_facet"		        type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false" 	multiValued="true"/>
+        <field name="synonyms" 			    	    type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="true"/>
+        <field name="summation" 			        type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false" 	multiValued="false"/>
+        <field name="inferredSummation" 		    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
+        <field name="literatureReferenceTitle" 		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="true"/>
         <field name="literatureReferenceAuthor"		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="literatureReferencePubMedId"	type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="literatureReferenceIsbn"		type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="compartmentName" 			    type="text_field" 	    indexed="true" 	stored="false"  omitNorms="false"   required="false" 	multiValued="true"/>
-        <field name="compartmentAccession" 		    type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="goBiologicalProcessName"		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="false"/>
+        <field name="literatureReferenceIsbn"		type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"	required="false" 	multiValued="true"/>
+        <field name="compartmentName" 			    type="text_field" 	    indexed="true" 	stored="false"  omitNorms="false"	required="false" 	multiValued="true"/>
+        <field name="compartmentAccession" 		    type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"	required="false" 	multiValued="true"/>
+        <field name="goBiologicalProcessName"		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="false"/>
         <field name="goBiologicalProcessAccessions"	type="keyword_field"    indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="goCellularComponentName"		type="text_field"		indexed="true" 	stored="false"	omitNorms="false"   required="false" 	multiValued="true"/>
+        <field name="goCellularComponentName"		type="text_field"	    indexed="true" 	stored="false"	omitNorms="false"	required="false" 	multiValued="true"/>
         <field name="goCellularComponentAccessions"	type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="goMolecularFunctionName" 		type="text_field"	 	indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
+        <field name="goMolecularFunctionName" 		type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="true"/>
         <field name="goMolecularFunctionAccession" 	type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="crossReferences" 			    type="keyword_field" 	indexed="true" 	stored="false"	omitNorms="false"  	required="false"  	multiValued="true"/>
         <field name="referenceCrossReferences" 		type="keyword_field" 	indexed="true" 	stored="false"	omitNorms="false"  	required="false"  	multiValued="true"/>
-        <field name="referenceName"  	 	    	type="text_field"		indexed="true" 	stored="true" 	omitNorms="false"   required="false" 	multiValued="false"/>
+        <field name="referenceName"  	 	    	type="text_field"	    indexed="true" 	stored="true" 	omitNorms="false"	required="false" 	multiValued="false"/>
         <field name="referenceIdentifiers" 		    type="keyword_field"	indexed="true" 	stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="referenceURL" 			        type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="false"/>
         <field name="databaseName" 			        type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="false"/>
-        <field name="referenceSynonyms"  		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
-        <field name="referenceOtherIdentifier"      type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="referenceGeneNames" 		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
+        <field name="referenceSynonyms"  		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="true"/>
+        <field name="referenceOtherIdentifier"		type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="referenceSecondaryIdentifier"	type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="referenceGeneNames" 		    type="text_field"	    indexed="true" 	stored="false" 	omitNorms="false"	required="false" 	multiValued="true"/>
         <field name="spellcheck" 			        type="suggest_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
 
-        <field name="reactomeInteractorIds" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="interactionsIds" 			    type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="scores" 				        type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="interactorAccessions"		    type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
-        <field name="reactomeInteractorNames" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="reactomeInteractorIds"	type="stored_value" indexed="false"	stored="true"	omitNorms="true"	required="false"	multiValued="true" useDocValuesAsStored="false" />
+        <field name="interactionsIds"		type="stored_value" indexed="false"	stored="true"	omitNorms="true"	required="false"	multiValued="true" useDocValuesAsStored="false"/>
+        <field name="scores"		        type="stored_value"	indexed="false"	stored="true" 	omitNorms="true"   	required="false" 	multiValued="true" useDocValuesAsStored="false"/>
+        <field name="interactorAccessions"  type="stored_value"	indexed="false"	stored="true" 	omitNorms="true"   	required="false" 	multiValued="true" useDocValuesAsStored="false"/>
+        <field name="reactomeInteractorNames" type="stored_value" indexed="false" stored="true" omitNorms="true"   	required="false" 	multiValued="true" useDocValuesAsStored="false"/>
 
     </fields>
 
@@ -64,34 +65,34 @@
     <copyField source="name"                            dest="name_gram"/>
     <copyField source="name"                            dest="name_stem"/>
 
-    <copyField source="species" 			            dest="species_facet"/>
-    <copyField source="relatedSpecies" 			        dest="species_facet"/>
-    <copyField source="type" 				            dest="type_facet"/>
-    <copyField source="compartmentName" 	    	    dest="compartment_facet"/>
-    <copyField source="keywords" 			            dest="keywords_facet"/>
+    <copyField source="species"                         dest="species_facet"/>
+    <copyField source="relatedSpecies"                  dest="species_facet"/>
+    <copyField source="type"				            dest="type_facet"/>
+    <copyField source="compartmentName"                 dest="compartment_facet"/>
+    <copyField source="keywords"			            dest="keywords_facet"/>
 
-    <copyField source="stId" 		                    dest="spellcheck"/>
-    <copyField source="oldStId"		                    dest="spellcheck"/>
-    <copyField source="name" 		                    dest="spellcheck"/>
+    <copyField source="stId"				            dest="spellcheck"/>
+    <copyField source="oldStId"				            dest="spellcheck"/>
+    <copyField source="name"				            dest="spellcheck"/>
     <copyField source="synonyms"                        dest="spellcheck"/>
-    <copyField source="compartmentName" 		        dest="spellcheck"/>
-    <copyField source="compartmentAccession" 		    dest="spellcheck"/>
+    <copyField source="compartmentName"			        dest="spellcheck"/>
+    <copyField source="compartmentAccession"		    dest="spellcheck"/>
     <copyField source="goBiologicalProcessName"		    dest="spellcheck"/>
     <copyField source="goBiologicalProcessAccessions" 	dest="spellcheck"/>
-    <copyField source="goCellularComponentName" 	    dest="spellcheck"/>
+    <copyField source="goCellularComponentName"		    dest="spellcheck"/>
     <copyField source="goCellularComponentAccessions" 	dest="spellcheck"/>
-    <copyField source="goMolecularFunctionName" 	    dest="spellcheck"/>
+    <copyField source="goMolecularFunctionName"		    dest="spellcheck"/>
     <copyField source="goMolecularFunctionAccession"	dest="spellcheck"/>
     <copyField source="crossReferences"			        dest="spellcheck"/>
     <copyField source="referenceCrossReferences"        dest="spellcheck"/>
-    <copyField source="referenceName" 			        dest="spellcheck"/>
-    <copyField source="referenceIdentifiers" 		    dest="spellcheck"/>
-    <copyField source="referenceSynonyms" 		        dest="spellcheck"/>
+    <copyField source="referenceName"			        dest="spellcheck"/>
+    <copyField source="referenceIdentifiers"		    dest="spellcheck"/>
+    <copyField source="referenceSynonyms"		        dest="spellcheck"/>
     <copyField source="referenceOtherIdentifier"        dest="spellcheck"/>
-    <copyField source="referenceGeneNames" 		        dest="spellcheck"/>
-    <copyField source="diseaseId"      			        dest="spellcheck"/>
-    <copyField source="diseaseName"      		        dest="spellcheck"/>
-    <copyField source="diseaseSynonyms"  		        dest="spellcheck"/>
+    <copyField source="referenceGeneNames"		        dest="spellcheck"/>
+    <copyField source="diseaseId"			            dest="spellcheck"/>
+    <copyField source="diseaseName" 			        dest="spellcheck"/>
+    <copyField source="diseaseSynonyms"			        dest="spellcheck"/>
 
     <solrQueryParser defaultOperator="OR"/>
     <uniqueKey>dbId</uniqueKey>

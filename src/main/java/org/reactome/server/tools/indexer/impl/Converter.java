@@ -614,16 +614,17 @@ class Converter {
         try {
             List<String> rtn = new LinkedList<>();
             GKInstance goTerm = (GKInstance) instance.getAttributeValue(fieldName);
-            if (hasValue(goTerm, ReactomeJavaConstants.accession)){
-                String go = goTerm.getAttributeValue(ReactomeJavaConstants.accession).toString();
-                rtn.add(go);
-                rtn.add("go:" + go);
-                return  rtn;
+            if (goTerm != null) {
+                if (hasValue(goTerm, ReactomeJavaConstants.accession)) {
+                    String go = goTerm.getAttributeValue(ReactomeJavaConstants.accession).toString();
+                    rtn.add(go);
+                    rtn.add("go:" + go);
+                    return rtn;
+                }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Go Term: " + instance.getDBID() + " has no accession number");
         }
-        logger.error("Go Term: " + instance.getDBID() + "has no accession number");
         return null;
     }
 
@@ -638,9 +639,8 @@ class Converter {
             GKInstance goTerm = (GKInstance) instance.getAttributeValue(fieldName);
             return goTerm.getDisplayName();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Go Term: " + instance.getDBID() + " has no name");
         }
-        logger.error("Go Term: " + instance.getDBID() + "has no name");
         return null;
     }
 

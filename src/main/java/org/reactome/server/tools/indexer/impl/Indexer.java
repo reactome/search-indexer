@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.SQLException;
@@ -90,7 +91,7 @@ public class Indexer {
         interactionService = new InteractionService(interactorsDatabase);
 
         if (xml) {
-            marshaller = new Marshaller(new File("target/ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+            marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
         }
     }
 
@@ -112,14 +113,15 @@ public class Indexer {
             }
 
             System.out.println("Started importing Reactome data to Solr");
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
+
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity, entriesCount);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation, entriesCount);
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
             commitSolrServer();
 
             System.out.println("\nStarted importing Interactors data to Solr");
@@ -257,6 +259,8 @@ public class Indexer {
             }
 
             logger.info("  >> querying accessions in GKInstance [" + progress + "]");
+
+            updateProgressBar(progress); // done
 
         } catch (Exception e) {
             logger.error("Fetching Instances by ClassName from the Database caused an error", e);
@@ -417,6 +421,8 @@ public class Indexer {
 
             logger.info(numberOfDocuments + " Interactor(s) have now been added to Solr");
 
+            updateProgressBar(preparingSolrDocuments);
+
         } catch (InvalidInteractionResourceException | SQLException e) {
             throw new IndexerException(e);
         }
@@ -518,14 +524,17 @@ public class Indexer {
             return "Entries without species";
         }
 
-        InputStream response;
         try {
+
             String urlString = "http://rest.ensembl.org/taxonomy/id/" + taxId;
             URL url = new URL(urlString);
-            URLConnection conn = url.openConnection();
 
-            conn.setRequestProperty("Content-Type", "application/json");
-            response = conn.getInputStream();
+            URLConnection connection = url.openConnection();
+            HttpURLConnection httpConnection = (HttpURLConnection)connection;
+            httpConnection.setRequestProperty("Content-Type", "application/json");
+
+            InputStream response = httpConnection.getInputStream();
+
             String StringFromInputStream = IOUtils.toString(response, "UTF-8");
             JSONObject jsonObject = new JSONObject(StringFromInputStream);
 
@@ -538,14 +547,18 @@ public class Indexer {
             }
 
             response.close();
-            /**
-             * taking too long to execute.
-             */
-//            getTaxonomyLineage(parentTaxId,original);
 
         }catch (IOException | JSONException e){
-            e.printStackTrace();
+            try {
+                // If we hammer ensembl server than we get an 429 STATUS CODE, if that occurs we just wait 50sec.
+                Thread.sleep(50000);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+
+            return getTaxonomyLineage(taxId);
         }
+
         return "Entries without species";
 
     }
@@ -570,10 +583,12 @@ public class Indexer {
         }
         int numberOfDocuments = 0;
         List<IndexDocument> collection = new ArrayList<>();
+        int count = 0;
         for (Object object : instances) {
             GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
             collection.add(document);
+	        instance.deflate();
             if (xml) {
                 marshaller.writeEntry(document);
             }
@@ -593,7 +608,7 @@ public class Indexer {
 //                    System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
 //                }
             }
-            int count = previousCount + numberOfDocuments;
+            count = previousCount + numberOfDocuments;
             if (count % 100 == 0 ) {
                 updateProgressBar(count);
             }
@@ -606,6 +621,9 @@ public class Indexer {
 //                System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
 //            }
         }
+
+        updateProgressBar(count); // done
+
         return numberOfDocuments;
     }
 
