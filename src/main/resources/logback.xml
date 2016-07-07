@@ -19,10 +19,17 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="importLogger" level="WARN" additivity="false">
+    <logger name="importLogger" level="INFO" additivity="false">
         <appender-ref ref="importFileAppender"/>
+        <appender-ref ref="STDOUT"/>
     </logger>
+
+    <!-- Setting up neo4j and sdn logging to ERROR -->
+    <logger name="org.neo4j.ogm" level="ERROR" />
+    <logger name="org.springframework.data.neo4j" level="ERROR" />
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
+
 </configuration>

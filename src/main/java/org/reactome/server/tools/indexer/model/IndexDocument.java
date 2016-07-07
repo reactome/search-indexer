@@ -2,6 +2,7 @@ package org.reactome.server.tools.indexer.model;
 
 import org.apache.solr.client.solrj.beans.Field;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -427,12 +428,26 @@ public class IndexDocument {
         this.goMolecularFunctionName = goMolecularFunctionName;
     }
 
+    public void addGoMolecularFunctionName(String gmfName){
+        if (this.goMolecularFunctionName == null){
+            this.goMolecularFunctionName = new ArrayList<>();
+        }
+        this.goMolecularFunctionName.add(gmfName);
+    }
+
     public List<String> getGoMolecularFunctionAccession() {
         return goMolecularFunctionAccession;
     }
 
     public void setGoMolecularFunctionAccession(List<String> goMolecularFunctionAccession) {
         this.goMolecularFunctionAccession = goMolecularFunctionAccession;
+    }
+
+    public void addGoMolecularFunctionAccession(String gmfAccession){
+        if (this.goMolecularFunctionAccession == null){
+            this.goMolecularFunctionAccession = new ArrayList<>();
+        }
+        this.goMolecularFunctionAccession.add(gmfAccession);
     }
 
     public String getReferenceName() {
