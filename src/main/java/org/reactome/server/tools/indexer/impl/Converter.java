@@ -1,8 +1,8 @@
 package org.reactome.server.tools.indexer.impl;
 
-import org.gk.model.GKInstance;
-import org.gk.model.ReactomeJavaConstants;
-import org.reactome.server.tools.indexer.model.IndexDocument;
+//import org.gk.model.GKInstance;
+//import org.gk.model.ReactomeJavaConstants;
+//import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,28 +29,28 @@ class Converter {
      * Converts GKInstance to a flat IndexDocument (Bean that later is indexed in Solr)
      * @param instance GkInstance
      * @return IndexDocument
-     */
-    IndexDocument buildDocumentFromGkInstance (GKInstance instance) {
-        if (instance != null && instance.getDBID()!= null){
-            IndexDocument document = new IndexDocument();
-
-            setGeneralAttributes(document, instance);
-
-            if(instance.getSchemClass().isa(ReactomeJavaConstants.Event)){
-                setEventAttributes(document,instance);
-            }
-            if(instance.getSchemClass().isa(ReactomeJavaConstants.PhysicalEntity)){
-                setPhysicalEntityAttributes(document,instance);
-            }
-            else if (instance.getSchemClass().isa(ReactomeJavaConstants.Regulation)){
-//                setRegulationAttributes(document, instance);
-            }
-            logger.info("Document was successfully created");
-            return document;
-        }
-        logger.error("Instance should not be null!");
-        return null;
-    }
+//     */
+//    IndexDocument buildDocumentFromGkInstance (GKInstance instance) {
+//        if (instance != null && instance.getDBID()!= null){
+//            IndexDocument document = new IndexDocument();
+//
+//            setGeneralAttributes(document, instance);
+//
+//            if(instance.getSchemClass().isa(ReactomeJavaConstants.Event)){
+//                setEventAttributes(document,instance);
+//            }
+//            if(instance.getSchemClass().isa(ReactomeJavaConstants.PhysicalEntity)){
+//                setPhysicalEntityAttributes(document,instance);
+//            }
+//            else if (instance.getSchemClass().isa(ReactomeJavaConstants.Regulation)){
+////                setRegulationAttributes(document, instance);
+//            }
+//            logger.info("Document was successfully created");
+//            return document;
+//        }
+//        logger.error("Instance should not be null!");
+//        return null;
+//    }
 
 //    private void setRegulationAttributes(IndexDocument document, GKInstance instance) {
 //        try {
@@ -118,7 +118,7 @@ class Converter {
      * @param document IndexDocument
      * @param instance GkInstance
      */
-    private void setGeneralAttributes(IndexDocument document, GKInstance instance) {
+//    private void setGeneralAttributes(IndexDocument document, GKInstance instance) {
 
 //        document.setDbId(instance.getDBID().toString()); //ok
 //        setNameAndSynonyms(document, instance); //ok, BUT CHECK whether we used displayName or not
@@ -223,7 +223,7 @@ class Converter {
 //        } catch (Exception e) {
 //            logger.error(e.getMessage(),e);
 //        }
-    }
+//    }
 
 //    private List<String> getKeywordsFromName(String name) {
 //        List<String> list = new ArrayList<>();
@@ -276,7 +276,7 @@ class Converter {
      * @param document IndexDocument
      * @param instance GkInstance
      */
-    private void setEventAttributes (IndexDocument document, GKInstance instance) {
+//    private void setEventAttributes (IndexDocument document, GKInstance instance) {
 
 //        document.setExactType(instance.getSchemClass().getName());
 //
@@ -294,14 +294,14 @@ class Converter {
 //            document.setGoBiologicalProcessAccessions(getGoTermAccession(instance, ReactomeJavaConstants.goBiologicalProcess));
 //            document.setGoBiologicalProcessName(getGoTermName(instance, ReactomeJavaConstants.goBiologicalProcess));
 //        }
-    }
+//    }
 
     /**
      * sets all physical entity attributes
      * @param document IndexDocument
      * @param instance GkInstance
      */
-    private void setPhysicalEntityAttributes (IndexDocument document, GKInstance instance) {
+//    private void setPhysicalEntityAttributes (IndexDocument document, GKInstance instance) {
 
 //        if (hasValue(instance, ReactomeJavaConstants.goCellularComponent)){
 //            document.setGoCellularComponentAccessions(getGoTermAccession(instance, ReactomeJavaConstants.goCellularComponent));
@@ -321,7 +321,7 @@ class Converter {
 //                document.setType(instance.getSchemClass().getName());
 //            }
 //        }
-    }
+//    }
 
     /**
      * returns the concatenated summation (will be better to display as a result when searching
@@ -449,7 +449,7 @@ class Converter {
      * @param document IndexDocument
      * @param instance GkInstance
      */
-    private void setReferenceEntityAttributes(IndexDocument document, GKInstance instance) {
+//    private void setReferenceEntityAttributes(IndexDocument document, GKInstance instance) {
 
 //        try {
 
@@ -506,7 +506,7 @@ class Converter {
 //        } catch (Exception e) {
 //            logger.error(e.getMessage(), e);
 //        }
-    }
+//    }
 //
 //    private void setReferenceCrossReference(IndexDocument document, GKInstance instance) {
 //        try {
