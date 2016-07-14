@@ -6,10 +6,15 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.util.IndexerMapSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,20 +22,31 @@ import java.util.stream.Collectors;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 @Service
-public class AspectService {
+public class DocumentBuilder {
+    private static final Logger logger = LoggerFactory.getLogger("importLogger");
+
+    private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
 
     @Autowired
     private DatabaseObjectService databaseObjectService;
 
+    private List<String> keywords;
+
+    public DocumentBuilder() {
+        keywords = loadFile(CONTROLLED_VOCABULARY);
+        if (keywords == null) {
+            logger.error("No keywords available");
+        }
+    }
 
     @Transactional
-    public IndexDocument testingTransactional(Long dbId){
+    public IndexDocument createSolrDocument(Long dbId) {
 
         IndexDocument document = new IndexDocument();
         /**
          * Query the Graph and load only Primitives and no Relations attributes. Lazy-loading will load them on demand.
          */
-        DatabaseObject databaseObject = databaseObjectService.findByIdNoRelations(dbId);
+        DatabaseObject databaseObject = databaseObjectService.findById(dbId);
 
         /** Setting common attributes **/
         document.setDbId(databaseObject.getDbId().toString());
@@ -91,14 +107,10 @@ public class AspectService {
         }
 
         /** Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms **/
-//        setKeywords(document);
-
+        setKeywords(document);
 
         return document;
-
     }
-
-
 
     /**
      * @param document
@@ -552,16 +564,39 @@ public class AspectService {
         }
     }
 
-//    /**
-//     * Keyword rely on document.getName. Make sure you are invoking document.setName before setting the keywords
-//     */
-//    private void setKeywords(IndexDocument document) {
-//        if (keywords == null) return;
-//
-//        // TODO. Discuss. Flo says the way it is implemented is not nice
-//        document.setKeywords(keywords.stream().filter(keyword -> document.getName().toLowerCase().contains(keyword.toLowerCase())).collect(Collectors.toList()));
-//    }
+    /**
+     * Keyword rely on document.getName. Make sure you are invoking document.setName before setting the keywords
+     */
+    private void setKeywords(IndexDocument document) {
+        if (keywords == null) return;
+
+        // TODO. Discuss. Flo says the way it is implemented is not nice. Right we check into a static file with defined vocabulary. Would be nice if we check which reactions is a bind reaction e.g and then add it as keyword.
+        document.setKeywords(keywords.stream().filter(keyword -> document.getName().toLowerCase().contains(keyword.toLowerCase())).collect(Collectors.toList()));
+    }
 
 
+    /**
+     * @param fileName
+     * @return
+     */
+    private List<String> loadFile(String fileName) {
+        try {
+            List<String> list = new ArrayList<>();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                list.add(line);
+            }
+            bufferedReader.close();
+
+            logger.debug(list.toString());
+
+            return list;
+        } catch (IOException e) {
+            logger.error("An error occurred when loading the controlled vocabulary file", e);
+        }
+
+        return null;
+    }
 
 }

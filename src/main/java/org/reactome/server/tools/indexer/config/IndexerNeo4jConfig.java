@@ -21,9 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @org.springframework.context.annotation.Configuration
 @ComponentScan( basePackages = {"org.reactome.server.tools.indexer", "org.reactome.server.graph"} )
 @EnableTransactionManagement
-@EnableNeo4jRepositories(
-        basePackages = {"org.reactome.server.graph.repository"}
-)
+@EnableNeo4jRepositories( basePackages = {"org.reactome.server.graph.repository"} )
 @EnableSpringConfigured
 public class IndexerNeo4jConfig extends Neo4jConfig {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");

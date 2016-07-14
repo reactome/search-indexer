@@ -13,11 +13,15 @@ import org.reactome.server.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.impl.NewIndexer;
+import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.PreemptiveAuthInterceptor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -28,7 +32,7 @@ public class Main {
 
     private static final String FROM = "reactome-indexer@reactome.org";
 
-    public static void main(String[] args) throws JSAPException, SQLException, IndexerException {
+    public static void main(String[] args) throws JSAPException, SQLException {
 
         long startTime = System.currentTimeMillis();
 
@@ -81,58 +85,55 @@ public class Main {
         System.setProperty("neo4j.user", config.getString("user"));
         System.setProperty("neo4j.password", config.getString("password"));
 
-        //NewIndexer indexer = new NewIndexer(solrClient, interactorsDatabase, xml);
-
-        //MailUtil mailUtil = new MailUtil(mailSmtp, mailPort);
-
-       // indexer.index();
+        MailUtil mailUtil = new MailUtil(mailSmtp, mailPort);
 
         AnnotationConfigApplicationContext ctx =
                 new AnnotationConfigApplicationContext(IndexerNeo4jConfig.class); // Use annotated beans from the specified package
 
-        NewIndexer main = ctx.getBean(NewIndexer.class);
-        main.setSolrClient(solrClient);
-        main.setXml(xml);
+        NewIndexer indexer = ctx.getBean(NewIndexer.class);
+        indexer.setSolrClient(solrClient);
+        indexer.setXml(xml);
 
-        main.index();
+        try {
+            indexer.index();
 
-//        AspectService mai2n = ctx.getBean(AspectService.class);
-//        mai2n.testingTransactional();
+            if (mail) {
+                long stopTime = System.currentTimeMillis();
+                long ms = stopTime - startTime;
+                long hour = TimeUnit.MILLISECONDS.toHours(ms);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
+                // Send an error notification by the end of indexer.
+                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
+            }
+        } catch (IndexerException e) {
+            if (mail) {
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw));
+                String exceptionAsString = sw.toString();
 
+                @SuppressWarnings("StringBufferReplaceableByString")
+                StringBuilder body = new StringBuilder();
+                body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
+                body.append("Message: ").append(e.getMessage());
+                body.append("\n");
+                body.append("Cause: ").append(e.getCause());
+                body.append("\n");
+                body.append("Stacktrace: ").append(exceptionAsString);
 
-
-        //main.index();
-
-//        try {
-//            indexer.index();
-//            if (mail) {
-//                long stopTime = System.currentTimeMillis();
-//                long ms = stopTime - startTime;
-//                long hour = TimeUnit.MILLISECONDS.toHours(ms);
-//                long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
-//                long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
-//                // Send an error notification by the end of indexer.
-//                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
-//            }
-//        } catch (IndexerException e) {
-//            if (mail) {
-//                StringWriter sw = new StringWriter();
-//                e.printStackTrace(new PrintWriter(sw));
-//                String exceptionAsString = sw.toString();
-//                @SuppressWarnings("StringBufferReplaceableByString")
-//                StringBuilder body = new StringBuilder();
-//                body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
-//                body.append("Message: ").append(e.getMessage());
-//                body.append("\n");
-//                body.append("Cause: ").append(e.getCause());
-//                body.append("\n");
-//                body.append("Stacktrace: ").append(exceptionAsString);
-//                // Send an error notification by the end of indexer.
-//                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has thrown exception", body.toString());
-//            }
-//        }
+                // Send an error notification by the end of indexer.
+                mailUtil.send(FROM, mailDest, "[SearchIndexer] The Solr indexer has thrown exception", body.toString());
+            }
+        }
     }
 
+    /**
+     *
+     * @param user
+     * @param password
+     * @param url
+     * @return
+     */
     private static SolrClient getSolrClient(String user, String password, String url) {
 
         if (user != null && !user.isEmpty() && password != null && !password.isEmpty()) {
@@ -146,8 +147,4 @@ public class Main {
 
         return new HttpSolrClient.Builder(url).build();
     }
-
-//    private static ApplicationContext getApplicationContext() {
-//        return new AnnotationConfigApplicationContext(IndexerNeo4jConfig.class);
-//    }
 }
