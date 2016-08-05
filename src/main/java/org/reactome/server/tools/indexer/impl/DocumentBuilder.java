@@ -2,9 +2,12 @@ package org.reactome.server.tools.indexer.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.exception.CustomQueryException;
+import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
+import org.reactome.server.tools.indexer.model.SpeciesResult;
 import org.reactome.server.tools.indexer.util.IndexerMapSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +35,11 @@ public class DocumentBuilder {
     @Autowired
     private DatabaseObjectService databaseObjectService;
 
+    @Autowired
+    private AdvancedDatabaseObjectService advancedDatabaseObjectService;
+
+    private Map<Long, Set<String>> simpleEntitiesSpecies = null;
+
     private List<String> keywords;
 
     public DocumentBuilder() {
@@ -41,6 +51,10 @@ public class DocumentBuilder {
 
     @Transactional
     public IndexDocument createSolrDocument(Long dbId) {
+
+        if (simpleEntitiesSpecies == null) {
+            cacheSimpleEntitySpecies();
+        }
 
         IndexDocument document = new IndexDocument();
         /**
@@ -56,10 +70,17 @@ public class DocumentBuilder {
         document.setType(getType(databaseObject));
         document.setExactType(databaseObject.getSchemaClass());
 
+//        if (databaseObject.getCreated() != null) {
+//            List<Person> pp = databaseObject.getCreated().getAuthor();
+//            for (Person person : pp) {
+//                System.out.println(person.getDisplayName() + " - " + person.getOrcidId());
+//            }
+//        }
+
         if (databaseObject instanceof PhysicalEntity) {
             PhysicalEntity physicalEntity = (PhysicalEntity) databaseObject;
 
-            /** GENERAL ATTRIBUTES **/
+            // GENERAL ATTRIBUTES
             setNameAndSynonyms(document, physicalEntity, physicalEntity.getName());
             setLiteratureReference(document, physicalEntity.getLiteratureReference());
             setSummation(document, physicalEntity.getSummation());
@@ -68,14 +89,14 @@ public class DocumentBuilder {
             setCrossReference(document, physicalEntity.getCrossReference());
             setSpecies(document, physicalEntity);
 
-            /** SPECIFIC FOR PHYSICAL ENTITIES **/
+            // SPECIFIC FOR PHYSICAL ENTITIES
             setGoTerms(document, physicalEntity.getGoCellularComponent());
             setReferenceEntity(document, physicalEntity);
 
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
 
-            /** GENERAL ATTRIBUTES **/
+            // GENERAL ATTRIBUTES
             setNameAndSynonyms(document, event, event.getName());
             setLiteratureReference(document, event.getLiteratureReference());
             setSummation(document, event.getSummation());
@@ -83,8 +104,9 @@ public class DocumentBuilder {
             setCompartment(document, event.getCompartment());
             setCrossReference(document, event.getCrossReference());
             setSpecies(document, event);
+            setAuthorAndReviewed(document, event);
 
-            /** SPECIFIC FOR EVENT **/
+            // SPECIFIC FOR EVENT
             setGoTerms(document, event.getGoBiologicalProcess());
             if (event instanceof ReactionLikeEvent) {
                 ReactionLikeEvent reactionLikeEvent = (ReactionLikeEvent) event;
@@ -94,22 +116,70 @@ public class DocumentBuilder {
         } else if (databaseObject instanceof Regulation) {
             Regulation regulation = (Regulation) databaseObject;
 
-            /** GENERAL ATTRIBUTES **/
+            // GENERAL ATTRIBUTES
             setNameAndSynonyms(document, regulation, regulation.getName());
             setLiteratureReference(document, regulation.getLiteratureReference());
             setSummation(document, regulation.getSummation());
             setSpecies(document, regulation);
 
-            /** SPECIFIC FOR REGULATIONS **/
+            // SPECIFIC FOR REGULATIONS
             setRegulatedEntity(document, regulation.getRegulatedEntity());
             setRegulator(document, regulation.getRegulator());
 
         }
 
-        /** Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms **/
+        setFireworksSpecies(document, databaseObject);
+
+        // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
         return document;
+    }
+
+    private void cacheSimpleEntitySpecies() {
+        logger.info("Caching SimpleEntity Species");
+        String query = "MATCH (n:SimpleEntity)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
+                "RETURN n.dbId AS dbId, species";
+        try {
+            Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.customQueryForObjects(SpeciesResult.class, query, null);
+            simpleEntitiesSpecies = new HashMap<>(speciesResultList.size());
+            for (SpeciesResult speciesResult : speciesResultList) {
+                simpleEntitiesSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
+            }
+        } catch (CustomQueryException e) {
+            logger.error("Could not cache fireworks species");
+        }
+
+        logger.info("Caching SimpleEntity Species is done");
+    }
+
+    private void setFireworksSpecies(IndexDocument document, DatabaseObject databaseObject) {
+        Set<String> fireworksSpecies = new HashSet<>();
+        if ((databaseObject instanceof SimpleEntity)) {
+            fireworksSpecies = simpleEntitiesSpecies.get(databaseObject.getDbId());
+        } else {
+            try {
+                Method getSpecies = databaseObject.getClass().getMethod("getSpecies");
+                Object species = getSpecies.invoke(databaseObject);
+                // some cases like DefinedSet it has species as an attribute but it does not have value in it.
+                if (species != null) {
+                    if (species instanceof Collection) {
+                        //noinspection Convert2streamapi,unchecked
+                        for (Taxon t : (Collection<? extends Taxon>) species) {
+                            fireworksSpecies.add(t.getDisplayName());
+                        }
+                    } else {
+                        Taxon t = (Taxon) species;
+                        fireworksSpecies.add(t.getDisplayName());
+                    }
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                //Nothing here
+            }
+        }
+
+        document.setFireworksSpecies(fireworksSpecies.isEmpty() ? null : fireworksSpecies);
     }
 
     /**
@@ -119,7 +189,7 @@ public class DocumentBuilder {
      */
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
-            /** some regulations do not have name **/
+            // some regulations do not have name
             document.setName(databaseObject.getDisplayName());
             return;
         }
@@ -202,7 +272,7 @@ public class DocumentBuilder {
     private void setSummation(IndexDocument document, List<Summation> summations) {
         if (summations == null) return;
 
-        /** Creating a report - We should have only one summation **/
+        // Creating a report - We should have only one summation
         if (summations.size() >= 2) {
             //logger.info("[SUMMATION] - " + document.getDbId());
         }
@@ -287,7 +357,7 @@ public class DocumentBuilder {
      * @param goTerm
      */
     private void setGoTerms(IndexDocument document, GO_Term goTerm) {
-        /** The "GoTerm" field is a list - We add the plain value and the constant 'go:' concatenated to the plain value **/
+        // The "GoTerm" field is a list - We add the plain value and the constant 'go:' concatenated to the plain value
         if (goTerm == null) return;
 
         if (goTerm instanceof GO_BiologicalProcess) {
@@ -312,6 +382,7 @@ public class DocumentBuilder {
      */
     private void setSpecies(IndexDocument document, DatabaseObject databaseObject) {
         Collection<? extends Taxon> speciesCollection = null;
+        List<String> relatedSpecies;
         if (databaseObject instanceof GenomeEncodedEntity) {
             GenomeEncodedEntity genomeEncodedEntity = (GenomeEncodedEntity) databaseObject;
             if (genomeEncodedEntity.getSpecies() != null) {
@@ -336,25 +407,20 @@ public class DocumentBuilder {
             speciesCollection = event.getSpecies();
 
             if (event.getRelatedSpecies() != null) {
-                document.setRelatedSpecies(event.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList()));
+                relatedSpecies = event.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList());
+                document.setRelatedSpecies(relatedSpecies);
             }
         }
 
         if (speciesCollection == null || speciesCollection.isEmpty()) {
-            //TODO: What about change  "Entries without species" default name ?
-            document.setSpecies("Entries without species");
+            document.setSpecies(Collections.singletonList("Entries without species"));
             return;
         }
 
-        // TODO: SPECIES IS A COLLECTION IN THE DATA MODEL BUT SOLR HAS IT AS SPECIES ONLY
-        // TODO: AS PART OF THE UPDATE TO THE NEW VERSION, I'LL KEEP THE ONLY THE FIRST ONE IN THE LIST. NOT HUNDRED PERCENT CONFIDENT HERE.
-//        for (Taxon species : speciesCollection) {
-//            document.setSpecies(species.getDisplayName());
-//            document.setTaxId(species.getTaxId());
-//        }
+        List<String> allSpecies = speciesCollection.stream().map(Taxon::getDisplayName).collect(Collectors.toList());
+        document.setSpecies(allSpecies);
 
-        document.setSpecies(speciesCollection.iterator().next().getDisplayName());
-        document.setTaxId(speciesCollection.iterator().next().getTaxId());
+        document.setTaxId(speciesCollection.stream().map(Taxon::getTaxId).collect(Collectors.toList()));
     }
 
     /**
@@ -395,7 +461,7 @@ public class DocumentBuilder {
                 }
             }
 
-            /** Setting TYPE and EXACT TYPE for the given PhysicalEntity **/
+            // Setting TYPE and EXACT TYPE for the given PhysicalEntity
             document.setType(getReferenceTypes(referenceEntity));
             document.setExactType(referenceEntity.getSchemaClass());
 
@@ -447,10 +513,10 @@ public class DocumentBuilder {
     private void setReferenceCrossReference(IndexDocument document, List<DatabaseIdentifier> referenceCrossReferences) {
         if (referenceCrossReferences == null || referenceCrossReferences.isEmpty()) return;
 
-        /** CrossReferencesIds add displayName which is <DB>:<ID> and also the Identifier **/
+        // CrossReferencesIds add displayName which is <DB>:<ID> and also the Identifier
         List<String> crossReferencesInfo = new ArrayList<>();
 
-        /** allCrossReferences are used in the Marshaller (ebeye.xml) **/
+        // allCrossReferences are used in the Marshaller (ebeye.xml)
         List<CrossReference> allXRefs = new ArrayList<>();
         for (DatabaseIdentifier databaseIdentifier : referenceCrossReferences) {
             crossReferencesInfo.add(databaseIdentifier.getIdentifier());
@@ -485,19 +551,19 @@ public class DocumentBuilder {
      */
     private String getType(DatabaseObject databaseObject) {
         if (databaseObject instanceof EntitySet) {
-            /** Any instance of CandidateSet, DefinedSet, OpenSet **/
+            // Any instance of CandidateSet, DefinedSet, OpenSet
             return "Set";
         } else if (databaseObject instanceof GenomeEncodedEntity) {
-            /** Any instance of GenomeEncodedEntity is setting the type based on its Reference **/
+            // Any instance of GenomeEncodedEntity is setting the type based on its Reference
             return "Genes and Transcripts";
         } else if (databaseObject instanceof Pathway) {
-            /** Also covering TopLevelPathway **/
+            // Also covering TopLevelPathway
             return "Pathway";
         } else if (databaseObject instanceof ReactionLikeEvent) {
-            /** Also covering BlackBoxEvent, (De)Polymerisation, (Failed)Reaction **/
+            // Also covering BlackBoxEvent, (De)Polymerisation, (Failed)Reaction
             return "Reaction";
         } else if (databaseObject instanceof Regulation) {
-            /** Also covering PositiveRegulation, NegativeRegulation, Requirement **/
+            // Also covering PositiveRegulation, NegativeRegulation, Requirement
             return "Regulation";
         } else {
             return databaseObject.getSchemaClass();
@@ -536,6 +602,31 @@ public class DocumentBuilder {
 
     /**
      * @param document
+     * @param event
+     */
+    private void setAuthorAndReviewed(IndexDocument document, Event event) {
+        if (event.getAuthored() == null && event.getReviewed() == null) return;
+
+        // Using a set to avoid duplication
+        Set<String> authorAndReviewerNames = new HashSet<>();
+        Set<String> authorAndReviewerOrcid = new HashSet<>();
+
+        if (event.getAuthored() != null) {
+            authorAndReviewerNames.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
+            authorAndReviewerOrcid.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
+        }
+
+        if (event.getReviewed() != null) {
+            authorAndReviewerNames.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
+            authorAndReviewerOrcid.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
+        }
+
+        document.setAuthor(authorAndReviewerNames.isEmpty() ? null : authorAndReviewerNames);
+        document.setAuthorOrcid(authorAndReviewerOrcid.isEmpty() ? null : authorAndReviewerOrcid);
+    }
+
+    /**
+     * @param document
      * @param regulator
      */
     private void setRegulator(IndexDocument document, DatabaseObject regulator) {
@@ -564,8 +655,11 @@ public class DocumentBuilder {
         }
     }
 
+
     /**
      * Keyword rely on document.getName. Make sure you are invoking document.setName before setting the keywords
+     *
+     * @param document solr document
      */
     private void setKeywords(IndexDocument document) {
         if (keywords == null) return;
@@ -574,10 +668,11 @@ public class DocumentBuilder {
         document.setKeywords(keywords.stream().filter(keyword -> document.getName().toLowerCase().contains(keyword.toLowerCase())).collect(Collectors.toList()));
     }
 
-
     /**
-     * @param fileName
-     * @return
+     * Load a file that is present in classpath
+     *
+     * @param fileName the file name
+     * @return the content file in a List of String
      */
     private List<String> loadFile(String fileName) {
         try {
@@ -598,5 +693,4 @@ public class DocumentBuilder {
 
         return null;
     }
-
 }

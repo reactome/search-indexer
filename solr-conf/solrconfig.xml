@@ -163,7 +163,7 @@
             <!--no search results returned because we are only interested in faceting information-->
             <int name="rows">0</int>
             <!--no search results returned because we are only interested in faceting information-->
-            <str name="mm">50%</str>
+            <!--<str name="mm">50%</str>-->
             <!--minimum match (at least 50% of the query string has to be matched in order to be displayed)-->
             <str name="q.alt">*:*</str>
             <!--alternative query parameter-->
@@ -212,6 +212,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
             </str>
             <str name="facet">on</str>
             <!-- activates Faceting-->
@@ -235,7 +237,7 @@
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
 
-            <str name="mm">50%</str>
+            <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
 
@@ -282,6 +284,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
             </str>
         </lst>
     </requestHandler>
@@ -294,7 +298,7 @@
             <str name="defType">edismax</str>
 
             <!-- general Parameters -->
-            <str name="mm">50%</str>
+            <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
 
@@ -332,7 +336,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-		        referenceSecondaryIdentifier^20
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -341,6 +345,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
             </str>
 
             <!-- Highlighting -->
@@ -371,7 +377,7 @@
             <str name="defType">edismax</str>
 
             <!-- general Parameters -->
-            <str name="mm">50%</str>
+            <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
 
@@ -409,7 +415,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-		        referenceSecondaryIdentifier^20
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -418,6 +424,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
             </str>
 
             <!-- Grouping -->
@@ -521,7 +529,7 @@
             <str name="defType">edismax</str>
 
             <!-- general Parameters -->
-            <str name="mm">50%</str>
+            <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
 
@@ -556,6 +564,7 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                fireworksSpecies^25.0
             </str>
 
             <!-- Highlighting -->

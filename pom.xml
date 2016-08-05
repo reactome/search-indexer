@@ -35,7 +35,7 @@
     </developers>
 
     <properties>
-        <reactome.data.version>0.0.4-SNAPSHOT</reactome.data.version>
+        <reactome.data.version>0.1.0-SNAPSHOT</reactome.data.version>
         <interactors.version>1.0.2</interactors.version>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>

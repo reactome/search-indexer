@@ -4,11 +4,14 @@ import org.apache.solr.client.solrj.beans.Field;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * JAVA BEAN representing the Document that is going to be Indexed into Solr
  * Field marks a Solr Field
- * Created by flo on 4/29/14.
+ *
+ * @author Florian Korninger (fkorn@ebi.ac.uk) on 4/29/14.
+ * @author Guilherme Viteri (gviteri@ebi.ac.uk)
  */
 @SuppressWarnings("unused")
 public class IndexDocument {
@@ -36,11 +39,12 @@ public class IndexDocument {
     private List<String> diseaseSynonyms;
 
     @Field
-    private String species;
+    private List<String> species;
     @Field
     private List<String> relatedSpecies;
 
-    private String taxId;
+    /** Not in Solr, but used in the ebeye.xml file **/
+    private List<String> taxId;
 
     @Field
     private List<String> synonyms;
@@ -129,15 +133,24 @@ public class IndexDocument {
     @Field
     private List<String> reactomeInteractorNames;
 
+    // The attribute is a collection but is singular just to make the lucene query syntax easier.
+    // e.g author:"John Doe"
+    // This field has authored and reviewed for a given Event.
+    @Field
+    private Set<String> author;
+    @Field
+    private Set<String> authorOrcid;
+
+    @Field
+    private Set<String> fireworksSpecies;
 
     // Auto Generated Getters Setters
 
-
-    public String getTaxId() {
+    public List<String> getTaxId() {
         return taxId;
     }
 
-    public void setTaxId(String taxId) {
+    public void setTaxId(List<String> taxId) {
         this.taxId = taxId;
     }
 
@@ -220,7 +233,6 @@ public class IndexDocument {
     public void setKeywords(List<String> keywords) {
         this.keywords = keywords;
     }
-
 
 
     public List<String> getReferenceCrossReferences() {
@@ -308,11 +320,11 @@ public class IndexDocument {
         this.type = type;
     }
 
-    public String getSpecies() {
+    public List<String> getSpecies() {
         return species;
     }
 
-    public void setSpecies(String species) {
+    public void setSpecies(List<String> species) {
         this.species = species;
     }
 
@@ -428,8 +440,8 @@ public class IndexDocument {
         this.goMolecularFunctionName = goMolecularFunctionName;
     }
 
-    public void addGoMolecularFunctionName(String gmfName){
-        if (this.goMolecularFunctionName == null){
+    public void addGoMolecularFunctionName(String gmfName) {
+        if (this.goMolecularFunctionName == null) {
             this.goMolecularFunctionName = new ArrayList<>();
         }
         this.goMolecularFunctionName.add(gmfName);
@@ -443,8 +455,8 @@ public class IndexDocument {
         this.goMolecularFunctionAccession = goMolecularFunctionAccession;
     }
 
-    public void addGoMolecularFunctionAccession(String gmfAccession){
-        if (this.goMolecularFunctionAccession == null){
+    public void addGoMolecularFunctionAccession(String gmfAccession) {
+        if (this.goMolecularFunctionAccession == null) {
             this.goMolecularFunctionAccession = new ArrayList<>();
         }
         this.goMolecularFunctionAccession.add(gmfAccession);
@@ -552,5 +564,29 @@ public class IndexDocument {
 
     public void setReferenceSecondaryIdentifier(List<String> referenceSecondaryIdentifier) {
         this.referenceSecondaryIdentifier = referenceSecondaryIdentifier;
+    }
+
+    public Set<String> getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Set<String> author) {
+        this.author = author;
+    }
+
+    public Set<String> getAuthorOrcid() {
+        return authorOrcid;
+    }
+
+    public void setAuthorOrcid(Set<String> authorOrcid) {
+        this.authorOrcid = authorOrcid;
+    }
+
+    public Set<String> getFireworksSpecies() {
+        return fireworksSpecies;
+    }
+
+    public void setFireworksSpecies(Set<String> fireworksSpecies) {
+        this.fireworksSpecies = fireworksSpecies;
     }
 }

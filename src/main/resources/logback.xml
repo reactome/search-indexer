@@ -33,7 +33,7 @@
 
     <!-- Setting up neo4j and sdn logging to ERROR -->
     <logger name="org.neo4j.ogm" level="ERROR" />
-    <logger name="org.springframework.data.neo4j" level="ERROR" />
+    <logger name="org.springframework" level="ERROR" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

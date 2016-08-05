@@ -563,69 +563,6 @@
 //
 //    }
 //
-//    /**
-//     * Iterates of a Collection of GkInstances, each Instance will be converted
-//     * to a IndexDocument by the Converter, The IndexDocuments will be added to
-//     * Solr and marshaled to a xml file.
-//     *
-//     * @param className Name of the SchemaClass that should be indexed
-//     * @return number of Documents processed
-//     * @throws IndexerException
-//     */
-//    private int indexSchemaClass(String className, int previousCount) throws IndexerException {
-//
-//        Collection<?> instances;
-//        try {
-//            instances = dba.fetchInstancesByClass(className);
-//        } catch (Exception e) {
-//            logger.error("Fetching Instances by ClassName from the Database caused an error", e);
-//            throw new IndexerException("Fetching Instances by ClassName from the Database caused an error", e);
-//        }
-//        int numberOfDocuments = 0;
-//        List<IndexDocument> collection = new ArrayList<>();
-//        int count = 0;
-//        for (Object object : instances) {
-//            GKInstance instance = (GKInstance) object;
-//            IndexDocument document = converter.buildDocumentFromGkInstance(instance);
-//            collection.add(document);
-//	        instance.deflate();
-//            if (xml) {
-//                marshaller.writeEntry(document);
-//            }
-//            numberOfDocuments++;
-//            if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
-//                addDocumentsToSolrServer(collection);
-//                collection.clear();
-//                if (xml) {
-//                    try {
-//                        marshaller.flush();
-//                    } catch (IOException e) {
-//                        logger.error("An error occurred when trying to flush to XML", e);
-//                    }
-//                }
-//                logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
-////                if (verbose) {
-////                    System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
-////                }
-//            }
-//            count = previousCount + numberOfDocuments;
-//            if (count % 100 == 0 ) {
-//                updateProgressBar(count);
-//            }
-//
-//        }
-//        if (!collection.isEmpty()) {
-//            addDocumentsToSolrServer(collection);
-//            logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
-////            if (verbose) {
-////                System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
-////            }
-//        }
-//
-//        updateProgressBar(count); // done
-//
-//        return numberOfDocuments;
-//    }
 //
 //    /**
 //     * Safely adding Document Bean to Solr Server
@@ -722,5 +659,5 @@
 //        return sb.toString();
 //    }
 //}
-//
-//
+
+
