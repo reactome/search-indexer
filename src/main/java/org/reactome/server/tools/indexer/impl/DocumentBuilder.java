@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 @Service
-public class DocumentBuilder {
+class DocumentBuilder {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
@@ -50,7 +50,7 @@ public class DocumentBuilder {
     }
 
     @Transactional
-    public IndexDocument createSolrDocument(Long dbId) {
+    IndexDocument createSolrDocument(Long dbId) {
 
         if (simpleEntitiesSpecies == null) {
             cacheSimpleEntitySpecies();
@@ -69,13 +69,6 @@ public class DocumentBuilder {
 
         document.setType(getType(databaseObject));
         document.setExactType(databaseObject.getSchemaClass());
-
-//        if (databaseObject.getCreated() != null) {
-//            List<Person> pp = databaseObject.getCreated().getAuthor();
-//            for (Person person : pp) {
-//                System.out.println(person.getDisplayName() + " - " + person.getOrcidId());
-//            }
-//        }
 
         if (databaseObject instanceof PhysicalEntity) {
             PhysicalEntity physicalEntity = (PhysicalEntity) databaseObject;
@@ -139,8 +132,8 @@ public class DocumentBuilder {
     private void cacheSimpleEntitySpecies() {
         logger.info("Caching SimpleEntity Species");
         String query = "MATCH (n:SimpleEntity)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
-                "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
-                "RETURN n.dbId AS dbId, species";
+                       "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
+                       "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.customQueryForObjects(SpeciesResult.class, query, null);
             simpleEntitiesSpecies = new HashMap<>(speciesResultList.size());
@@ -182,11 +175,6 @@ public class DocumentBuilder {
         document.setFireworksSpecies(fireworksSpecies.isEmpty() ? null : fireworksSpecies);
     }
 
-    /**
-     * @param document
-     * @param databaseObject
-     * @param name
-     */
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
             // some regulations do not have name
@@ -205,11 +193,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param databaseObject
-     * @param referenceName
-     */
     private void setReferenceNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> referenceName) {
         if (referenceName == null || referenceName.isEmpty()) {
             document.setReferenceName(databaseObject.getDisplayName());
@@ -265,17 +248,13 @@ public class DocumentBuilder {
         document.setLiteratureReferenceAuthor(mapSet.getElements("author").stream().map(i -> i.split("#")[1]).collect(Collectors.toList()));
     }
 
-    /**
-     * @param document
-     * @param summations
-     */
     private void setSummation(IndexDocument document, List<Summation> summations) {
         if (summations == null) return;
 
         // Creating a report - We should have only one summation
-        if (summations.size() >= 2) {
+//        if (summations.size() >= 2) {
             //logger.info("[SUMMATION] - " + document.getDbId());
-        }
+//        }
 
         String summationText = "";
         boolean first = true;
@@ -295,10 +274,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param diseases
-     */
     private void setDiseases(IndexDocument document, List<? extends ExternalOntology> diseases) {
         if (diseases == null || diseases.isEmpty()) {
             document.setIsDisease(false);
@@ -315,10 +290,6 @@ public class DocumentBuilder {
         document.setIsDisease(true);
     }
 
-    /**
-     * @param document
-     * @param compartments
-     */
     private void setCompartment(IndexDocument document, List<? extends Compartment> compartments) {
         if (compartments == null || compartments.isEmpty()) return;
 
@@ -326,10 +297,6 @@ public class DocumentBuilder {
         document.setCompartmentAccession(compartments.stream().map(Compartment::getAccession).collect(Collectors.toList()));
     }
 
-    /**
-     * @param document
-     * @param crossReferences
-     */
     private void setCrossReference(IndexDocument document, List<DatabaseIdentifier> crossReferences) {
         if (crossReferences == null || crossReferences.isEmpty()) return;
 
@@ -352,10 +319,6 @@ public class DocumentBuilder {
         document.setAllCrossReferences(allXRefs);
     }
 
-    /**
-     * @param document
-     * @param goTerm
-     */
     private void setGoTerms(IndexDocument document, GO_Term goTerm) {
         // The "GoTerm" field is a list - We add the plain value and the constant 'go:' concatenated to the plain value
         if (goTerm == null) return;
@@ -376,10 +339,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param databaseObject
-     */
     private void setSpecies(IndexDocument document, DatabaseObject databaseObject) {
         Collection<? extends Taxon> speciesCollection = null;
         List<String> relatedSpecies;
@@ -423,10 +382,6 @@ public class DocumentBuilder {
         document.setTaxId(speciesCollection.stream().map(Taxon::getTaxId).collect(Collectors.toList()));
     }
 
-    /**
-     * @param document
-     * @param databaseObject
-     */
     private void setReferenceEntity(IndexDocument document, DatabaseObject databaseObject) {
         if (databaseObject == null) return;
 
@@ -488,10 +443,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param referenceEntity
-     * @return
-     */
     private String getReferenceTypes(ReferenceEntity referenceEntity) {
         if (referenceEntity instanceof ReferenceGeneProduct) {
             return "Protein";
@@ -506,10 +457,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param referenceCrossReferences
-     */
     private void setReferenceCrossReference(IndexDocument document, List<DatabaseIdentifier> referenceCrossReferences) {
         if (referenceCrossReferences == null || referenceCrossReferences.isEmpty()) return;
 
@@ -531,10 +478,6 @@ public class DocumentBuilder {
         document.setAllCrossReferences(allXRefs);
     }
 
-    /**
-     * @param document
-     * @param catalystActivities
-     */
     private void setCatalystActivities(IndexDocument document, List<CatalystActivity> catalystActivities) {
         if (catalystActivities == null) return;
 
@@ -546,7 +489,6 @@ public class DocumentBuilder {
     /**
      * Generic Type, the one we have in the facets.
      *
-     * @param databaseObject
      * @return type
      */
     private String getType(DatabaseObject databaseObject) {
@@ -570,10 +512,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param regulatedEntity
-     */
     private void setRegulatedEntity(IndexDocument document, DatabaseObject regulatedEntity) {
         if (regulatedEntity == null) return;
 
@@ -600,10 +538,6 @@ public class DocumentBuilder {
         }
     }
 
-    /**
-     * @param document
-     * @param event
-     */
     private void setAuthorAndReviewed(IndexDocument document, Event event) {
         if (event.getAuthored() == null && event.getReviewed() == null) return;
 
@@ -625,10 +559,6 @@ public class DocumentBuilder {
         document.setAuthorOrcid(authorAndReviewerOrcid.isEmpty() ? null : authorAndReviewerOrcid);
     }
 
-    /**
-     * @param document
-     * @param regulator
-     */
     private void setRegulator(IndexDocument document, DatabaseObject regulator) {
         if (regulator == null) return;
 
@@ -664,7 +594,7 @@ public class DocumentBuilder {
     private void setKeywords(IndexDocument document) {
         if (keywords == null) return;
 
-        // TODO. Discuss. Flo says the way it is implemented is not nice. Right we check into a static file with defined vocabulary. Would be nice if we check which reactions is a bind reaction e.g and then add it as keyword.
+        // TODO: Flo says the way it is implemented is not nice. Right we check into a static file with defined vocabulary. Would be nice if we check which reactions are in a bind reaction e.g and then add it as keyword.
         document.setKeywords(keywords.stream().filter(keyword -> document.getName().toLowerCase().contains(keyword.toLowerCase())).collect(Collectors.toList()));
     }
 
@@ -683,14 +613,11 @@ public class DocumentBuilder {
                 list.add(line);
             }
             bufferedReader.close();
-
             logger.debug(list.toString());
-
             return list;
         } catch (IOException e) {
             logger.error("An error occurred when loading the controlled vocabulary file", e);
         }
-
         return null;
     }
 }

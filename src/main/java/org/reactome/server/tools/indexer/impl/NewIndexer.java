@@ -76,15 +76,11 @@ public class NewIndexer {
 
     // Collection that holds accessions from IntAct that are not in Reactome Data.
     // This collection will be used to keep interactions to those accession not in Reactome.
-    private static final Set<String> accessionsNoReactome = new HashSet<>();
+    private static final Set<String> accessionsNotInReactome = new HashSet<>();
 
     //Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
     private final Map<String, ReactomeSummary> accessionMap = new HashMap<>();
     private final Map<Integer, String> taxonomyMap = new HashMap<>();
-
-    private final int addInterval = 1000;
-    // TODO: Create the progress bar
-    private final int width = 50;
 
     private SolrClient solrClient;
     private Marshaller marshaller;
@@ -98,56 +94,64 @@ public class NewIndexer {
 
         totalCount();
 
-        if (xml) {
-            int releaseNumber = 0;
-            try {
-                releaseNumber = generalService.getDBVersion();
-            } catch (Exception e) {
-                logger.error("An error occurred when trying to retrieve the release number from the database.");
+        try {
+            if (xml) {
+                int releaseNumber = 0;
+                try {
+                    releaseNumber = generalService.getDBVersion();
+                } catch (Exception e) {
+                    logger.error("An error occurred when trying to retrieve the release number from the database.");
+                }
+                marshaller.writeHeader(releaseNumber);
             }
-            marshaller.writeHeader(releaseNumber);
+
+            cleanSolrIndex();
+            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
+            commitSolrServer();
+            entriesCount += indexBySchemaClass(Event.class, entriesCount);
+            commitSolrServer();
+            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
+            commitSolrServer();
+
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
+
+            logger.info("Started importing Interactors data to SolR");
+            entriesCount += indexInteractors();
+            commitSolrServer();
+            logger.info("Entries total: " + entriesCount);
+
+            long end = System.currentTimeMillis() - start;
+            logger.info("Full indexing took " + end + " .ms");
+
+            System.out.println("\nData Import finished with " + entriesCount + " entries imported.");
+
+        } catch (Exception e) {
+            logger.error("An error occurred during the data import",e);
+            e.printStackTrace();
+            throw new IndexerException(e);
+        } finally {
+            closeSolrServer();
         }
-
-//        cleanSolrIndex();
-//        entriesCount += indexBySchemaClass(PhysicalEntity.class);
-//        commitSolrServer();
-//        entriesCount += indexBySchemaClass(Event.class);
-//        commitSolrServer();
-//        entriesCount += indexBySchemaClass(Regulation.class);
-//        commitSolrServer();
-
-        if (xml) {
-            marshaller.writeFooter(entriesCount);
-        }
-
-        System.out.println("\nStarted importing Interactors data to Solr");
-        entriesCount += indexInteractors();
-
-
-        System.out.println("Entries total: " + entriesCount);
-
-        long end = System.currentTimeMillis() - start;
-
-        logger.info("Full indexing took " + end + " .ms");
-
     }
 
     /**
-     * @param clazz
-     * @return
+     * @param clazz class to be Indexed
+     * @return total of indexed items
      */
-    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz) throws IndexerException {
+    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount) throws IndexerException {
         long start = System.currentTimeMillis();
 
         logger.info("Getting all simple objects of class " + clazz.getSimpleName());
         Collection<Long> allOfGivenClass = schemaService.getDbIdsByClass(clazz);
         logger.info("[" + allOfGivenClass.size() + "] " + clazz.getSimpleName());
 
+        final int addInterval = 1000;
         int numberOfDocuments = 0;
+        int count = 0;
         List<IndexDocument> allDocuments = new ArrayList<>();
-
         for (Long dbId : allOfGivenClass) {
-
             IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
 
             if (xml) {
@@ -168,18 +172,24 @@ public class NewIndexer {
                         logger.error("An error occurred when trying to flush to XML", e);
                     }
                 }
-                logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to Solr");
+                logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
+            }
+
+            count = previousCount + numberOfDocuments;
+            if (count % 100 == 0 ) {
+                 updateProgressBar(count);
             }
         }
 
         // Add to Solr the remaining documents
         if (!allDocuments.isEmpty()) {
             addDocumentsToSolrServer(allDocuments);
-            logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to Solr");
         }
 
         long end = System.currentTimeMillis() - start;
         logger.info("Elapsed time for " + clazz.getSimpleName() + " is " + end + "ms.");
+
+        updateProgressBar(count); // done
 
         return numberOfDocuments;
     }
@@ -250,7 +260,7 @@ public class NewIndexer {
         if (documents != null && !documents.isEmpty()) {
             try {
                 solrClient.addBeans(documents);
-                logger.debug(documents.size() + " Documents successfully added to Solr");
+                logger.debug(documents.size() + " Documents successfully added to SolR");
             } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
                 for (IndexDocument document : documents) {
                     try {
@@ -268,20 +278,8 @@ public class NewIndexer {
         }
     }
 
-    public SolrClient getSolrClient() {
-        return solrClient;
-    }
-
     public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
-    }
-
-    public Marshaller getMarshaller() {
-        return marshaller;
-    }
-
-    public void setMarshaller(Marshaller marshaller) {
-        this.marshaller = marshaller;
     }
 
     public Boolean getXml() {
@@ -333,24 +331,24 @@ public class NewIndexer {
             // also a map with the accession +information (stIds,names) in reactome
             createAccessionSet(accessionsList);
 
-            logger.info("Querying all available interactions");
+            System.out.println("\n[Interactors] Started adding to SolR");
+
             // Get Interactions for all accessions that are NOT in Reactome.
             // Keep in mind that we are only saving interactions having score higher than InteractorConstant.MINIMUM_VALID_SCORE
             // The result of this query is Map having the accession as the key and a list of interactions. Take into account the
             // Interaction domain has InteractorA and InteractorB where interactorA is ALWAYS the same as the map key.
             // e.g map K=q13501, interactorA=q13501, interactorB=p12345 (this is the interaction)
-            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, InteractorConstant.STATIC);
+            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNotInReactome, InteractorConstant.STATIC);
 
             logger.info("Preparing SolR documents for Interactors [" + interactions.size() + "]");
             total = interactions.size();
             int preparingSolrDocuments = 0;
             for (String accKey : interactions.keySet()) {
                 Set<InteractorSummary> interactorSummarySet = new HashSet<>();
-                /*
-                 * Interaction --> InteractorA and InteractorB where:
-                 *  InteractorA is the one being queried in the database
-                 *  InteractorB is the one that Interacts with A.
-                 */// get reactome information from the map based on interactor B. Interactor A is the one we are creating the document
+
+                 // Interaction --> InteractorA and InteractorB where:
+                 //   InteractorA is the one being queried in the database
+                 //   InteractorB is the one that Interacts with A.
                 interactions.get(accKey).stream().filter(interaction -> accessionMap.containsKey(interaction.getInteractorB().getAcc())).forEach(interaction -> {
                     InteractorSummary summary = new InteractorSummary();
                     // get reactome information from the map based on interactor B. Interactor A is the one we are creating the document
@@ -367,7 +365,7 @@ public class NewIndexer {
 
                 if (!interactorSummarySet.isEmpty()) {
                     // Create index document based on interactor A and the summary based on Interactor B.
-                    IndexDocument indexDocument = createDocument(interactions.get(accKey).get(0).getInteractorA(), interactorSummarySet);
+                    IndexDocument indexDocument = createInteractorsDocument(interactions.get(accKey).get(0).getInteractorA(), interactorSummarySet);
                     collection.add(indexDocument);
 
                     numberOfDocuments++;
@@ -375,23 +373,21 @@ public class NewIndexer {
 
                 preparingSolrDocuments++;
                 if(preparingSolrDocuments % 1000 == 0){
-                    logger.info("  >> preparing interactors Solr Documents [" + preparingSolrDocuments + "]");
+                    logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
                 }
                 if(preparingSolrDocuments % 100 == 0){
-                    // TODO PROGRESS BAR
-                    //updateProgressBar(preparingSolrDocuments);
+                    updateProgressBar(preparingSolrDocuments);
                 }
             }
 
-            logger.info("  >> preparing interactors Solr Documents [" + preparingSolrDocuments + "]");
+            logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
 
             // Save the indexDocument into Solr.
             addDocumentsToSolrServer(collection);
 
-            logger.info(numberOfDocuments + " Interactor(s) have now been added to Solr");
+            logger.info(numberOfDocuments + " Interactor(s) have now been added to SolR");
 
-            // TODO PROGRESS BAR
-//            updateProgressBar(preparingSolrDocuments);
+            updateProgressBar(preparingSolrDocuments);
 
         } catch (InvalidInteractionResourceException | SQLException e) {
             throw new IndexerException(e);
@@ -462,45 +458,8 @@ public class NewIndexer {
         logger.info("Taxonomy map is done.");
     }
 
-//    /**
-//     * Check if the instance is referred to a Reaction.
-//     *
-//     * @return true if is associated
-//     * @throws Exception
-//     */
-//    private boolean isDirectlyAssociatedTo(GKInstance gkInstance) throws Exception {
-//
-//        List<String> fieldReferers = new ArrayList<>();
-//        fieldReferers.add(ReactomeJavaConstants.input);
-//        fieldReferers.add(ReactomeJavaConstants.output);
-//        fieldReferers.add(ReactomeJavaConstants.regulator);
-//        fieldReferers.add(ReactomeJavaConstants.physicalEntity);
-//
-//        for (String field : fieldReferers) {
-//            Collection<?> collection = gkInstance.getReferers(field);
-//
-//            if (collection != null && !collection.isEmpty()) {
-//                for (Object entryObject : collection) {
-//                    GKInstance entry = (GKInstance) entryObject;
-//
-//                    if(entry.getSchemClass().isa(ReactomeJavaConstants.Reaction)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.CatalystActivity)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.BlackBoxEvent)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.Depolymerisation)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.FailedReaction)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.Polymerisation)
-//                            || entry.getSchemClass().isa(ReactomeJavaConstants.ReactionlikeEvent)){
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
-
     /**
-     * Queries gk_instance and create a list of accessions that are not in reactome (accessionsNoReactome) and
+     * Queries gk_instance and create a list of accessions that are not in reactome (accessionsNotInReactome) and
      * also a map with the accession +information (stIds,names) in reactome (accessionMap).
      *
      * @param accessionList all unique accessions from Interactors Database excluding those that start with EBI-. They are provided by IntAct but does not have accession.
@@ -508,12 +467,12 @@ public class NewIndexer {
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
 
-        logger.info("Creating accession set");
+        System.out.println("\n[Interactors] Creating accession set");
         int progress = 0;
 
         // Making a copy of the original accession list. Accessions that exist in Reactome will be removed from this
         // collection. The final collection will hold those accessions that are not present in Reactome.
-        accessionsNoReactome.addAll(accessionList);
+        accessionsNotInReactome.addAll(accessionList);
         Collection<String> referenceEntities;
 
         try {
@@ -521,15 +480,13 @@ public class NewIndexer {
             // Get all ReferenceEntities in Reactome Database. We have around 370000. These are the objects which have the accession.
             // Then, check if the given ref. identifier is in the accessionList (which has all the accessions from IntAct).
             String queryEntities = "MATCH (n:ReferenceEntity) RETURN DISTINCT n.identifier AS identifier";
-            referenceEntities = advancedDatabaseObjectService.customQueryForObjects(String.class, queryEntities, null);
+            referenceEntities = advancedDatabaseObjectService.customQueryResults(queryEntities, null);
             total = referenceEntities.size();
             logger.info("Retrieving accessions from Reactome -- Accession list has [" + accessionList.size() + "] entries and [" + referenceEntities.size() + "] ReferenceEntities");
             for (String  accession : referenceEntities) {
-
-                // TODO PROGRESS BAR
-//                if(progress % 100 == 0){
-//                    updateProgressBar(progress);
-//                }
+                if(progress % 100 == 0){
+                    updateProgressBar(progress);
+                }
                 progress++;
 
                 if (!accessionList.contains(accession)) continue;
@@ -537,50 +494,47 @@ public class NewIndexer {
                 // Removing the identifier that exists in Reactome.
                 // Remember, the final collection will hold those accessions that are not present in Reactome.
                 // At, we are going to get the Interactions using the accessions that are not in reactome.
-                accessionsNoReactome.remove(accession);
+                accessionsNotInReactome.remove(accession);
 
                 // Get the referenceEntity in the referers, this instance has the accession we are interested in
                 Map<String, Object> param = new HashMap<>();
                 param.put("accession", accession);
 
+                // Retrieves the referenceEntity if it is directly associated to a Reaction.
+                String query = "MATCH (:ReferenceEntity{identifier:{accession}})<-[:referenceEntity]-(pe:PhysicalEntity)<-[:input|output|regulator|regulatedBy|physicalEntity|catalystActivity*]-(:ReactionLikeEvent) " +
+                               "RETURN DISTINCT pe.dbId as dbId, pe.stId as stId, pe.displayName as displayName";
+                Collection<SimpleDatabaseObject> ref = advancedDatabaseObjectService.customQueryForObjects(SimpleDatabaseObject.class, query, param);
 
-                String query = "MATCH (n:ReferenceEntity{identifier:{accession}})<-[:referenceEntity]-(pe:PhysicalEntity)<-[:input|output|regulator|regulatedBy|physicalEntity|catalystActivity]-(:ReactionLikeEvent) RETURN pe.dbId as dbId, pe.stId as stId, pe.displayName as displayName";
-                Collection<SimpleDatabaseObject> ref = advancedDatabaseObjectService.customQueryForDatabaseObjects(SimpleDatabaseObject.class, query, param);
-                if (ref == null) continue;
+                if (ref == null || ref.isEmpty()) continue;
 
                 for (SimpleDatabaseObject simpleDatabaseObject : ref) {
 
-                     // TODO IMPLEMENT DIRECTLY ASSOCIATED TO
-//                    if (isDirectlyAssociatedTo(gkInstance)) {
-                        // accessionMap is a map that has the accession as the Key
-                        // and ReactomeSummary as the value. ReactomeSummary holds a list
-                        // of ids (StId) and names that are refer to the accession.
-                        if (accessionMap.containsKey(accession)) {
-                            // If the accession is in the map, we get it and add the Id and Name into the list
-                            ReactomeSummary summary = accessionMap.get(accession);
-                            summary.addId(getId(simpleDatabaseObject));
-                            summary.addName(simpleDatabaseObject.getDisplayName());
-                        } else {
-                            // Otherwise create a new one and add to the map
-                            ReactomeSummary summary = new ReactomeSummary();
-                            summary.addId(getId(simpleDatabaseObject));
-                            summary.addName(simpleDatabaseObject.getDisplayName());
-                            accessionMap.put(accession, summary);
-                        }
-//                    }
+                    // accessionMap is a map that has the accession as the Key
+                    // and ReactomeSummary as the value. ReactomeSummary holds a list
+                    // of ids (StId) and names that are refer to the accession.
+                    if (accessionMap.containsKey(accession)) {
+                        // If the accession is in the map, we get it and add the Id and Name into the list
+                        ReactomeSummary summary = accessionMap.get(accession);
+                        summary.addId(getId(simpleDatabaseObject));
+                        summary.addName(simpleDatabaseObject.getDisplayName());
+                    } else {
+                        // Otherwise create a new one and add to the map
+                        ReactomeSummary summary = new ReactomeSummary();
+                        summary.addId(getId(simpleDatabaseObject));
+                        summary.addName(simpleDatabaseObject.getDisplayName());
+                        accessionMap.put(accession, summary);
+                    }
                 }
             }
 
-            logger.info("  >> querying accessions in GKInstance [" + progress + "]");
+            logger.info("  >> querying accessions in the Graph [" + progress + "]");
 
-            // TODO UPDATE PROGRESS BAR
-            //updateProgressBar(progress); // done
+            updateProgressBar(progress); // done
 
         } catch (Exception e) {
             logger.error("Fetching Instances by ClassName from the Database caused an error", e);
             throw new IndexerException("Fetching Instances by ClassName from the Database caused an error", e);
         }
-
     }
 
     private String getId(SimpleDatabaseObject simpleDatabaseObject) throws Exception {
@@ -596,7 +550,7 @@ public class NewIndexer {
      * Creating interactor document, where the Interactor A is the base and the B is the interactor which has
      * the reactome information.
      */
-    private IndexDocument createDocument(Interactor interactorA, Set<InteractorSummary> interactorSummarySet) {
+    private IndexDocument createInteractorsDocument(Interactor interactorA, Set<InteractorSummary> interactorSummarySet) {
 
         IndexDocument document = new IndexDocument();
         document.setDbId(interactorA.getAcc());
@@ -648,7 +602,6 @@ public class NewIndexer {
         document.setInteractorAccessions(accessions);
 
         return document;
-
     }
 
     /**
@@ -675,9 +628,11 @@ public class NewIndexer {
 
     /**
      * Simple method that prints a progress bar to command line
-     * @param done Number of entries added to the graph
+     * @param done Number of entries added
      */
     private void updateProgressBar(int done) {
+        final int width = 55;
+
         String format = "\r%3d%% %s %c";
         char[] rotators = {'|', '/', '—', '\\'};
         double percent = (double) done / total;

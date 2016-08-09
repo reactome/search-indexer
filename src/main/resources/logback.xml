@@ -11,7 +11,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${logging.dir}/solr-indexer/indexer.log</file>
+        <file>${logging.dir}/solr-indexer/solr-indexer.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <fileNamePattern>${logging.dir}/solr-indexer/solr-indexer-%i-log.zip</fileNamePattern>
             <minIndex>1</minIndex>
@@ -28,7 +28,6 @@
 
     <logger name="importLogger" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="STDOUT"/>
     </logger>
 
     <!-- Setting up neo4j and sdn logging to ERROR -->
@@ -37,7 +36,6 @@
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE" />
     </root>
 
 </configuration>

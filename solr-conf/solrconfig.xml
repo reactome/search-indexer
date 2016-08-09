@@ -508,7 +508,7 @@
     </requestHandler>
 
 
-   <requestHandler name="/intactdetail" class="solr.SearchHandler">
+   <requestHandler name="/interactor" class="solr.SearchHandler">
         <lst name="defaults">
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
