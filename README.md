@@ -1,113 +1,177 @@
 # Search
 #### What is Reactome Search ?
-Reactome Search is a project that optimizes the 'searches' in Reactome Website. Based on Apache Lucene, reactome database is fully indexed by Apache Solr. SolR is versatil, so it's configured and parametrized to face our needs and requirements, deliverying a high performance result list.
-The Search project is split into 'Indexer' and 'Search':
-  * Indexer: query GKInstance (MySql database) and indexer the whole database in SolR Model
-  * Search: Spring MVC Application which queries SolR documents in order to optimize the searching for Reactome Pathway Browser.
+Reactome Search is a project that optimizes the queries in Reactome Website. Based on Apache Lucene, Reactome Graph Database is fully indexed by Apache SolR. SolR is versatile, it's configured and parametrized to face Reactome needs and requirements, delivering a high performance and accurate result list.
+The Search Project is split into 'Indexer' and 'Search':
 
-#### How do I easily setup a new Apache SolR instance for Reactome ?
-  <ol>
-  <li>Download all-in-one script setup https://github.com/reactome/Search/blob/refactoring/install_solr.sh</li>
-  <li>Open terminal</li>
-  <li>Go to folder where the script has been downloaded</li>
-  <li>Check script options before executing 
+* Indexer: query Reactome GraphDatabase and indexer PhysicalEntities, Event and Regulation in SolR documents
+* Search: Spring MVC Application which queries SolR documents in order to optimize the searching for Reactome Pathway Browser.
+
+## Table of Contents
+ - [Download](#download)
+ - [Installing SolR](#installing-solr)
+ - [Updating SolR Configuration Files](#updating-solr-configuration-files)
+ - [Running Reactome Indexer](#running-reactome-indexer)
+ - [SolR](#solr)
+
+#### Download
+<ol>
+  <li>Download all-in-one script setup https://github.com/reactome/Search/blob/master/setup-solr.sh</li>
+  <li>Open a terminal and navigate to the folder where the script has been downloaded</li>
+  <li>Check script options before executing
+
 ```
-$> sudo ./install_solr.sh -h
+$> sudo ./setup-solr.sh -h
 
 OUTPUT:
-install_solr.sh -i <password>  
-                [-c <solr_core_name> 
-                 -d <solr_home> 
-                 —v <solr_version> 
-                 -p <port> 
-                 -u <user>] 
-                 -- program to auto setup the Apache Lucene Solr in Reactome environment.
+setup-solr.sh <execution_type -a, -b or -c> -m <solr_passwd> [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd>
+                                                              -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version>
+                                                              -o <interactors_db_path>
+                                                              -p <smtp_server> -q <smtp_port> -r <mail_from>
+                                                              -s -t
+                                                              -u <git_branch>
+                                                              ] -- program to auto setup the Apache Lucene Solr in Reactome environment.
+
 where:
     -h  Program help/usage
-    -i  Solr Password
-    -c  Solr Core name. DEFAULT: reactome
-    -d  Solr Home directory. DEFAULT: /home/solr
-    -v  Solr Version. DEFAULT: 5.3.1
-    -p  Solr Port. DEFAULT: 8983
-    -u  Solr User. DEFAULT: admin
+
+    Execution Type:
+        -a  Install SolR                DEFAULT: false
+        -b  Update SolR core            DEFAULT: false
+        -c  Import Reactome data        DEFAULT: false
+
+    Arguments:
+        -d  Neo4j Host                  DEFAULT: localhost
+        -e  Neo4j Port                  DEFAULT: 7474
+        -f  Neo4j User                  DEFAULT: neo4j
+        -g  Neo4j Password              REQUIRED [Import Reactome data]
+
+        -j  SolR Core name              DEFAULT: reactome
+        -k  SolR Port                   DEFAULT: 8983
+        -l  SolR User                   DEFAULT: admin
+        -m  SolR Password               REQUIRED [All Execution Type]
+        -n  SolR Version                DEFAULT: 6.1.0
+
+        -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
+
+        -p  Mail SMTP Server            DEFAULT: smtp.oicr.on.ca
+        -q  Mail SMTP port              DEFAULT: 25
+        -r  Mail From                   DEFAULT: reactome-developer@reactome.org
+
+        -s  XML output for EBeye        DEFAULT: false
+        -t  Send indexing report mail   DEFAULT: false
+
+        -u  Indexer GitHub Branch       DEFAULT: master
 ```
   </li>
-  <li>
-      Execute script as root. 
-      **You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.**
-      Replace the default arguments if necessary...
+  </ol>
+
+#### Installing SolR (-a)
+
+<ol>
+    <li>
+Execute script as root.
+You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.
+Replace the default arguments if necessary...</li>
 
 ```
-$> sudo ./install_solr.sh -i <password>
+$> sudo ./setup-solr.sh -a -m <solr_pass>
 ```
 
-or
-
-```
-$> sudo ./install_solr.sh -i not4hack -p 8081 -u solruser
-```
-
-  </li>
-  <li>To validate the installation of the Apache Solr the URL http://[serverip]:[port]/solr must ask for Basic Authentication. Please provide the user and password configured in the install_solr.sh script</li>
-  <li> You're now able to run the Reactome Indexer. Follow next steps.</li>
-</ol>
-  
-#### How do I run the Reactome Indexer ?
-** Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html.
- <ol>
-  <li>Clone the Search repository on your end
-
-```
-git clone https://github.com/reactome/Search.git
-```
-
-  </li>
-  <li>Navigate into indexer</li>
-  <li>Package with Maven
-```
-mvn clean package
-```
-  </li>
-  <li>Indexer Help: --help
-```
-java -jar target/Indexer-[version]-jar-with-dependencies.jar --help
-```
-  </li>
-  <li>Execute indexer
-  
-  command help (ensure special characters are escaped):
-```
-java -jar target/Indexer-[version]-jar-with-dependencies.jar 
-     -d dbname 
-     -u dbuser 
-     -p dbpass 
-     -e solr_user
-     -a solr_password
-     -v
-```
 e.g
 
 ```
-java -jar target/Indexer-[version]-jar-with-dependencies.jar 
-     -d reactome 
-     -u reactome 
-     -p reactome 
-     -e admin
-     -a reacpass
-     -v
+$> sudo ./setup-solr.sh -a -m not2share
 ```
-You can specify any other parameter in order to modify the default values.
-    
-  </li>
- </ol>
- 
- 
-#### Solr useful commands
 
+</li>
+
+<li>To validate Apache SolR installation reach out the URL http://[serverip]:[port]/solr (must ask for Basic Authentication). Please provide the user and password configured in the setup-solr.sh script</li>
+<li> You're now able to run the Reactome Indexer. Follow next steps.</li>
+
+</ol>
+
+#### Updating SolR Configuration Files (-b)
+
+<ol>
+    <li>
+    Automatic way to updated SolR Configuration files, mainly schema.xml (requires new indexing) and solrconfig.xml
+Execute script as root.
+You may need to specify a Solr Password used during Solr Installation
+Replace the default arguments if necessary...</li>
+
+```
+$> sudo ./setup-solr.sh -b -m <solr_pass>
+```
+
+e.g
+
+```
+$> sudo ./setup-solr.sh -b -m not2share
+```
+
+</li>
+
+<li>To check the new configuration in SolR go to http://[serverip]:[port]/solr (must ask for Basic Authentication).</li>
+<ol>
+<li>Select your SolR Core</li>
+<li>Click Files and confirm your changes have been applied.</li>
+</ol>
+
+<li> You're now able to run the Reactome Indexer.</li>
+</ol>
+
+#### Running Reactome Indexer (-c)
+
+**Pre-Requirements**
+
+* SolR 6.x.x properly installed using setup-solr.sh option -a
+* Neo4j Graph Database + Reactome Graph Database - https://github.com/reactome/graph-importer
+* Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
+
+**Indexer by default**
+
+```
+$> sudo ./setup-solr.sh -c -m <solr_pass> -g <neo4j_passwd>
+```
+
+e.g
+
+```
+$> sudo ./setup-solr.sh -c -m not2share -g neo4j
+```
+
+**Indexer + Ebeye.xml**
+
+  * Specify -s and the ebeye.xml file is going to be created.
+
+```
+$> sudo ./setup-solr.sh -c -m not2share -g neo4j -s
+```
+
+**Indexer + Mail Notification**
+
+  * Specify -t and an email is going to be sent at the end of indexing.
+  * Change the default mail configuration by setting -p -q -r
+
+```
+$> sudo ./setup-solr.sh -c -m not2share -g neo4j -t
+```
+
+**Indexer + GitHub Branch**
+
+  * Specify GitHub branch in order to run the indexer based on the code for the given branch.
+
+```
+$> sudo ./setup-solr.sh -c -m not2share -g neo4j -u add_new_field
+```
+
+#### SolR
+
+**Useful commands**
 ```
 sudo service solr [stop|start|restart|status]
 ```
 
-#### Solr Console
+**Solr Console**
 
 [Console](http://localhost:8983/solr/)

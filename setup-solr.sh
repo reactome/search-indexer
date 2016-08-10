@@ -4,63 +4,48 @@
 # Script that automates the Reactome Solr initial setup.
 # Execute the files as $sudo ./setup_solr.sh -h
 #
-#
-# 19 October 2015
 # Florian Korninger - fkorn@ebi.ac.uk
 # Guilherme Viteri  - gviteri@ebi.ac.uk
 #
 #-----------------------------------------------------------
 
-# redirect stdout/stderr to a file
-#_DATE=`date +%Y%m%d%H%M%S`
-#exec > >(tee -ia $0-$_DATE.log)
-#exec 2>&1
-#sleep .1
-
-usage="$(basename "$0") <execution_type -a, -b or -c> -m <solr_passwd> [-d <db_host> -e <db_port> —f <db_name> -g <db_user> -v <db_passwd> -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version> -o <interactors_db_path> -p <smtp_server> -q <smtp_port> -r <mail_from> -s -t -u <git_branch>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
+usage="$(basename "$0") <execution_type -a, -b or -c> -m <solr_passwd> [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd> -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version> -o <interactors_db_path> -p <smtp_server> -q <smtp_port> -r <mail_from> -s -t -u <git_branch>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
 
 where:
     -h  Program help/usage
 
     Execution Type:
-    -a  Install Solr                DEFAULT: false
-    -b  Update Solr core            DEFAULT: false
-    -c  Import Reactome data        DEFAULT: false
+        -a  Install Solr                DEFAULT: false
+        -b  Update Solr core            DEFAULT: false
+        -c  Import Reactome data        DEFAULT: false
 
     Arguments:
-    -d  Reactome database host      DEFAULT: localhost
-    -e  Reactome database port      DEFAULT: 3306
-    -f  Reactome database name      DEFAULT: reactome
-    -g  Reactome database user      DEFAULT: reactome
-    -v  Reactome database password  DEFAULT:
+        -d  Neo4j Host                  DEFAULT: localhost
+        -e  Neo4j Port                  DEFAULT: 7474
+        -f  Neo4j User                  DEFAULT: neo4j
+        -g  Neo4j Password              REQUIRED
 
-    -j  Solr Core name              DEFAULT: reactome
-    -k  Solr Port                   DEFAULT: 8983
-    -l  Solr User                   DEFAULT: admin
-    -m  Solr Password
-    -n  Solr Version                DEFAULT: 6.0.1
+        -j  Solr Core name              DEFAULT: reactome
+        -k  Solr Port                   DEFAULT: 8983
+        -l  Solr User                   DEFAULT: admin
+        -m  Solr Password               REQUIRED
+        -n  Solr Version                DEFAULT: 6.1.0
 
-    -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
+        -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
 
-    -p  Mail Smtp server            DEFAULT: smtp.oicr.on.ca
-    -q  Mail Smtp port              DEFAULT: 25
-    -r  Mail From                   DEFAULT: reactome-developer@reactome.org
+        -p  Mail Smtp server            DEFAULT: smtp.oicr.on.ca
+        -q  Mail Smtp port              DEFAULT: 25
+        -r  Mail From                   DEFAULT: reactome-developer@reactome.org
 
-    -s  XML output for EBeye        DEFAULT: false
-    -t  Send indexing report mail   DEFAULT: false
+        -s  XML output for EBeye        DEFAULT: false
+        -t  Send indexing report mail   DEFAULT: false
 
-    -u  Indexer GitHub Branch       DEFAULT: master"
+        -u  Indexer GitHub Branch       DEFAULT: master"
 
 # Default values
 _INSTALL_SOLR=false
 _UPDATE_SOLR_CORE=false
 _IMPORT_DATA=false
-
-_REACTOME_HOST="localhost"
-_REACTOME_PORT=3306
-_REACTOME_NAME="reactome"
-_REACTOME_USER="reactome"
-_REACTOME_PASSWORD=""
 
 _SOLR_HOME="/var/solr"
 
@@ -68,7 +53,12 @@ _SOLR_CORE="reactome"
 _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
-_SOLR_VERSION="6.0.1"
+_SOLR_VERSION="6.1.0"
+
+_NEO4J_HOST="localhost"
+_NEO4J_PORT="7474"
+_NEO4J_USER="neo4j"
+_NEO4J_PASSWORD=""
 
 _INTERACTORS_DB="/usr/local/reactomes/Reactome/production/ContentService/interactors.db"
 
@@ -92,13 +82,13 @@ while getopts ":d:e:f:g:v:j:k:l:m:n:o:p:q:r:ustabch" option; do
             ;;
         c) _IMPORT_DATA=true
             ;;
-        d) _REACTOME_HOST=$OPTARG
+        d) _NEO4J_HOST=$OPTARG
             ;;
-        e) _REACTOME_PORT=$OPTARG
+        e) _NEO4J_PORT=$OPTARG
             ;;
-        f) _REACTOME_NAME=$OPTARG
+        f) _NEO4J_USER=$OPTARG
             ;;
-        g) _REACTOME_USER=$OPTARG
+        g) _NEO4J_PASSWORD=$OPTARG
             ;;
         v) _REACTOME_PASSWORD=$OPTARG
             ;;
@@ -120,9 +110,9 @@ while getopts ":d:e:f:g:v:j:k:l:m:n:o:p:q:r:ustabch" option; do
             ;;
         r) _MAIL_DEST=$OPTARG
             ;;
-        s) _XML="-x"
+        s) _XML="-l"
             ;;
-        t) _MAIL="-y"
+        t) _MAIL="-m"
             ;;
         u) _GIT_BRANCH=$OPTARG
             ;;
@@ -363,8 +353,8 @@ runIndexer () {
         exit 1
     fi;
 
-    if [ -z $_REACTOME_PASSWORD ]; then
-        echo "missing argument for -v <db_passwd>"
+    if [ -z $_NEO4J_PASSWORD ]; then
+        echo "missing argument for -g <neo4j_passwd>"
         exit 1
     fi;
 
@@ -419,7 +409,7 @@ runIndexer () {
 
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
 
-     if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -h ${_REACTOME_HOST} -p ${_REACTOME_PORT} -n ${_REACTOME_NAME} -u ${_REACTOME_USER} -v ${_REACTOME_PASSWORD} -s ${_SOLR_URL} -e ${_SOLR_USER} -a ${_SOLR_PASSWORD} -i ${_INTERACTORS_DB} -m ${_MAIL_SMTP} -t ${_MAIL_PORT} -f ${_MAIL_DEST} ${_XML} ${_MAIL}; then
+     if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -h ${_INTERACTORS_DB} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
     fi
@@ -433,9 +423,8 @@ summary () {
    echo "Install SolR:       " $_INSTALL_SOLR
    echo "Update SolR:        " $_UPDATE_SOLR_CORE
    echo "Run Indexer:        " $_IMPORT_DATA
-   echo "Database URL:       " $_REACTOME_HOST":"$_REACTOME_PORT
-   echo "Database Name:      " $_REACTOME_NAME
-   echo "Database User:      " $_REACTOME_USER
+   echo "neo4j host:         " "http://"$_NEO4J_HOST":"$_NEO4J_PORT
+   echo "neo4j user:         " $_REACTOME_NAME
    echo "SolR Default Home:  " $_SOLR_HOME
    echo "SolR Core:          " $_SOLR_CORE
    echo "SolR Port:          " $_SOLR_PORT

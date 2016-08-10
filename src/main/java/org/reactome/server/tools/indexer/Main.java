@@ -12,7 +12,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.reactome.server.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.reactome.server.tools.indexer.exception.IndexerException;
-import org.reactome.server.tools.indexer.impl.NewIndexer;
+import org.reactome.server.tools.indexer.impl.Indexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.PreemptiveAuthInterceptor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -75,7 +75,7 @@ public class Main {
 
         // Instantiate NewIndexer class as Bean. Spring managed class.
         // Passing arguments using the constructor wasn't working somehow.
-        NewIndexer indexer = ctx.getBean(NewIndexer.class);
+        Indexer indexer = ctx.getBean(Indexer.class);
         indexer.setSolrClient(solrClient);
         indexer.setXml(config.getBoolean("xml")); // ebeye.xml file
         indexer.setInteractorsDatabase(new InteractorsDatabase(config.getString("iDbPath")));
