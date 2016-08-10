@@ -3,7 +3,7 @@
 Reactome Search is a project that optimizes the queries in Reactome Website. Based on Apache Lucene, Reactome Graph Database is fully indexed by Apache SolR. SolR is versatile, it's configured and parametrized to face Reactome needs and requirements, delivering a high performance and accurate result list.
 The Search Project is split into 'Indexer' and 'Search':
 
-* Indexer: query Reactome GraphDatabase and indexer PhysicalEntities, Event and Regulation in SolR documents
+* Indexer: query Reactome Graph Database and index PhysicalEntities, Event and Regulation into SolR documents
 * Search: Spring MVC Application which queries SolR documents in order to optimize the searching for Reactome Pathway Browser.
 
 ## Table of Contents ##
@@ -22,13 +22,14 @@ The Search Project is split into 'Indexer' and 'Search':
 $> sudo ./setup-solr.sh -h
 
 OUTPUT:
-setup-solr.sh <execution_type -a, -b or -c> -m <solr_passwd> [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd>
-                                                              -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version>
-                                                              -o <interactors_db_path>
-                                                              -p <smtp_server> -q <smtp_port> -r <mail_from>
-                                                              -s -t
-                                                              -u <git_branch>
-                                                              ] -- program to auto setup the Apache Lucene Solr in Reactome environment.
+setup-solr.sh <execution_type -a, -b or -c> -m <solr_passwd>
+                   [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd>
+                   -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version>
+                   -o <interactors_db_path>
+                   -p <smtp_server> -q <smtp_port> -r <mail_from>
+                   -s -t
+                   -u <git_branch>
+                   ] -- program to auto setup the Apache Lucene Solr in Reactome environment.
 
 where:
     -h  Program help/usage
@@ -62,11 +63,11 @@ where:
         -u  Indexer GitHub Branch       DEFAULT: master
 ```
 
-## Installing SolR (-a) ##
+## Installing SolR ##
 
-* Execute script as root.
-* * You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.
-* * Replace the default arguments if necessary...
+* :warning: Execute script as root.
+  * You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.
+  * Replace the default arguments if necessary...
 
 ```
 $> sudo ./setup-solr.sh -a -m <solr_pass>
@@ -81,12 +82,12 @@ $> sudo ./setup-solr.sh -a -m not2share
 * To validate Apache SolR installation reach out the URL http://[serverip]:[port]/solr (must ask for Basic Authentication). Please provide the user and password configured in the setup-solr.sh script
 * You're now able to run the Reactome Indexer. Follow next steps.
 
-## Updating SolR Configuration Files (-b) ##
+## Updating SolR Configuration Files ##
 
-* Automatic way to updated SolR Configuration files, mainly schema.xml (requires new indexing) and solrconfig.xml
-* * Execute script as root.
-* * You may need to specify a Solr Password used during Solr Installation
-* * Replace the default arguments if necessary...
+Automatic way to updated SolR Configuration files, mainly schema.xml (requires new indexing) and solrconfig.xml
+* :warning: Execute script as root.
+  * You may need to specify a Solr Password used during Solr Installation
+  * Replace the default arguments if necessary...
 
 ```
 $> sudo ./setup-solr.sh -b -m <solr_pass>
@@ -98,30 +99,30 @@ e.g
 $> sudo ./setup-solr.sh -b -m not2share
 ```
 
-*To check the new configuration in SolR go to http://[serverip]:[port]/solr (must ask for Basic Authentication).
-* * Select your SolR Core
-* * Click Files and confirm your changes have been applied.
+* To check the new configuration in SolR go to http://[serverip]:[port]/solr (must ask for Basic Authentication).
+  * Select your SolR Core
+  * Click Files and confirm your changes have been applied.
 
 * You're now able to run the Reactome Indexer.
 
-## Running Reactome Indexer (-c) ##
+## Running Reactome Indexer ##
 
-### Pre-Requirements ###
+### :white_check_mark: Pre-Requirements ###
 
 * SolR 6.x.x properly installed using setup-solr.sh option -a
 * Neo4j Graph Database + Reactome Graph Database - https://github.com/reactome/graph-importer
 * Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
 
-### Indexer by default ###
+### Indexer by default :books: ###
 
 ```
-$> sudo ./setup-solr.sh -c -m <solr_pass> -g <neo4j_passwd>
+$> ./setup-solr.sh -c -m <solr_pass> -g <neo4j_passwd>
 ```
 
 e.g
 
 ```
-$> sudo ./setup-solr.sh -c -m not2share -g neo4j
+$> ./setup-solr.sh -c -m not2share -g neo4j
 ```
 
 ### Indexer + Ebeye.xml ###
@@ -129,16 +130,16 @@ $> sudo ./setup-solr.sh -c -m not2share -g neo4j
 * Specify -s and the ebeye.xml file is going to be created.
 
 ```
-$> sudo ./setup-solr.sh -c -m not2share -g neo4j -s
+$> ./setup-solr.sh -c -m not2share -g neo4j -s
 ```
 
-### Indexer + Mail Notification ###
+### Indexer + Mail Notification :envelope: ###
 
   * Specify -t and an email is going to be sent at the end of indexing.
   * Change the default mail configuration by setting -p -q -r
 
 ```
-$> sudo ./setup-solr.sh -c -m not2share -g neo4j -t
+$> ./setup-solr.sh -c -m not2share -g neo4j -t
 ```
 
 ### Indexer + GitHub Branch ###
@@ -146,7 +147,7 @@ $> sudo ./setup-solr.sh -c -m not2share -g neo4j -t
   * Specify GitHub branch in order to run the indexer based on the code for the given branch.
 
 ```
-$> sudo ./setup-solr.sh -c -m not2share -g neo4j -u add_new_field
+$> ./setup-solr.sh -c -m not2share -g neo4j -u add_new_field
 ```
 
 ## SolR ##
@@ -159,4 +160,4 @@ sudo service solr [stop|start|restart|status]
 
 ### Solr Console ###
 
-[Console](http://localhost:8983/solr/)
+:computer: [Console](http://localhost:8983/solr/)
