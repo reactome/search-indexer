@@ -424,7 +424,7 @@ summary () {
    echo "Update SolR:        " $_UPDATE_SOLR_CORE
    echo "Run Indexer:        " $_IMPORT_DATA
    echo "neo4j host:         " "http://"$_NEO4J_HOST":"$_NEO4J_PORT
-   echo "neo4j user:         " $_REACTOME_NAME
+   echo "neo4j user:         " $_NEO4J_USER
    echo "SolR Default Home:  " $_SOLR_HOME
    echo "SolR Core:          " $_SOLR_CORE
    echo "SolR Port:          " $_SOLR_PORT
@@ -436,8 +436,6 @@ summary () {
    echo "GitHub Branch:      " $_GIT_BRANCH
    echo "============================"
 }
-
-
 
 # -- Print variables
 summary
