@@ -65,9 +65,10 @@ where:
 
 ## Installing SolR ##
 
-* :warning: Execute script as root.
+:warning: Execute script as root.
   * You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.
   * Replace the default arguments if necessary...
+  * Escape special characters if they are present in the password e.g not4shar\&, use backslash.
 
 ```
 $> sudo ./setup-solr.sh -a -m <solr_pass>
@@ -85,10 +86,11 @@ $> sudo ./setup-solr.sh -a -m not2share
 ## Updating SolR Configuration Files ##
 
 Automatic way to updated SolR Configuration files, mainly schema.xml (requires new indexing) and solrconfig.xml
-* :warning: Execute script as root.
+
+:warning: Execute script as root.
   * You may need to specify a Solr Password used during Solr Installation
   * Replace the default arguments if necessary...
-
+  * Escape special characters if they are present in the password e.g not4shar\&, use backslash.
 ```
 $> sudo ./setup-solr.sh -b -m <solr_pass>
 ```
@@ -112,6 +114,7 @@ $> sudo ./setup-solr.sh -b -m not2share
 * SolR 6.x.x properly installed using setup-solr.sh option -a
 * Neo4j Graph Database + Reactome Graph Database - https://github.com/reactome/graph-importer
 * Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
+* Escape special characters if they are present in the password e.g not4shar\&, use backslash.
 
 ### Indexer by default :books: ###
 
