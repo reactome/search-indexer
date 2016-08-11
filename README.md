@@ -19,7 +19,7 @@ The Search Project is split into 'Indexer' and 'Search':
 * Check script options before executing
 
 ```
-$> sudo ./setup-solr.sh -h
+$> ./setup-solr.sh -h
 
 OUTPUT:
 setup-solr.sh <execution_type -a, -b or -c> -m <solr_passwd>
@@ -90,7 +90,8 @@ Automatic way to updated SolR Configuration files, mainly schema.xml (requires n
 :warning: Execute script as root.
   * You may need to specify a Solr Password used during Solr Installation
   * Replace the default arguments if necessary...
-  * Escape special characters if they are present in the password e.g not4shar\&, use backslash.
+  * Escape special characters if they are present in the password e.g not4shar\&, use backslash (\).
+
 ```
 $> sudo ./setup-solr.sh -b -m <solr_pass>
 ```
@@ -101,9 +102,9 @@ e.g
 $> sudo ./setup-solr.sh -b -m not2share
 ```
 
-* To check the new configuration in SolR go to http://[serverip]:[port]/solr (must ask for Basic Authentication).
+* To verify the new configuration in SolR, go to http://[serverip]:[port]/solr (must ask for Basic Authentication).
   * Select your SolR Core
-  * Click Files and confirm your changes have been applied.
+  * Under core, click on Files > select one of the files and confirm that your changes have been applied.
 
 * You're now able to run the Reactome Indexer.
 
@@ -112,7 +113,10 @@ $> sudo ./setup-solr.sh -b -m not2share
 ### :white_check_mark: Pre-Requirements ###
 
 * SolR 6.x.x properly installed using setup-solr.sh option -a
-* Neo4j Graph Database + Reactome Graph Database - https://github.com/reactome/graph-importer
+  * You should be able to access http://[serverip]:[port]/solr
+* Neo4j Graph Database + Reactome Graph Database
+  * [Installing Neo4j](https://github.com/reactome/graph-importer)
+  * [Download Reactome Graph](http://reactome.org/download/current/reactome.graphdb.tgz)
 * Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
 * Escape special characters if they are present in the password e.g not4shar\&, use backslash.
 
