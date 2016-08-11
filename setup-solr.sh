@@ -385,7 +385,7 @@ runIndexer () {
 
             echo "Cloning project from repository..."
 
-	          # As we are maintaining two repositories, I will leave this option until we merge them
+	         # As we are maintaining two repositories, I will leave this option until we merge them
             read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
 
             if [ $_GIT_OPTION = 2 ] ; then
