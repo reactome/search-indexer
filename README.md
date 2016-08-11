@@ -66,9 +66,9 @@ where:
 ## Installing SolR ##
 
 :warning: Execute script as root.
-  * You may need to specify a Solr Password. Please write down - this is mandatory for reaching out the Solr Console Site.
+  * You may need to specify a Solr Password. Please write it down - this is mandatory for reaching out the Solr Console Site.
   * Replace the default arguments if necessary...
-  * Escape special characters if they are present in the password e.g not4shar\&, use backslash.
+  * Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 
 ```
 $> sudo ./setup-solr.sh -a -m <solr_pass>
@@ -90,7 +90,7 @@ Automatic way to updated SolR Configuration files, mainly schema.xml (requires n
 :warning: Execute script as root.
   * You may need to specify a Solr Password used during Solr Installation
   * Replace the default arguments if necessary...
-  * Escape special characters if they are present in the password e.g not4shar\&, use backslash (\).
+  * Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 
 ```
 $> sudo ./setup-solr.sh -b -m <solr_pass>
@@ -116,9 +116,9 @@ $> sudo ./setup-solr.sh -b -m not2share
   * You should be able to access http://[serverip]:[port]/solr
 * Neo4j Graph Database + Reactome Graph Database
   * [Installing Neo4j](https://github.com/reactome/graph-importer)
-  * [Download Reactome Graph](http://reactome.org/download/current/reactome.graphdb.tgz)
+  * [Download Reactome Graph Database](http://reactome.org/download/current/reactome.graphdb.tgz)
 * Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
-* Escape special characters if they are present in the password e.g not4shar\&, use backslash.
+* Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 
 ### Indexer by default :books: ###
 
