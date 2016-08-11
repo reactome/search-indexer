@@ -185,6 +185,8 @@ public class Indexer {
             if (count % 100 == 0 ) {
                  updateProgressBar(count);
             }
+
+            if (numberOfDocuments % 30000 == 0) cleanNeo4jCache();
         }
 
         // Add to Solr the remaining documents
