@@ -135,7 +135,6 @@ if ! $_INSTALL_SOLR && ! $_UPDATE_SOLR_CORE && ! $_IMPORT_DATA ; then
     exit 1
 fi;
 
-
 installSolr () {
 
     if [ -z $_SOLR_PASSWORD ]; then
@@ -193,7 +192,7 @@ installSolr () {
         _MD5_SOLR=$(md5sum /tmp/solr-$_SOLR_VERSION.tgz | cut -d ' ' -f 1) >/dev/null 2>&1;
         _MD5_MD5=$(cat /tmp/solr-$_SOLR_VERSION.tgz.md5 | cut -d ' ' -f 1) >/dev/null 2>&1;
 
-	rm /tmp/solr-$_SOLR_VERSION.tgz.md5
+	      rm /tmp/solr-$_SOLR_VERSION.tgz.md5
 
         if [ $_MD5_SOLR != $_MD5_MD5 ]; then
             echo "Could not download Solr version $_SOLR_VERSION. Please check the specified version and try again"
@@ -230,11 +229,11 @@ installSolr () {
 
     	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
     	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
-	read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
+	    read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
 
-	echo "Updating SolR Configuration files based on BitBucket"
+	    echo "Updating SolR Configuration files based on BitBucket"
     	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+	    sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
     	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
     	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 
@@ -318,11 +317,11 @@ updateSolrConfigFiles () {
 
     	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
     	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
-        read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
+      read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
 
-	echo "Updating SolR Configuration files based on BitBucket"
+      echo "Updating SolR Configuration files based on BitBucket"
     	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml" >/dev/null 2>&1
-	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
+	    sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
     	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt" >/dev/null 2>&1
     	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" >/dev/null 2>&1
 
@@ -386,7 +385,7 @@ runIndexer () {
 
             echo "Cloning project from repository..."
 
-	    # As we are maintaining two repositories, I will leave this option until we merge them
+	          # As we are maintaining two repositories, I will leave this option until we merge them
             read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
 
             if [ $_GIT_OPTION = 2 ] ; then
@@ -403,7 +402,7 @@ runIndexer () {
             if ! mvn -q -f .${_PATH}/pom.xml clean package -DskipTests >/dev/null 2>&1; then
                echo "An error occurred when packaging the project."
                exit 1
-	    fi
+	          fi
         fi
     fi
 
@@ -412,7 +411,7 @@ runIndexer () {
      if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -h ${_INTERACTORS_DB} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
-    fi
+     fi
 
     echo "Successfully imported data to Solr!"
 }
