@@ -106,12 +106,18 @@ public class Indexer {
             }
 
             cleanSolrIndex();
+
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
             commitSolrServer();
+            cleanNeo4jCache();
+
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
             commitSolrServer();
+            cleanNeo4jCache();
+
             entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
             commitSolrServer();
+            cleanNeo4jCache();
 
             if (xml) {
                 marshaller.writeFooter(entriesCount);
@@ -645,6 +651,10 @@ public class Indexer {
             progress.append(" ");
         progress.append('|');
         System.out.printf(format, (int) (percent*100), progress, rotators[((done - 1) % (rotators.length * 100)) /100]);
+    }
+
+    private void cleanNeo4jCache(){
+        generalService.clearCache();
     }
 }
 
