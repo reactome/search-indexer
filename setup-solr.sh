@@ -29,7 +29,7 @@ where:
         -k  Solr Port                   DEFAULT: 8983
         -l  Solr User                   DEFAULT: admin
         -m  Solr Password               REQUIRED
-        -n  Solr Version                DEFAULT: 6.1.0
+        -n  Solr Version                DEFAULT: 6.2.0
 
         -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
 
@@ -53,7 +53,7 @@ _SOLR_CORE="reactome"
 _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
-_SOLR_VERSION="6.1.0"
+_SOLR_VERSION="6.2.0"
 
 _NEO4J_HOST="localhost"
 _NEO4J_PORT="7474"
@@ -184,10 +184,10 @@ installSolr () {
         echo "Attempting to download Solr with version: "$_SOLR_VERSION
 
         # Download solr tgz file
-        wget http://www-eu.apache.org/dist/lucene/solr/$_SOLR_VERSION/solr-$_SOLR_VERSION.tgz -P /tmp
+        wget http://archive.apache.org/dist/lucene/solr/$_SOLR_VERSION/solr-$_SOLR_VERSION.tgz -P /tmp
 
         # Download MD5 - Used to check the integrity of solr downloaded file
-        wget http://www-eu.apache.org/dist/lucene/solr/$_SOLR_VERSION/solr-$_SOLR_VERSION.tgz.md5 -P /tmp
+        wget http://archive.apache.org/dist/lucene/solr/$_SOLR_VERSION/solr-$_SOLR_VERSION.tgz.md5 -P /tmp
 
         _MD5_SOLR=$(md5sum /tmp/solr-$_SOLR_VERSION.tgz | cut -d ' ' -f 1) >/dev/null 2>&1;
         _MD5_MD5=$(cat /tmp/solr-$_SOLR_VERSION.tgz.md5 | cut -d ' ' -f 1) >/dev/null 2>&1;
