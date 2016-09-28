@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 
 #-----------------------------------------------------------
 # Script that automates the Reactome Solr initial setup.
@@ -293,29 +293,11 @@ updateSolrConfigFiles () {
     echo "Downloading latest Solr configuration from git"
     _SOLR_CORE_CONF_DIR=$_SOLR_HOME/data/$_SOLR_CORE/conf
 
-    # As we are maintaining two repositories, I will leave this option until we merge them
-    read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
-
-    if [ $_GIT_OPTION = 2 ] ; then
-
-    	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
-    	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
-      read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
-
-      echo "Updating SolR Configuration files based on BitBucket"
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml" >/dev/null 2>&1
-	    sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml" >/dev/null 2>&1
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt" >/dev/null 2>&1
-    	sudo su - solr -c "wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt" >/dev/null 2>&1
-
-    else
-       echo "Updating SolR Configuration files based on GitHub"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt"
-
-    fi
+    echo "Updating SolR Configuration files based on GitHub"
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 
     echo "Starting Solr"
     if ! sudo service solr start ; then
@@ -368,18 +350,10 @@ runIndexer () {
 
             echo "Cloning project from repository..."
 
-	         # As we are maintaining two repositories, I will leave this option until we merge them
-            read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
+            git clone https://github.com/reactome/search-indexer.git
 
-            if [ $_GIT_OPTION = 2 ] ; then
-            	read -p "bitbucket.org username [not your email]: `echo $'\n> '`" _GIT_USER
-            	git clone https://$_GIT_USER@bitbucket.org/fkorn/indexer.git
-            else
-                git clone https://github.com/reactome/Search.git
-            fi
-
-            git -C ./indexer/ fetch && git -C ./indexer/ checkout $_GIT_BRANCH
-            _PATH="/indexer"
+            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout $_GIT_BRANCH
+            _PATH="/search-indexer"
 
             echo "Started packaging reactome project"
             if ! mvn -q -f .${_PATH}/pom.xml clean package -DskipTests >/dev/null 2>&1; then
