@@ -240,8 +240,8 @@ installSolr () {
     echo "Solr core has been created."
 
     echo "Enabling Solr admin authentication in Jetty"
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/webdefault.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/webdefault.xml
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/webdefault.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/webdefault.xml
 
     sudo bash -c "echo $_SOLR_USER: '$_SOLR_PASSWORD',solr-admin > /opt/solr-$_SOLR_VERSION/server/etc/realm.properties"
 
