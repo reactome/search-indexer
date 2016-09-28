@@ -222,28 +222,11 @@ installSolr () {
 
     sudo mkdir -p $_SOLR_CORE_CONF_DIR
 
-    # As we are maintaining two repositories, I will leave this option until we merge them
-    read -p "[1] GitHub or [2] BitBucket (Type 2 for the new configuration): [1] " _GIT_OPTION
-
-    if [ $_GIT_OPTION = 2 ] ; then
-
-    	read -p "bitbucket.org email: `echo $'\n> '`" _GIT_USER
-    	read -s -p "bitbucket.org password: `echo $'\n> '`" _GIT_PASSWD
-	    read -p "bitbucket.org commit ID: `echo $'\n> '`" _GIT_COMMIT_ID
-
-	    echo "Updating SolR Configuration files based on BitBucket"
-    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-	    sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
-    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
-    	sudo wget -q --user=$_GIT_USER --password=$_GIT_PASSWD https://bitbucket.org/fkorn/indexer/raw/$_GIT_COMMIT_ID/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
-
-    else
-       echo "Updating SolR Configuration files based on GitHub"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt"
-       sudo su - solr -c "wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt"
-    fi
+    echo "Updating SolR Configuration files based on GitHub"
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 
     sudo chown -R solr:solr $_SOLR_DATA_DIR/$_SOLR_CORE
 
@@ -257,8 +240,8 @@ installSolr () {
     echo "Solr core has been created."
 
     echo "Enabling Solr admin authentication in Jetty"
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml
-    sudo wget -q https://raw.githubusercontent.com/reactome/Search/$_GIT_BRANCH/solr-jetty-conf/webdefault.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/webdefault.xml
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml
+    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-jetty-conf/webdefault.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/webdefault.xml
 
     sudo bash -c "echo $_SOLR_USER: '$_SOLR_PASSWORD',solr-admin > /opt/solr-$_SOLR_VERSION/server/etc/realm.properties"
 
