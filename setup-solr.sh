@@ -223,10 +223,10 @@ installSolr () {
     sudo mkdir -p $_SOLR_CORE_CONF_DIR
 
     echo "Updating SolR Configuration files based on GitHub"
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
-    sudo wget -q https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate https://raw.githubusercontent.com/reactome/search-indexer/$_GIT_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 
     sudo chown -R solr:solr $_SOLR_DATA_DIR/$_SOLR_CORE
 
