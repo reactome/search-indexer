@@ -7,7 +7,7 @@
     <artifactId>Indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Indexer</name>
 
     <description>
@@ -35,15 +35,14 @@
     </developers>
 
     <properties>
-        <reactome.data.version>0.1.2-SNAPSHOT</reactome.data.version>
-        <interactors.version>1.0.3-SNAPSHOT</interactors.version>
+        <reactome.graph.core>1.0.0</reactome.graph.core>
+        <interactors.core>1.0.6</interactors.core>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.4</mail.version>
         <activation.version>1.1.1</activation.version>
         <json.version>20090211</json.version>
         <logging.version>1.1.7</logging.version>
-
         <maven.compiler.version>3.5.1</maven.compiler.version>
         <jdk.version>1.8</jdk.version>
         <maven.javadoc.version>2.10.3</maven.javadoc.version>
@@ -66,13 +65,13 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${reactome.data.version}</version>
+            <version>${reactome.graph.core}</version>
         </dependency>
         <!-- Reactome Interactor-core -->
         <dependency>
             <groupId>org.reactome.server.interactors</groupId>
             <artifactId>interactor-core</artifactId>
-            <version>${interactors.version}</version>
+            <version>${interactors.core}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
