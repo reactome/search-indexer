@@ -51,37 +51,28 @@ import java.util.*;
 @Service
 public class Indexer {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
-
-    @Autowired
-    private SchemaService schemaService;
-
-    @Autowired
-    private GeneralService generalService;
-
-    //Creating SolR Document querying the Graph in Transactional execution
-    @Autowired
-    private DocumentBuilder documentBuilder;
-
-    @Autowired
-    private AdvancedDatabaseObjectService advancedDatabaseObjectService;
-
     private static final String EBEYE_NAME = "Reactome";
     private static final String EBEYE_DESCRIPTION = "Reactome is a free, open-source, curated and peer reviewed pathway " +
             "database. Our goal is to provide intuitive bioinformatics tools for the visualization, interpretation and " +
             "analysis of pathway knowledge to support basic research, genome analysis, modeling, systems biology and " +
             "education.";
-
-    private static InteractorService interactorService;
-    private static InteractionService interactionService;
-
     // Collection that holds accessions from IntAct that are not in Reactome Data.
     // This collection will be used to keep interactions to those accession not in Reactome.
     private static final Set<String> accessionsNotInReactome = new HashSet<>();
-
+    private static InteractorService interactorService;
+    private static InteractionService interactionService;
     //Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
     private final Map<String, ReactomeSummary> accessionMap = new HashMap<>();
     private final Map<Integer, String> taxonomyMap = new HashMap<>();
-
+    @Autowired
+    private SchemaService schemaService;
+    @Autowired
+    private GeneralService generalService;
+    //Creating SolR Document querying the Graph in Transactional execution
+    @Autowired
+    private DocumentBuilder documentBuilder;
+    @Autowired
+    private AdvancedDatabaseObjectService advancedDatabaseObjectService;
     private SolrClient solrClient;
     private Marshaller marshaller;
 
@@ -107,21 +98,21 @@ public class Indexer {
 
             cleanSolrIndex();
 
-            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
-            commitSolrServer();
-            cleanNeo4jCache();
-
-            entriesCount += indexBySchemaClass(Event.class, entriesCount);
-            commitSolrServer();
-            cleanNeo4jCache();
-
-            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
-            commitSolrServer();
-            cleanNeo4jCache();
-
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
+//            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
+//            commitSolrServer();
+//            cleanNeo4jCache();
+//
+//            entriesCount += indexBySchemaClass(Event.class, entriesCount);
+//            commitSolrServer();
+//            cleanNeo4jCache();
+//
+//            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
+//            commitSolrServer();
+//            cleanNeo4jCache();
+//
+//            if (xml) {
+//                marshaller.writeFooter(entriesCount);
+//            }
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
@@ -134,7 +125,7 @@ public class Indexer {
             System.out.println("\nData Import finished with " + entriesCount + " entries imported.");
 
         } catch (Exception e) {
-            logger.error("An error occurred during the data import",e);
+            logger.error("An error occurred during the data import", e);
             e.printStackTrace();
             throw new IndexerException(e);
         } finally {
@@ -182,8 +173,8 @@ public class Indexer {
             }
 
             count = previousCount + numberOfDocuments;
-            if (count % 100 == 0 ) {
-                 updateProgressBar(count);
+            if (count % 100 == 0) {
+                updateProgressBar(count);
             }
 
             if (numberOfDocuments % 30000 == 0) cleanNeo4jCache();
@@ -354,9 +345,9 @@ public class Indexer {
             for (String accKey : interactions.keySet()) {
                 Set<InteractorSummary> interactorSummarySet = new HashSet<>();
 
-                 // Interaction --> InteractorA and InteractorB where:
-                 //   InteractorA is the one being queried in the database
-                 //   InteractorB is the one that Interacts with A.
+                // Interaction --> InteractorA and InteractorB where:
+                //   InteractorA is the one being queried in the database
+                //   InteractorB is the one that Interacts with A.
                 interactions.get(accKey).stream().filter(interaction -> accessionMap.containsKey(interaction.getInteractorB().getAcc())).forEach(interaction -> {
                     InteractorSummary summary = new InteractorSummary();
                     // get reactome information from the map based on interactor B. Interactor A is the one we are creating the document
@@ -380,10 +371,10 @@ public class Indexer {
                 }
 
                 preparingSolrDocuments++;
-                if(preparingSolrDocuments % 1000 == 0){
+                if (preparingSolrDocuments % 1000 == 0) {
                     logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
                 }
-                if(preparingSolrDocuments % 100 == 0){
+                if (preparingSolrDocuments % 100 == 0) {
                     updateProgressBar(preparingSolrDocuments);
                 }
             }
@@ -408,14 +399,14 @@ public class Indexer {
     /**
      * Query Ensembl REST API in order to get the taxonomy lineage
      * and then get the parent.
-     *
+     * <p>
      * Once we found the species we add it to the global map, it will
      * reduce the amount of queries to an external resource.
      *
      * @return the species
      */
-    private String getTaxonomyLineage(Integer taxId){
-        if(taxId == 1 || taxId == 0 || taxId == -1){
+    private String getTaxonomyLineage(Integer taxId) {
+        if (taxId == 1 || taxId == 0 || taxId == -1) {
             return "Entries without species";
         }
 
@@ -424,7 +415,7 @@ public class Indexer {
             URL url = new URL(urlString);
 
             URLConnection connection = url.openConnection();
-            HttpURLConnection httpConnection = (HttpURLConnection)connection;
+            HttpURLConnection httpConnection = (HttpURLConnection) connection;
             httpConnection.setRequestProperty("Content-Type", "application/json");
 
             InputStream response = httpConnection.getInputStream();
@@ -434,7 +425,7 @@ public class Indexer {
 
             int parentTaxId = jsonObject.getJSONObject("parent").getInt("id");
 
-            if (taxonomyMap.containsKey(parentTaxId)){
+            if (taxonomyMap.containsKey(parentTaxId)) {
                 String species = taxonomyMap.get(parentTaxId);
                 taxonomyMap.put(taxId, species);
                 return species;
@@ -442,14 +433,18 @@ public class Indexer {
 
             response.close();
 
-        }catch (IOException | JSONException e){
-            try {
-                // If we hammer ensembl server than we get an 429 STATUS CODE, if that occurs we just wait 50sec.
-                Thread.sleep(50000);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
+        } catch (IOException | JSONException e) {
+            String msg = e.getMessage();
+            if (msg.contains("429")) { // If we hammer ensembl server than we get an 429 STATUS CODE, if that occurs we just wait 50sec.
+                try {
+                    Thread.sleep(50000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                return getTaxonomyLineage(taxId);
+            } else {
+                logger.info("Taxomony ID does not exist: " + msg);
             }
-            return getTaxonomyLineage(taxId);
         }
         return "Entries without species";
     }
@@ -491,8 +486,8 @@ public class Indexer {
             referenceEntities = advancedDatabaseObjectService.customQueryResults(queryEntities, null);
             total = referenceEntities.size();
             logger.info("Retrieving accessions from Reactome -- Accession list has [" + accessionList.size() + "] entries and [" + referenceEntities.size() + "] ReferenceEntities");
-            for (String  accession : referenceEntities) {
-                if(progress % 100 == 0){
+            for (String accession : referenceEntities) {
+                if (progress % 100 == 0) {
                     updateProgressBar(progress);
                 }
                 progress++;
@@ -510,7 +505,7 @@ public class Indexer {
 
                 // Retrieves the referenceEntity if it is directly associated to a Reaction.
                 String query = "MATCH (:ReferenceEntity{identifier:{accession}})<-[:referenceEntity]-(pe:PhysicalEntity)<-[:input|output|regulator|regulatedBy|physicalEntity|catalystActivity*]-(:ReactionLikeEvent) " +
-                               "RETURN DISTINCT pe.dbId as dbId, pe.stId as stId, pe.displayName as displayName";
+                        "RETURN DISTINCT pe.dbId as dbId, pe.stId as stId, pe.displayName as displayName";
                 Collection<SimpleDatabaseObject> ref = advancedDatabaseObjectService.customQueryForObjects(SimpleDatabaseObject.class, query, param);
 
                 if (ref == null || ref.isEmpty()) continue;
@@ -565,9 +560,9 @@ public class Indexer {
 
         // In the interactors.db we are saving the alias null if it is the same as the accession
         // Just assigning the acc in the name which is required here
-        if(interactorA.getAlias() != null) {
+        if (interactorA.getAlias() != null) {
             document.setName(interactorA.getAliasWithoutSpecies(false));
-        }else {
+        } else {
             document.setName(interactorA.getAcc());
         }
 
@@ -617,13 +612,13 @@ public class Indexer {
      * be a comma-separated list. When parsing this List in the client (splitting by comma) then it may split
      * other identifiers which has comma as part of its name.
      * e.g Reactome names has comma on it.
-     *   "[NUDC [cytosol], NUDC [nucleoplasm], p-S274,S326-NUDC [nucleoplasm]]"
-     *   This multivalued field has 3 values, but splitting them by comma will result in
-     *   4 values.
-     *
+     * "[NUDC [cytosol], NUDC [nucleoplasm], p-S274,S326-NUDC [nucleoplasm]]"
+     * This multivalued field has 3 values, but splitting them by comma will result in
+     * 4 values.
+     * <p>
      * This parser retrieve the list as String using # as delimiter.
      */
-    private String parseList(List<String> list){
+    private String parseList(List<String> list) {
         String delimiter = "";
         StringBuilder sb = new StringBuilder();
         for (String s : list) {
@@ -636,6 +631,7 @@ public class Indexer {
 
     /**
      * Simple method that prints a progress bar to command line
+     *
      * @param done Number of entries added
      */
     private void updateProgressBar(int done) {
@@ -647,15 +643,15 @@ public class Indexer {
         StringBuilder progress = new StringBuilder(width);
         progress.append('|');
         int i = 0;
-        for (; i < (int) (percent*width); i++)
+        for (; i < (int) (percent * width); i++)
             progress.append("=");
         for (; i < width; i++)
             progress.append(" ");
         progress.append('|');
-        System.out.printf(format, (int) (percent*100), progress, rotators[((done - 1) % (rotators.length * 100)) /100]);
+        System.out.printf(format, (int) (percent * 100), progress, rotators[((done - 1) % (rotators.length * 100)) / 100]);
     }
 
-    private void cleanNeo4jCache(){
+    private void cleanNeo4jCache() {
         generalService.clearCache();
     }
 }
