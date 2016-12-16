@@ -98,21 +98,21 @@ public class Indexer {
 
             cleanSolrIndex();
 
-//            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            entriesCount += indexBySchemaClass(Event.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
+            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            entriesCount += indexBySchemaClass(Event.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
