@@ -309,6 +309,58 @@ updateSolrConfigFiles () {
 
 }
 
+# -- Check if neo4j is running and stops program otherwise
+# -- If something was wrong with n4j we only knew after a java exception during the program execution
+checkNeo4j() {
+    _MSG="OK"
+    _JSONFILE="query_result.json"
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/"
+    _STATUS=$(curl -H "Content-Type: application/json" $_NEO4J_URL --write-out "%{http_code}\n" --silent --output $_JSONFILE)
+    # no content from the server
+    if [ 000 == "$_STATUS" ]; then
+        _MSG="Neo4j is not running. Please check 'service neo4j status'"
+    # didn't succeed
+    elif [ 200 != "$_STATUS" ]; then
+        _JSON_MSG=$(cat $_JSONFILE | python -c "import sys, json; print json.load(sys.stdin)['errors'][0]['message']")
+        _MSG="Couldn't retrieve neo4j information. Reason [$_JSON_MSG]"
+    fi
+    if [ -f "$_JSONFILE" ]; then rm $_JSONFILE; fi
+    echo "$_MSG"
+}
+
+getReleaseInfo() {
+    _RELEASE_INFO="Couldn't retrieve DBInfo."
+    _JSONFILE="query_result.json"
+    _CYPHER='{"statements":[{"statement":"MATCH (n:DBInfo) RETURN n.version LIMIT 1"}]}'
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/transaction/commit"
+    _STATUS=$(curl -H "Content-Type: application/json" -d "$_CYPHER" $_NEO4J_URL --write-out "%{http_code}\n" --silent --output $_JSONFILE)
+    if [ 200 == "$_STATUS" ]; then
+        _RELEASE_INFO=v-$(cat $_JSONFILE | sed 's/,//g;s/^.*row...\([0-9]*\).*$/\1/' | tr -d '[:space:]')
+    fi
+    if [ -f "$_JSONFILE" ]; then
+        rm $_JSONFILE
+    fi
+
+    echo "$_RELEASE_INFO"
+}
+
+# -- Getting neo4j version, also check if neo4j is running and stops program otherwise
+getNeo4jVersion() {
+    _RET=""
+    _JSONFILE="query_result.json"
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/"
+    _STATUS=$(curl -H "Content-Type: application/json" $_NEO4J_URL --write-out "%{http_code}\n" --silent --output $_JSONFILE)
+    if [ 200 == "$_STATUS" ]; then
+        _RET=$(cat $_JSONFILE | python -c "import sys, json; print json.load(sys.stdin)['neo4j_version']")
+    fi
+    if [ -f "$_JSONFILE" ]; then
+        rm $_JSONFILE
+    fi
+
+    echo "$_RET"
+}
+
+
 # SolR Data is created in $_SOLR_HOME/data/$_SOLR_CORE/data
 runIndexer () {
 
@@ -321,6 +373,19 @@ runIndexer () {
         echo "missing argument for -g <neo4j_passwd>"
         exit 1
     fi;
+
+    _MSG=$(checkNeo4j)
+    if [ "$_MSG" != "OK" ]; then
+        echo $_MSG
+        exit 1
+    fi
+
+    echo "=========== Neo4j =========="
+    echo "Neo4j host:         " "http://"$_NEO4J_HOST":"$_NEO4J_PORT
+    echo "Neo4j user:         " $_NEO4J_USER
+    echo "Neo4j Version:      " $(getNeo4jVersion)
+    echo "DB Content:         " $(getReleaseInfo)
+    echo "============================"
 
     # -- Reset flags
     _INSTALL_SOLR=false
@@ -373,14 +438,12 @@ runIndexer () {
     echo "Successfully imported data to Solr!"
 }
 
-summary () {
+generalSummary () {
    echo "============================"
    echo "=========== SOLR ==========="
    echo "Install SolR:       " $_INSTALL_SOLR
    echo "Update SolR:        " $_UPDATE_SOLR_CORE
    echo "Run Indexer:        " $_IMPORT_DATA
-   echo "neo4j host:         " "http://"$_NEO4J_HOST":"$_NEO4J_PORT
-   echo "neo4j user:         " $_NEO4J_USER
    echo "SolR Default Home:  " $_SOLR_HOME
    echo "SolR Core:          " $_SOLR_CORE
    echo "SolR Port:          " $_SOLR_PORT
@@ -390,11 +453,11 @@ summary () {
    echo "SMTP Server:        " $_MAIL_SMTP":"$_MAIL_PORT
    echo "Mail Destination:   " $_MAIL_DEST
    echo "GitHub Branch:      " $_GIT_BRANCH
-   echo "============================"
+   # neo4j summary will be printed when needed
 }
 
 # -- Print variables
-summary
+generalSummary
 
 # --- Install SOLR, Create reactome core and set security --- #
 if ${_INSTALL_SOLR} = true; then
