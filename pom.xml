@@ -35,8 +35,8 @@
     </developers>
 
     <properties>
-        <reactome.graph.core>1.0.0</reactome.graph.core>
-        <interactors.core>1.0.6</interactors.core>
+        <reactome.graph.core>1.0.1</reactome.graph.core>
+        <interactors.core>1.0.7</interactors.core>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.4</mail.version>
