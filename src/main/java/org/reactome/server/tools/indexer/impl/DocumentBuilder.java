@@ -1,6 +1,7 @@
 package org.reactome.server.tools.indexer.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.neo4j.ogm.exception.MappingException;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
@@ -58,9 +59,16 @@ class DocumentBuilder {
 
         IndexDocument document = new IndexDocument();
         /**
-         * Query the Graph and load only Primitives and no Relations attributes. Lazy-loading will load them on demand.
+         * Query the Graph and load only Primitives and no Relations attributes.
+         * Lazy-loading will load them on demand.
          */
-        DatabaseObject databaseObject = databaseObjectService.findById(dbId);
+        DatabaseObject databaseObject;
+        try {
+            databaseObject = databaseObjectService.findById(dbId);
+        } catch (MappingException e){
+            logger.error("There has been an error mapping the object with dbId: " + dbId, e);
+            return null;
+        }
 
         /** Setting common attributes **/
         document.setDbId(databaseObject.getDbId().toString());

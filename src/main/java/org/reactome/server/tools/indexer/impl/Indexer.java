@@ -148,14 +148,16 @@ public class Indexer {
         int numberOfDocuments = 0;
         int count = 0;
         List<IndexDocument> allDocuments = new ArrayList<>();
+        List<Long> missingDocuments = new ArrayList<>();
         for (Long dbId : allOfGivenClass) {
+
             IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
-
-            if (xml) {
-                marshaller.writeEntry(document);
+            if (document != null) {
+                if (xml) marshaller.writeEntry(document);
+                allDocuments.add(document);
+            } else {
+                missingDocuments.add(dbId);
             }
-
-            allDocuments.add(document);
 
             numberOfDocuments++;
             if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
@@ -187,6 +189,10 @@ public class Indexer {
 
         long end = System.currentTimeMillis() - start;
         logger.info("Elapsed time for " + clazz.getSimpleName() + " is " + end + "ms.");
+
+        if (!missingDocuments.isEmpty()) {
+            logger.info("\nMissing documents for:\n\t" + StringUtils.join(missingDocuments, "\n\t"));
+        }
 
         updateProgressBar(count); // done
 
