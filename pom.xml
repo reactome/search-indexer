@@ -35,14 +35,14 @@
     </developers>
 
     <properties>
-        <reactome.graph.core>1.0.0</reactome.graph.core>
-        <interactors.core>1.0.6</interactors.core>
+        <reactome.graph.core>1.0.3</reactome.graph.core>
+        <interactors.core>1.0.7</interactors.core>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>
-        <mail.version>1.5.4</mail.version>
+        <mail.version>1.5.6</mail.version>
         <activation.version>1.1.1</activation.version>
         <json.version>20090211</json.version>
-        <logging.version>1.1.7</logging.version>
+        <logging.version>1.1.10</logging.version>
         <maven.compiler.version>3.5.1</maven.compiler.version>
         <jdk.version>1.8</jdk.version>
         <maven.javadoc.version>2.10.3</maven.javadoc.version>
@@ -53,13 +53,6 @@
     </properties>
 
     <dependencies>
-
-        <!-- REACTOME BASE - TEMP -->
-        <!--<dependency>-->
-            <!--<groupId>org.reactome.base</groupId>-->
-            <!--<artifactId>reactome-base</artifactId>-->
-            <!--<version>1.2.4</version>-->
-        <!--</dependency>-->
 
         <!--Reactome data-->
         <dependency>

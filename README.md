@@ -1,4 +1,6 @@
-# Search #
+<img src=https://cloud.githubusercontent.com/assets/6883670/22938783/bbef4474-f2d4-11e6-92a5-07c1a6964491.png width=220 height=100 />
+
+# Search Indexer
 ## What is Reactome Search ? ##
 Reactome Search is a project that optimizes the queries in Reactome Website. Based on Apache Lucene, Reactome Graph Database is fully indexed by Apache SolR. SolR is versatile, it's configured and parametrized to face Reactome needs and requirements, delivering a high performance and accurate result list.
 The Search Project is split into 'Indexer' and 'Search':
@@ -18,7 +20,7 @@ The Search Project is split into 'Indexer' and 'Search':
 * Open a terminal and navigate to the folder where the script has been downloaded
 * Check script options before executing
 
-```
+```console
 $> ./setup-solr.sh -h
 
 OUTPUT:
@@ -70,13 +72,13 @@ where:
   * Replace the default arguments if necessary...
   * Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 
-```
+```console
 $> sudo ./setup-solr.sh -a -m <solr_pass>
 ```
 
 e.g
 
-```
+```console
 $> sudo ./setup-solr.sh -a -m not2share
 ```
 
@@ -92,13 +94,13 @@ Automatic way to updated SolR Configuration files, mainly schema.xml (requires n
   * Replace the default arguments if necessary...
   * Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 
-```
+```console
 $> sudo ./setup-solr.sh -b -m <solr_pass>
 ```
 
 e.g
 
-```
+```console
 $> sudo ./setup-solr.sh -b -m not2share
 ```
 
@@ -122,13 +124,13 @@ $> sudo ./setup-solr.sh -b -m not2share
 
 ### Indexer by default :books: ###
 
-```
+```console
 $> ./setup-solr.sh -c -m <solr_pass> -g <neo4j_passwd>
 ```
 
 e.g
 
-```
+```console
 $> ./setup-solr.sh -c -m not2share -g neo4j
 ```
 
@@ -136,7 +138,7 @@ $> ./setup-solr.sh -c -m not2share -g neo4j
 
 * Specify -s and the ebeye.xml file is going to be created.
 
-```
+```console
 $> ./setup-solr.sh -c -m not2share -g neo4j -s
 ```
 
@@ -145,7 +147,7 @@ $> ./setup-solr.sh -c -m not2share -g neo4j -s
   * Specify -t and an email is going to be sent at the end of indexing.
   * Change the default mail configuration by setting -p -q -r
 
-```
+```console
 $> ./setup-solr.sh -c -m not2share -g neo4j -t
 ```
 
@@ -153,7 +155,7 @@ $> ./setup-solr.sh -c -m not2share -g neo4j -t
 
   * Specify GitHub branch in order to run the indexer based on the code for the given branch.
 
-```
+```console
 $> ./setup-solr.sh -c -m not2share -g neo4j -u add_new_field
 ```
 
@@ -161,7 +163,7 @@ $> ./setup-solr.sh -c -m not2share -g neo4j -u add_new_field
 
 ### Useful commands ###
 
-```
+```console
 sudo service solr [stop|start|restart|status]
 ```
 
