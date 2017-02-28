@@ -35,7 +35,7 @@
     </developers>
 
     <properties>
-        <reactome.graph.core>1.0.3</reactome.graph.core>
+        <graph.core>1.0.4-SNAPSHOT</graph.core>
         <interactors.core>1.0.7</interactors.core>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${reactome.graph.core}</version>
+            <version>${graph.core}</version>
         </dependency>
         <!-- Reactome Interactor-core -->
         <dependency>
