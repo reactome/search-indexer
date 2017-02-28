@@ -33,10 +33,7 @@ class DocumentBuilder {
 
     private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
 
-    @Autowired
     private DatabaseObjectService databaseObjectService;
-
-    @Autowired
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
 
     private Map<Long, Set<String>> simpleEntitiesSpecies = null;
@@ -58,7 +55,7 @@ class DocumentBuilder {
         }
 
         IndexDocument document = new IndexDocument();
-        /**
+        /*
          * Query the Graph and load only Primitives and no Relations attributes.
          * Lazy-loading will load them on demand.
          */
@@ -70,7 +67,7 @@ class DocumentBuilder {
             return null;
         }
 
-        /** Setting common attributes **/
+        // Setting common attributes
         document.setDbId(databaseObject.getDbId().toString());
         document.setStId(databaseObject.getStId());
         document.setOldStId(databaseObject.getOldStId());
@@ -259,11 +256,6 @@ class DocumentBuilder {
     private void setSummation(IndexDocument document, List<Summation> summations) {
         if (summations == null) return;
 
-        // Creating a report - We should have only one summation
-//        if (summations.size() >= 2) {
-            //logger.info("[SUMMATION] - " + document.getDbId());
-//        }
-
         String summationText = "";
         boolean first = true;
         for (Summation summation : summations) {
@@ -349,7 +341,6 @@ class DocumentBuilder {
 
     private void setSpecies(IndexDocument document, DatabaseObject databaseObject) {
         Collection<? extends Taxon> speciesCollection = null;
-        List<String> relatedSpecies;
         if (databaseObject instanceof GenomeEncodedEntity) {
             GenomeEncodedEntity genomeEncodedEntity = (GenomeEncodedEntity) databaseObject;
             if (genomeEncodedEntity.getSpecies() != null) {
@@ -358,9 +349,15 @@ class DocumentBuilder {
         } else if (databaseObject instanceof EntitySet) {
             EntitySet entitySet = (EntitySet) databaseObject;
             speciesCollection = entitySet.getSpecies();
+            if (entitySet.getRelatedSpecies() != null && !entitySet.getRelatedSpecies().isEmpty()) {
+                document.setRelatedSpecies(entitySet.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList()));
+            }
         } else if (databaseObject instanceof Complex) {
             Complex complex = (Complex) databaseObject;
             speciesCollection = complex.getSpecies();
+            if (complex.getRelatedSpecies() != null && !complex.getRelatedSpecies().isEmpty()) {
+                document.setRelatedSpecies(complex.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList()));
+            }
         } else if (databaseObject instanceof SimpleEntity) {
             SimpleEntity simpleEntity = (SimpleEntity) databaseObject;
             if (simpleEntity.getSpecies() != null) {
@@ -372,10 +369,8 @@ class DocumentBuilder {
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
             speciesCollection = event.getSpecies();
-
-            if (event.getRelatedSpecies() != null) {
-                relatedSpecies = event.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList());
-                document.setRelatedSpecies(relatedSpecies);
+            if (event.getRelatedSpecies() != null && !event.getRelatedSpecies().isEmpty()) {
+                document.setRelatedSpecies(event.getRelatedSpecies().stream().map(Species::getDisplayName).collect(Collectors.toList()));
             }
         }
 
@@ -627,5 +622,15 @@ class DocumentBuilder {
             logger.error("An error occurred when loading the controlled vocabulary file", e);
         }
         return null;
+    }
+
+    @Autowired
+    public void setDatabaseObjectService(DatabaseObjectService databaseObjectService) {
+        this.databaseObjectService = databaseObjectService;
+    }
+
+    @Autowired
+    public void setAdvancedDatabaseObjectService(AdvancedDatabaseObjectService advancedDatabaseObjectService) {
+        this.advancedDatabaseObjectService = advancedDatabaseObjectService;
     }
 }
