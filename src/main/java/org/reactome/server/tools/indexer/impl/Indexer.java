@@ -51,28 +51,30 @@ import java.util.*;
 @Service
 public class Indexer {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
+
     private static final String EBEYE_NAME = "Reactome";
     private static final String EBEYE_DESCRIPTION = "Reactome is a free, open-source, curated and peer reviewed pathway " +
             "database. Our goal is to provide intuitive bioinformatics tools for the visualization, interpretation and " +
             "analysis of pathway knowledge to support basic research, genome analysis, modeling, systems biology and " +
             "education.";
+
     // Collection that holds accessions from IntAct that are not in Reactome Data.
     // This collection will be used to keep interactions to those accession not in Reactome.
     private static final Set<String> accessionsNotInReactome = new HashSet<>();
     private static InteractorService interactorService;
     private static InteractionService interactionService;
-    //Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
+
+    // Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
     private final Map<String, ReactomeSummary> accessionMap = new HashMap<>();
     private final Map<Integer, String> taxonomyMap = new HashMap<>();
-    @Autowired
+
     private SchemaService schemaService;
-    @Autowired
     private GeneralService generalService;
-    //Creating SolR Document querying the Graph in Transactional execution
-    @Autowired
-    private DocumentBuilder documentBuilder;
-    @Autowired
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
+
+    // Creating SolR Document querying the Graph in Transactional execution
+    private DocumentBuilder documentBuilder;
+
     private SolrClient solrClient;
     private Marshaller marshaller;
 
@@ -213,7 +215,7 @@ public class Indexer {
     /**
      * Cleaning Solr Server (removes all current Data)
      *
-     * @throws IndexerException
+     * @throws IndexerException not cleaning the indexer means the indexer will failed.
      */
     private void cleanSolrIndex() throws IndexerException {
         try {
@@ -307,7 +309,7 @@ public class Indexer {
      * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
      * with Reactome proteins
      *
-     * @throws IndexerException
+     * @throws IndexerException interactors are mandatory
      */
     private int indexInteractors() throws IndexerException {
         logger.info("Start indexing interactors into Solr");
@@ -324,13 +326,7 @@ public class Indexer {
 
             // Removing accession identifier that are not UniProt/ChEBI accession Identifier.
             // The intact file keeps the same Intact id in this case.
-            Iterator<String> iterator = accessionsList.iterator();
-            while (iterator.hasNext()) {
-                String str = iterator.next();
-                if (str.startsWith("EBI-")) {
-                    iterator.remove();
-                }
-            }
+            accessionsList.removeIf(str -> str.startsWith("EBI-"));
 
             // Queries gk_instance and create a list of accessions that are not in reactome and
             // also a map with the accession +information (stIds,names) in reactome
@@ -472,7 +468,7 @@ public class Indexer {
      * also a map with the accession +information (stIds,names) in reactome (accessionMap).
      *
      * @param accessionList all unique accessions from Interactors Database excluding those that start with EBI-. They are provided by IntAct but does not have accession.
-     * @throws IndexerException
+     * @throws IndexerException interactors are mandatory
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
 
@@ -659,6 +655,26 @@ public class Indexer {
 
     private void cleanNeo4jCache() {
         generalService.clearCache();
+    }
+
+    @Autowired
+    public void setSchemaService(SchemaService schemaService) {
+        this.schemaService = schemaService;
+    }
+
+    @Autowired
+    public void setGeneralService(GeneralService generalService) {
+        this.generalService = generalService;
+    }
+
+    @Autowired
+    public void setAdvancedDatabaseObjectService(AdvancedDatabaseObjectService advancedDatabaseObjectService) {
+        this.advancedDatabaseObjectService = advancedDatabaseObjectService;
+    }
+
+    @Autowired
+    public void setDocumentBuilder(DocumentBuilder documentBuilder) {
+        this.documentBuilder = documentBuilder;
     }
 }
 
