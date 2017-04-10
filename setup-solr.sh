@@ -410,7 +410,7 @@ runIndexer () {
     echo "Reactome core is available!"
 
     echo "Checking if current directory is valid project"
-    if ! mvn -q clean package -DskipTests ; then
+    if ! mvn -q -U clean package -DskipTests ; then
         if [ ! -f /target/Indexer-jar-with-dependencies.jar ]; then
 
             echo "Cloning project from repository..."
@@ -421,7 +421,7 @@ runIndexer () {
             _PATH="/search-indexer"
 
             echo "Started packaging reactome project"
-            if ! mvn -q -f .${_PATH}/pom.xml clean package -DskipTests >/dev/null 2>&1; then
+            if ! mvn -q -f -U .${_PATH}/pom.xml clean package -DskipTests >/dev/null 2>&1; then
                echo "An error occurred when packaging the project."
                exit 1
 	          fi
@@ -439,6 +439,10 @@ runIndexer () {
 }
 
 generalSummary () {
+   _EBEYE="NO"
+   if [ "$_XML" -eq "-l" ]; then
+        _EBEYE="YES";
+   fi
    echo "============================"
    echo "=========== SOLR ==========="
    echo "Install SolR:       " $_INSTALL_SOLR
@@ -450,6 +454,7 @@ generalSummary () {
    echo "SolR User:          " $_SOLR_USER
    echo "SolR Version:       " $_SOLR_VERSION
    echo "Interactors DB:     " $_INTERACTORS_DB
+   echo "ebeye.xml:          " $_EBEYE
    echo "SMTP Server:        " $_MAIL_SMTP":"$_MAIL_PORT
    echo "Mail Destination:   " $_MAIL_DEST
    echo "GitHub Branch:      " $_GIT_BRANCH
