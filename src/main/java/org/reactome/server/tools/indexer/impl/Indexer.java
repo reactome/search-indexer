@@ -81,7 +81,7 @@ public class Indexer {
     private Boolean xml = false;
     private long total;
 
-    public void index() throws IndexerException {
+    public int index() throws IndexerException {
         long start = System.currentTimeMillis();
         int entriesCount = 0;
 
@@ -126,6 +126,7 @@ public class Indexer {
 
             System.out.println("\nData Import finished with " + entriesCount + " entries imported.");
 
+            return entriesCount;
         } catch (Exception e) {
             logger.error("An error occurred during the data import", e);
             e.printStackTrace();
