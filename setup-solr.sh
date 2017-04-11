@@ -440,7 +440,7 @@ runIndexer () {
 
 generalSummary () {
    _EBEYE="NO"
-   if [ "$_XML" -eq "-l" ]; then
+   if [ "$_XML" == "-l" ]; then
         _EBEYE="YES";
    fi
    echo "============================"
