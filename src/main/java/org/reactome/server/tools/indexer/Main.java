@@ -81,7 +81,7 @@ public class Main {
         indexer.setInteractorsDatabase(new InteractorsDatabase(config.getString("iDbPath")));
 
         try {
-            indexer.index();
+            int entriesCount = indexer.index();
 
             if (mail) {
                 long stopTime = System.currentTimeMillis();
@@ -90,7 +90,7 @@ public class Main {
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
                 long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
                 // Send an notification by the end of indexing.
-                mailUtil.send(FROM, mailDest, MAIL_SUBJECT_SUCCESS, "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
+                mailUtil.send(FROM, mailDest, MAIL_SUBJECT_SUCCESS, "The Solr Indexer has written successfully " + entriesCount + " documents within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
             }
         } catch (IndexerException e) {
             if (mail) {
