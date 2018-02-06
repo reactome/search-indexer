@@ -27,7 +27,6 @@ OUTPUT:
 setup-solr.sh <execution_type -a, -b or -c> -m <solr_passwd>
                    [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd>
                    -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version>
-                   -o <interactors_db_path>
                    -p <smtp_server> -q <smtp_port> -r <mail_from>
                    -s -t
                    -u <git_branch>
@@ -52,8 +51,6 @@ where:
         -l  SolR User                   DEFAULT: admin
         -m  SolR Password               REQUIRED [All Execution Type]
         -n  SolR Version                DEFAULT: 6.1.0
-
-        -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
 
         -p  Mail SMTP Server            DEFAULT: smtp.oicr.on.ca
         -q  Mail SMTP port              DEFAULT: 25
@@ -118,7 +115,7 @@ $> sudo ./setup-solr.sh -b -m not2share
   * You should be able to access http://[serverip]:[port]/solr
 * Neo4j Graph Database + Reactome Graph Database
   * [Installing Neo4j](https://github.com/reactome/graph-importer)
-  * [Download Reactome Graph Database](http://reactome.org/download/current/reactome.graphdb.tgz)
+  * [Download Reactome Graph Database](https://reactome.org/download/current/reactome.graphdb.tgz)
 * Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
 * Escape special characters if they are present in the password e.g not4shar\\&, use backslash (\\).
 

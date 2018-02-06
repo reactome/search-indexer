@@ -35,8 +35,7 @@
     </developers>
 
     <properties>
-        <graph.core>1.0.6</graph.core>
-        <interactors.core>1.0.7</interactors.core>
+        <graph.core>1.1.5</graph.core>
         <solr.version>6.1.0</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
@@ -59,18 +58,6 @@
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
             <version>${graph.core}</version>
-        </dependency>
-        <!-- Reactome Interactor-core -->
-        <dependency>
-            <groupId>org.reactome.server.interactors</groupId>
-            <artifactId>interactor-core</artifactId>
-            <version>${interactors.core}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Solr-->
         <dependency>

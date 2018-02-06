@@ -9,7 +9,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.reactome.server.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.impl.Indexer;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -30,14 +28,14 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class Main {
 
-    private static final String FROM = "reactome-indexer@reactome.org";
-    private static final String DEF_MAIL_DEST = "reactome-developer@reactome.org";
-    private static final String DEF_MAIL_SMTP = "smtp.oicr.on.ca";
-    private static final String DEF_SOLR_URL = "http://localhost:8983/solr/reactome";
+    private static final String FROM = "12eactome-indexer@reactome.org";
+    private static final String DEF_MAIL_DEST = "12reactome-developer@reactome.org";
+    private static final String DEF_MAIL_SMTP = "12smtp.oicr.on.ca";
+    private static final String DEF_SOLR_URL = "http://localhost:8983/solr/reactome-test";
     private static final String MAIL_SUBJECT_SUCCESS = "[Search Indexer] The Solr indexer has been created";
     private static final String MAIL_SUBJECT_ERROR = "[SearchIndexer] The Solr indexer has thrown exception";
 
-    public static void main(String[] args) throws JSAPException, SQLException {
+    public static void main(String[] args) throws JSAPException {
 
         long startTime = System.currentTimeMillis();
 
@@ -46,16 +44,15 @@ public class Main {
                         new FlaggedOption("host",       JSAP.STRING_PARSER,     "localhost",        JSAP.NOT_REQUIRED,  'a', "host",        "The neo4j host"),
                         new FlaggedOption("port",       JSAP.STRING_PARSER,     "7474",             JSAP.NOT_REQUIRED,  'b', "port",        "The neo4j port"),
                         new FlaggedOption("user",       JSAP.STRING_PARSER,     "neo4j",            JSAP.NOT_REQUIRED,  'c', "user",        "The neo4j user"),
-                        new FlaggedOption("password",   JSAP.STRING_PARSER,     JSAP.NO_DEFAULT,    JSAP.REQUIRED,      'd', "password",    "The neo4j password"),
-                        new FlaggedOption("solrUrl",    JSAP.STRING_PARSER,     DEF_SOLR_URL,       JSAP.REQUIRED,      'e', "solrUrl",     "Url of the running Solr server"),
+                        new FlaggedOption("password",   JSAP.STRING_PARSER,     JSAP.NO_DEFAULT,        JSAP.REQUIRED,      'd', "password",    "The neo4j password"),
+                        new FlaggedOption("solrUrl",    JSAP.STRING_PARSER,     DEF_SOLR_URL,           JSAP.REQUIRED,      'e', "solrUrl",     "Url of the running Solr server"),
                         new FlaggedOption("solrUser",   JSAP.STRING_PARSER,     "admin",            JSAP.NOT_REQUIRED,  'f', "solrUser",    "The Solr user"),
-                        new FlaggedOption("solrPw",     JSAP.STRING_PARSER,     JSAP.NO_DEFAULT,    JSAP.REQUIRED,      'g', "solrPw",      "The Solr password"),
-                        new FlaggedOption("iDbPath",    JSAP.STRING_PARSER,     JSAP.NO_DEFAULT,    JSAP.REQUIRED,      'h', "iDbPath",     "Interactor Database Path"),
-                        new FlaggedOption("mailSmtp",   JSAP.STRING_PARSER,     DEF_MAIL_SMTP,      JSAP.NOT_REQUIRED,  'i', "mailSmtp",    "SMTP Mail host"),
+                        new FlaggedOption("solrPw",     JSAP.STRING_PARSER,     JSAP.NO_DEFAULT,        JSAP.REQUIRED,      'g', "solrPw",      "The Solr password"),
+                        new FlaggedOption("mailSmtp",   JSAP.STRING_PARSER,     DEF_MAIL_SMTP,          JSAP.NOT_REQUIRED,  'i', "mailSmtp",    "SMTP Mail host"),
                         new FlaggedOption("mailPort",   JSAP.INTEGER_PARSER,    "25",               JSAP.NOT_REQUIRED,  'j', "mailPort",    "SMTP Mail port"),
-                        new FlaggedOption("mailDest",   JSAP.STRING_PARSER,     DEF_MAIL_DEST,      JSAP.NOT_REQUIRED,  'k', "mailDest",    "Mail Destination"),
-                        new QualifiedSwitch("xml",      JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,    JSAP.NOT_REQUIRED,  'l', "xml",         "XML output file for the EBeye"),
-                        new QualifiedSwitch("mail",     JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,    JSAP.NOT_REQUIRED,  'm', "mail",        "Activates mail option")
+                        new FlaggedOption("mailDest",   JSAP.STRING_PARSER,     DEF_MAIL_DEST,          JSAP.NOT_REQUIRED,  'k', "mailDest",    "Mail Destination"),
+                        new QualifiedSwitch("xml",      JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,        JSAP.NOT_REQUIRED,  'l', "xml",         "XML output file for the EBeye"),
+                        new QualifiedSwitch("mail",     JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,        JSAP.NOT_REQUIRED,  'm', "mail",        "Activates mail option")
                 }
         );
 
@@ -78,7 +75,6 @@ public class Main {
         Indexer indexer = ctx.getBean(Indexer.class);
         indexer.setSolrClient(solrClient);
         indexer.setXml(config.getBoolean("xml")); // ebeye.xml file
-        indexer.setInteractorsDatabase(new InteractorsDatabase(config.getString("iDbPath")));
 
         try {
             int entriesCount = indexer.index();
@@ -122,7 +118,6 @@ public class Main {
      * @return solr connection
      */
     private static SolrClient getSolrClient(String user, String password, String url) {
-
         if (user != null && !user.isEmpty() && password != null && !password.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create().addInterceptorFirst(new PreemptiveAuthInterceptor());
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -152,6 +147,5 @@ public class Main {
         System.setProperty("neo4j.password", password);
 
         return new AnnotationConfigApplicationContext(IndexerNeo4jConfig.class); // Use annotated beans from the specified package
-
     }
 }

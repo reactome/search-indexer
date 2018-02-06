@@ -9,7 +9,7 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.model.SpeciesResult;
-import org.reactome.server.tools.indexer.util.IndexerMapSet;
+import org.reactome.server.tools.indexer.util.MapSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,7 +224,7 @@ class DocumentBuilder {
     private void setLiteratureReference(IndexDocument document, List<Publication> literatureReference) {
         if (literatureReference == null) return;
 
-        IndexerMapSet<String, String> mapSet = new IndexerMapSet<>();
+        MapSet<String, String> mapSet = new MapSet<>();
         for (Publication publication : literatureReference) {
             mapSet.add("title", publication.getTitle());
             if (publication instanceof LiteratureReference) {

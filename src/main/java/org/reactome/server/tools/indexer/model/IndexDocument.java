@@ -122,17 +122,6 @@ public class IndexDocument {
     @Field
     private List<String> referenceGeneNames;
 
-    @Field
-    private List<String> reactomeInteractorIds;
-    @Field
-    private List<String> interactionsIds;
-    @Field
-    private List<Double> scores;
-    @Field
-    private List<String> interactorAccessions;
-    @Field
-    private List<String> reactomeInteractorNames;
-
     // The attribute is a collection but is singular just to make the lucene query syntax easier.
     // e.g author:"John Doe"
     // This field has authored and reviewed for a given Event.
@@ -516,46 +505,6 @@ public class IndexDocument {
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
-    }
-
-    public List<String> getReactomeInteractorIds() {
-        return reactomeInteractorIds;
-    }
-
-    public void setReactomeInteractorIds(List<String> reactomeInteractorIds) {
-        this.reactomeInteractorIds = reactomeInteractorIds;
-    }
-
-    public List<String> getInteractionsIds() {
-        return interactionsIds;
-    }
-
-    public void setInteractionsIds(List<String> interactionsIds) {
-        this.interactionsIds = interactionsIds;
-    }
-
-    public List<Double> getScores() {
-        return scores;
-    }
-
-    public void setScores(List<Double> scores) {
-        this.scores = scores;
-    }
-
-    public List<String> getInteractorAccessions() {
-        return interactorAccessions;
-    }
-
-    public void setInteractorAccessions(List<String> interactorAccessions) {
-        this.interactorAccessions = interactorAccessions;
-    }
-
-    public List<String> getReactomeInteractorNames() {
-        return reactomeInteractorNames;
-    }
-
-    public void setReactomeInteractorNames(List<String> reactomeInteractorNames) {
-        this.reactomeInteractorNames = reactomeInteractorNames;
     }
 
     public List<String> getReferenceSecondaryIdentifier() {
