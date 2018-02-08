@@ -177,6 +177,76 @@ public class Indexer {
     }
 
     /**
+     * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
+     * with Reactome proteins
+     */
+    private int indexInteractors() {
+        logger.info("Start indexing interactors into Solr");
+
+        int numberOfDocuments = 0;
+        List<IndexDocument> collection = new ArrayList<>();
+
+        System.out.println("\n[Interactors] Started adding to SolR");
+
+        Collection<ReferenceEntity> interactors = getInteractors();
+
+        logger.info("Preparing SolR documents for Interactors [" + interactors.size() + "]");
+        total = interactors.size();
+        int preparingSolrDocuments = 0;
+        for (ReferenceEntity interactorRE : interactors) {
+            // Create index document based on interactor A and the summary based on Interactor B.
+            IndexDocument indexDocument = interactorDocumentBuilder.createInteractorSolrDocument(interactorRE);
+            collection.add(indexDocument);
+
+            numberOfDocuments++;
+
+            preparingSolrDocuments++;
+            if (preparingSolrDocuments % 1000 == 0) {
+                logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
+            }
+            if (preparingSolrDocuments % 100 == 0) {
+                updateProgressBar(preparingSolrDocuments);
+            }
+        }
+
+        logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
+
+        // Save the indexDocument into Solr.
+        addDocumentsToSolrServer(collection);
+
+        logger.info(numberOfDocuments + " Interactor(s) have now been added to SolR");
+
+        updateProgressBar(preparingSolrDocuments);
+
+        return numberOfDocuments;
+    }
+
+    /**
+     * Interactors (ReferenceEntities) that ARE NOT in Reactome but
+     * interact with proteins/chemicals that ARE in Reactome
+     *
+     * @return interactor
+     */
+    private Collection<ReferenceEntity> getInteractors(){
+        Collection<ReferenceEntity> rtn;
+
+        String query = "" +
+                "MATCH (in:ReferenceEntity)<-[:interactor]-(:Interaction)-[:interactor]->(re:ReferenceEntity) " +
+                "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
+                "      NOT (:PhysicalEntity)-[:referenceEntity]->(in) " +
+                "RETURN DISTINCT in";
+
+        try {
+            rtn = advancedDatabaseObjectService.customQueryForDatabaseObjects(ReferenceEntity.class, query, null);
+        } catch (CustomQueryException e) {
+            logger.error(e.getMessage(), e);
+            rtn = new ArrayList<>();
+        }
+
+        return rtn;
+    }
+
+    /**
      * Count how many instances we are going to index.
      * This is going to be applied in the progress bar
      */
@@ -273,76 +343,6 @@ public class Indexer {
         if (xml) {
             marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
         }
-    }
-
-    /**
-     * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
-     * with Reactome proteins
-     */
-    private int indexInteractors() {
-        logger.info("Start indexing interactors into Solr");
-
-        int numberOfDocuments = 0;
-        List<IndexDocument> collection = new ArrayList<>();
-
-        System.out.println("\n[Interactors] Started adding to SolR");
-
-        Collection<ReferenceEntity> interactors = getInteractors();
-
-        logger.info("Preparing SolR documents for Interactors [" + interactors.size() + "]");
-        total = interactors.size();
-        int preparingSolrDocuments = 0;
-        for (ReferenceEntity interactorRE : interactors) {
-            // Create index document based on interactor A and the summary based on Interactor B.
-            IndexDocument indexDocument = interactorDocumentBuilder.createInteractorSolrDocument(interactorRE);
-            collection.add(indexDocument);
-
-            numberOfDocuments++;
-
-            preparingSolrDocuments++;
-            if (preparingSolrDocuments % 1000 == 0) {
-                logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
-            }
-            if (preparingSolrDocuments % 100 == 0) {
-                updateProgressBar(preparingSolrDocuments);
-            }
-        }
-
-        logger.info("  >> preparing interactors SolR Documents [" + preparingSolrDocuments + "]");
-
-        // Save the indexDocument into Solr.
-        addDocumentsToSolrServer(collection);
-
-        logger.info(numberOfDocuments + " Interactor(s) have now been added to SolR");
-
-        updateProgressBar(preparingSolrDocuments);
-
-        return numberOfDocuments;
-    }
-
-    /**
-     * Interactors (ReferenceEntities) that ARE NOT in Reactome but
-     * interact with proteins/chemicals that ARE in Reactome
-     *
-     * @return interactor
-     */
-    private Collection<ReferenceEntity> getInteractors(){
-        Collection<ReferenceEntity> rtn;
-
-        String query = "" +
-                "MATCH (in:ReferenceEntity)<-[:interactor]-(:Interaction)-[:interactor]->(re:ReferenceEntity) " +
-                "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
-                "      NOT (:PhysicalEntity)-[:referenceEntity]->(in) " +
-                "RETURN DISTINCT in";
-
-        try {
-            rtn = advancedDatabaseObjectService.customQueryForDatabaseObjects(ReferenceEntity.class, query, null);
-        } catch (CustomQueryException e) {
-            logger.error(e.getMessage(), e);
-            rtn = new ArrayList<>();
-        }
-
-        return rtn;
     }
 
     /**
