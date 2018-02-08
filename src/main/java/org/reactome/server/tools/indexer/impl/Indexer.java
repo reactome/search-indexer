@@ -59,36 +59,36 @@ public class Indexer {
         long start = System.currentTimeMillis();
         int entriesCount = 0;
 
-//        totalCount();
+        totalCount();
 
         try {
-//            if (xml) {
-//                int releaseNumber = 0;
-//                try {
-//                    releaseNumber = generalService.getDBVersion();
-//                } catch (Exception e) {
-//                    logger.error("An error occurred when trying to retrieve the release number from the database.");
-//                }
-//                marshaller.writeHeader(releaseNumber);
-//            }
+            if (xml) {
+                int releaseNumber = 0;
+                try {
+                    releaseNumber = generalService.getDBVersion();
+                } catch (Exception e) {
+                    logger.error("An error occurred when trying to retrieve the release number from the database.");
+                }
+                marshaller.writeHeader(releaseNumber);
+            }
 
             cleanSolrIndex();
 
-//            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            entriesCount += indexBySchemaClass(Event.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
-//            commitSolrServer();
-//            cleanNeo4jCache();
-//
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
+            entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            entriesCount += indexBySchemaClass(Event.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
+            commitSolrServer();
+            cleanNeo4jCache();
+
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
@@ -329,9 +329,11 @@ public class Indexer {
     private Collection<ReferenceEntity> getInteractors(){
         Collection<ReferenceEntity> rtn;
 
-        String query = "MATCH (re:ReferenceEntity)<-[:interactor]-(:Interaction) " +
-                       "WHERE NOT (:PhysicalEntity)-[:referenceEntity]->(re) " +
-                       "RETURN DISTINCT re";
+        String query = "" +
+                "MATCH (in:ReferenceEntity)<-[:interactor]-(:Interaction)-[:interactor]->(re:ReferenceEntity) " +
+                "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
+                "      NOT (:PhysicalEntity)-[:referenceEntity]->(in) " +
+                "RETURN DISTINCT in";
 
         try {
             rtn = advancedDatabaseObjectService.customQueryForDatabaseObjects(ReferenceEntity.class, query, null);
