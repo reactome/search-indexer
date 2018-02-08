@@ -47,8 +47,9 @@ class InteractorDocumentBuilder {
         try {
             return (List<String>) databaseObject.getClass().getMethod("getSecondaryIdentifier").invoke(databaseObject);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return new ArrayList<>();
+            // Nothing here
         }
+        return new ArrayList<>();
     }
 
     @SuppressWarnings("unchecked")
@@ -56,8 +57,9 @@ class InteractorDocumentBuilder {
         try {
             return (List<String>) databaseObject.getClass().getMethod("getGeneName").invoke(databaseObject);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return null;
+            // Nothing here
         }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -66,8 +68,9 @@ class InteractorDocumentBuilder {
             // in cases where databaseObject is instanceof ReferenceIsoform, use variantIdentifier as the main identifier
             return (String) databaseObject.getClass().getMethod("getVariantIdentifier").invoke(databaseObject);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return null;
+            // Nothing here
         }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -75,8 +78,9 @@ class InteractorDocumentBuilder {
         try {
             return ((Species) databaseObject.getClass().getMethod("getSpecies").invoke(databaseObject)).getDisplayName();
         } catch (NullPointerException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return null;
+            // Nothing here
         }
+        return null;
     }
 
     private String getName(ReferenceEntity interactor) {
