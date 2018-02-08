@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class Main {
 
-    private static final String FROM = "12eactome-indexer@reactome.org";
-    private static final String DEF_MAIL_DEST = "12reactome-developer@reactome.org";
-    private static final String DEF_MAIL_SMTP = "12smtp.oicr.on.ca";
-    private static final String DEF_SOLR_URL = "http://localhost:8983/solr/reactome-test";
+    private static final String FROM = "reactome-indexer@reactome.org";
+    private static final String DEF_MAIL_DEST = "reactome-developer@reactome.org";
+    private static final String DEF_MAIL_SMTP = "smtp.oicr.on.ca";
+    private static final String DEF_SOLR_URL = "http://localhost:8983/solr/reactome";
     private static final String MAIL_SUBJECT_SUCCESS = "[Search Indexer] The Solr indexer has been created";
     private static final String MAIL_SUBJECT_ERROR = "[SearchIndexer] The Solr indexer has thrown exception";
 
