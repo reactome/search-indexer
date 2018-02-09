@@ -80,21 +80,16 @@ class InteractorDocumentBuilder {
         } catch (NullPointerException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             // Nothing here
         }
-        return null;
+        return "Entries without species";
     }
 
     private String getName(ReferenceEntity interactor) {
-        String ret = "";
         List<String> geneName = getGeneName(interactor);
-        if (geneName == null || geneName.isEmpty()) {
-            List<String> names = interactor.getName();
-            if (names == null || names.isEmpty()) {
-                // IntAct entries - those starting with EBI- or isoforms
-                ret = interactor.getIdentifier();
-            }
-        } else {
-            ret = geneName.get(0);
-        }
-        return ret;
+        if (geneName != null && !geneName.isEmpty()) return geneName.get(0);
+
+        List<String> names = interactor.getName();
+        if (names != null && !names.isEmpty()) return names.get(0);
+
+        return interactor.getIdentifier();
     }
 }
