@@ -67,7 +67,7 @@ _MAIL=""
 
 _GIT_BRANCH="master"
 
-while getopts ":d:e:f:g:v:j:k:l:m:n:o:p:q:r:ustabch" option; do
+while getopts ":d:e:f:g:v:j:k:l:m:n:p:q:r:ustabch" option; do
     case "$option" in
         h) echo "$usage"
             exit
