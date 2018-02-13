@@ -9,7 +9,7 @@
 #
 #-----------------------------------------------------------
 
-usage="$(basename "$0") <execution_type -a, -b or -c> -m <solr_passwd> [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd> -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version> -o <interactors_db_path> -p <smtp_server> -q <smtp_port> -r <mail_from> -s -t -u <git_branch>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
+usage="$(basename "$0") <execution_type -a, -b or -c> -m <solr_passwd> [-d <neo4j_host> -e <neo4j_port> —f <neo4j_user> -g <neo4j_passwd> -j <solr_core> -k <sorl_port> -l <solr_user> -n <solr_version> -p <smtp_server> -q <smtp_port> -r <mail_from> -s -t -u <git_branch>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
 
 where:
     -h  Program help/usage
@@ -30,8 +30,6 @@ where:
         -l  Solr User                   DEFAULT: admin
         -m  Solr Password               REQUIRED
         -n  Solr Version                DEFAULT: 6.2.0
-
-        -o  Interactors database path   DEFAULT: /usr/local/reactomes/Reactome/production/ContentService/interactors.db
 
         -p  Mail Smtp server            DEFAULT: smtp.oicr.on.ca
         -q  Mail Smtp port              DEFAULT: 25
@@ -59,8 +57,6 @@ _NEO4J_HOST="localhost"
 _NEO4J_PORT="7474"
 _NEO4J_USER="neo4j"
 _NEO4J_PASSWORD=""
-
-_INTERACTORS_DB="/usr/local/reactomes/Reactome/production/ContentService/interactors.db"
 
 _MAIL_SMTP="smtp.oicr.on.ca"
 _MAIL_PORT="25"
@@ -101,8 +97,6 @@ while getopts ":d:e:f:g:v:j:k:l:m:n:o:p:q:r:ustabch" option; do
         m) _SOLR_PASSWORD=$OPTARG
             ;;
         n) _SOLR_VERSION=$OPTARG
-            ;;
-        o) _INTERACTORS_DB=$OPTARG
             ;;
         p) _MAIL_SMTP=$OPTARG
             ;;
@@ -430,7 +424,7 @@ runIndexer () {
 
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
 
-     if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -h ${_INTERACTORS_DB} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}; then
+     if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
      fi
@@ -453,7 +447,6 @@ generalSummary () {
    echo "SolR Port:          " $_SOLR_PORT
    echo "SolR User:          " $_SOLR_USER
    echo "SolR Version:       " $_SOLR_VERSION
-   echo "Interactors DB:     " $_INTERACTORS_DB
    echo "ebeye.xml:          " $_EBEYE
    echo "SMTP Server:        " $_MAIL_SMTP":"$_MAIL_PORT
    echo "Mail Destination:   " $_MAIL_DEST
