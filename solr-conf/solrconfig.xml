@@ -123,6 +123,7 @@
 
     <requestHandler name="/select" class="solr.SearchHandler">
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <int name="rows">10</int>
             <str name="df">name</str>
@@ -133,6 +134,7 @@
     <!--and will return the absolute numbers of entries within the different facets-->
     <requestHandler name="/facetall" class="solr.SearchHandler">
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <int name="start">0</int>
             <!--no search results returned because we are only interested in faceting information-->
@@ -157,6 +159,7 @@
     <!--request handler used to query with addition to faceting and exception of spellchecking information and result grouping-->
     <requestHandler name="/facet" class="solr.SearchHandler">
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
             <int name="start">0</int>
@@ -234,6 +237,7 @@
     <!--request handler used to query before adding a "suggestion" in the "did you mean..." field -->
     <requestHandler name="/exists" class="solr.SearchHandler">
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
 
@@ -294,6 +298,7 @@
     <requestHandler name="/search" class="solr.SearchHandler">
 
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
 
@@ -373,6 +378,7 @@
     <requestHandler name="/browse" class="solr.SearchHandler">
 
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
 
@@ -510,6 +516,7 @@
 
    <requestHandler name="/interactor" class="solr.SearchHandler">
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
             <int name="start">0</int>
@@ -525,6 +532,7 @@
     <requestHandler name="/fireworks" class="solr.SearchHandler">
 
         <lst name="defaults">
+            <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
             <str name="defType">edismax</str>
 
@@ -652,6 +660,7 @@
 
         <!--standard spellchecker using the values in specific fields to build up a dictionary from them -->
         <lst name="spellchecker">
+            <str name="q.op">OR</str>
             <str name="name">default</str>
             <!-- name of the spellcheck component-->
             <str name="field">spellcheck</str>
@@ -701,6 +710,7 @@
     <!--spellcheck component for autosuggestions, this spellchecker creates a dictionary using the values in specific fields-->
     <searchComponent class="solr.SpellCheckComponent" name="suggest">
         <lst name="spellchecker">
+            <str name="q.op">OR</str>
             <str name="name">suggest</str>
             <!-- name of the spellcheck component-->
             <str name="classname">org.apache.solr.spelling.suggest.Suggester</str>

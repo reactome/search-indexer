@@ -91,7 +91,6 @@
     <copyField source="diseaseName"                     dest="spellcheck"/>
     <copyField source="diseaseSynonyms"                 dest="spellcheck"/>
 
-    <solrQueryParser defaultOperator="OR"/>
     <uniqueKey>dbId</uniqueKey>
 
     <types>
