@@ -3,9 +3,11 @@ package org.reactome.server.tools.indexer.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.ogm.exception.MappingException;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.result.DiagramOccurrences;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
+import org.reactome.server.graph.service.DiagramService;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.model.SpeciesResult;
@@ -35,6 +37,7 @@ class DocumentBuilder {
 
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
+    private DiagramService diagramService;
 
     private Map<Long, Set<String>> simpleEntitiesSpecies = null;
 
@@ -62,7 +65,7 @@ class DocumentBuilder {
         DatabaseObject databaseObject;
         try {
             databaseObject = databaseObjectService.findById(dbId);
-        } catch (MappingException e){
+        } catch (MappingException e) {
             logger.error("There has been an error mapping the object with dbId: " + dbId, e);
             return null;
         }
@@ -128,6 +131,8 @@ class DocumentBuilder {
 
         setFireworksSpecies(document, databaseObject);
 
+        setDiagramOccurrences(document, databaseObject);
+
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
@@ -136,9 +141,10 @@ class DocumentBuilder {
 
     private void cacheSimpleEntitySpecies() {
         logger.info("Caching SimpleEntity Species");
-        String query = "MATCH (n:SimpleEntity)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
-                       "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
-                       "RETURN n.dbId AS dbId, species";
+        String query = "" +
+                "MATCH (n:SimpleEntity)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
+                "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.customQueryForObjects(SpeciesResult.class, query, null);
             simpleEntitiesSpecies = new HashMap<>(speciesResultList.size());
@@ -588,6 +594,26 @@ class DocumentBuilder {
         }
     }
 
+    private void setDiagramOccurrences(IndexDocument document, DatabaseObject databaseObject) {
+        Set<String> diagrams = new HashSet<>();
+        Set<String> occurrences = new HashSet<>();
+
+        long queryStart = System.currentTimeMillis();
+        Collection<DiagramOccurrences> dos = diagramService.getDiagramOccurrences(databaseObject.getStId());
+        long queryEnd = System.currentTimeMillis();
+        for (DiagramOccurrences diagramOccurrence : dos) {
+            diagrams.add(diagramOccurrence.getPathway().getStId());
+
+            if (diagramOccurrence.getSubpathway() != null) {
+                occurrences.add(diagramOccurrence.getPathway().getStId() + ":" + diagramOccurrence.getSubpathway().getStId());
+            } else {
+                occurrences.add(diagramOccurrence.getPathway().getStId() + ":" + diagramOccurrence.getPathway().getStId());
+            }
+        }
+
+        document.setDiagrams(diagrams);
+        document.setDiagramOccurrences(occurrences);
+    }
 
     /**
      * Keyword rely on document.getName. Make sure you are invoking document.setName before setting the keywords
@@ -632,5 +658,10 @@ class DocumentBuilder {
     @Autowired
     public void setAdvancedDatabaseObjectService(AdvancedDatabaseObjectService advancedDatabaseObjectService) {
         this.advancedDatabaseObjectService = advancedDatabaseObjectService;
+    }
+
+    @Autowired
+    public void setDiagramService(DiagramService diagramService) {
+        this.diagramService = diagramService;
     }
 }

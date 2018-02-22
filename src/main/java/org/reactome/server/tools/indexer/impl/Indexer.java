@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,18 +58,19 @@ public class Indexer {
         long start = System.currentTimeMillis();
         int entriesCount = 0;
 
-        totalCount();
+       // totalCount();
 
         try {
-            if (xml) {
-                int releaseNumber = 0;
-                try {
-                    releaseNumber = generalService.getDBVersion();
-                } catch (Exception e) {
-                    logger.error("An error occurred when trying to retrieve the release number from the database.");
-                }
-                marshaller.writeHeader(releaseNumber);
-            }
+//            if (xml) {
+//                marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+//                int releaseNumber = 0;
+//                try {
+//                    releaseNumber = generalService.getDBVersion();
+//                } catch (Exception e) {
+//                    logger.error("An error occurred when trying to retrieve the release number from the database.");
+//                }
+//                marshaller.writeHeader(releaseNumber);
+//            }
 
             cleanSolrIndex();
 
@@ -78,22 +78,22 @@ public class Indexer {
             commitSolrServer();
             cleanNeo4jCache();
 
-            entriesCount += indexBySchemaClass(Event.class, entriesCount);
-            commitSolrServer();
-            cleanNeo4jCache();
-
-            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
-            commitSolrServer();
-            cleanNeo4jCache();
-
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
-
-            logger.info("Started importing Interactors data to SolR");
-            entriesCount += indexInteractors();
-            commitSolrServer();
-            logger.info("Entries total: " + entriesCount);
+//            entriesCount += indexBySchemaClass(Event.class, entriesCount);
+//            commitSolrServer();
+//            cleanNeo4jCache();
+//
+//            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
+//            commitSolrServer();
+//            cleanNeo4jCache();
+//
+//            if (xml) {
+//                marshaller.writeFooter(entriesCount);
+//            }
+//
+//            logger.info("Started importing Interactors data to SolR");
+//            entriesCount += indexInteractors();
+//            commitSolrServer();
+//            logger.info("Entries total: " + entriesCount);
 
             long end = System.currentTimeMillis() - start;
             logger.info("Full indexing took " + end + " .ms");
@@ -130,6 +130,11 @@ public class Indexer {
 
             IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
             if (document != null) {
+                // TEMP - DONT COMMIT THIS
+                if (count >= 10) {
+                    break;
+                }
+
                 if (xml) marshaller.writeEntry(document);
                 allDocuments.add(document);
             } else {
@@ -171,7 +176,7 @@ public class Indexer {
             logger.info("\nMissing documents for:\n\t" + StringUtils.join(missingDocuments, "\n\t"));
         }
 
-        updateProgressBar(count); // done
+        //updateProgressBar(count); // done
 
         return numberOfDocuments;
     }
@@ -340,9 +345,6 @@ public class Indexer {
 
     public void setXml(Boolean xml) {
         this.xml = xml;
-        if (xml) {
-            marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
-        }
     }
 
     /**

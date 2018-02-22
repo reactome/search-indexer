@@ -133,6 +133,12 @@ public class IndexDocument {
     @Field
     private Set<String> fireworksSpecies;
 
+    @Field
+    private Set<String> diagrams;
+
+    @Field
+    private Set<String> diagramOccurrences;
+
     // Auto Generated Getters Setters
 
     public List<String> getTaxId() {
@@ -537,5 +543,21 @@ public class IndexDocument {
 
     public void setFireworksSpecies(Set<String> fireworksSpecies) {
         this.fireworksSpecies = fireworksSpecies;
+    }
+
+    public Set<String> getDiagrams() {
+        return diagrams;
+    }
+
+    public void setDiagrams(Set<String> diagrams) {
+        this.diagrams = diagrams;
+    }
+
+    public Set<String> getDiagramOccurrences() {
+        return diagramOccurrences;
+    }
+
+    public void setDiagramOccurrences(Set<String> diagramOccurrences) {
+        this.diagramOccurrences = diagramOccurrences;
     }
 }

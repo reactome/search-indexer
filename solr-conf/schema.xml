@@ -55,6 +55,8 @@
         <field name="author"                        type="author_field"     indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true" />
         <field name="authorOrcid"                   type="id"               indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true" />
         <field name="fireworksSpecies"              type="facet_field"      indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
+        <field name="diagrams"                      type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
+        <field name="diagramOccurrences"            type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>

@@ -16,15 +16,21 @@ import java.util.Properties;
  * @author Guilherme S. Viteri <gviteri@ebi.ac.uk>
  */
 public class MailUtil {
-
     private static final Logger logger = Logger.getLogger(MailUtil.class);
-
+    private static MailUtil mailUtil;
     private Properties properties;
 
-    public MailUtil(String host, Integer port){
+    private MailUtil(String host, Integer port) {
         properties = new Properties();
         properties.setProperty("mail.smpt.host", host);
         properties.setProperty("mail.smtp.port", String.valueOf(port));
+    }
+
+    public static MailUtil getInstance(String host, Integer port) {
+        if (mailUtil == null) {
+            mailUtil = new MailUtil(host, port);
+        }
+        return mailUtil;
     }
 
     public void send(String from, String to, String subject, String text) {
