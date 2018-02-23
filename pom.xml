@@ -35,8 +35,8 @@
     </developers>
 
     <properties>
-        <graph.core>1.1.7-SNAPSHOT</graph.core>
-        <solr.version>6.1.0</solr.version>
+        <graph.core>1.1.7</graph.core>
+        <solr.version>6.6.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
         <activation.version>1.1.1</activation.version>
@@ -69,12 +69,6 @@
                 has been introduced in version 2.6. In the graph-core we are using the 2.7.1
                 So excluding here will force maven to use the jackson-core provided by graph-core
             -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- JSAP command line parameters parser -->
         <dependency>
@@ -120,6 +114,13 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.2</version>
+        </dependency>
+
+        <!-- COMPRESS -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.16.1</version>
         </dependency>
 
     </dependencies>
