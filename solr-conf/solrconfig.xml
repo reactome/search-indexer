@@ -600,6 +600,60 @@
         </lst>
     </requestHandler>
 
+    <!-- search for a term in a given diagram. Diagram is a filterQuery -->
+    <requestHandler name="/diagrams" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <str name="q.alt">*:*</str>
+            <str name="df">name</str>
+            <str name="tie">0.1</str>
+            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="qf">
+                dbId^100.0
+                oldStId^90.0
+                stId^80.0
+                name_exact^100.0
+                name^50.0
+                name_gram^1.0
+                name_stem^1.0
+                keywords^0.1
+                species^1.0
+                relatedSpecies^1.0
+                type^1.0
+                synonyms^1.0
+                goBiologicalProcessName^1.0
+                goCellularComponentName^1.0
+                goMolecularFunctionName^1.0
+                goBiologicalProcessAccessions^1.0
+                goCellularComponentAccessions^1.0
+                goMolecularFunctionAccession^1.0
+                referenceName^1.0
+                referenceIdentifiers^1.0
+                referenceSynonyms^20.0
+                referenceOtherIdentifier^10.0
+                referenceGeneNames^1.0
+                crossReferences^1.0
+                referenceCrossReferences^1.0
+                regulator^1.0
+                regulatedEntity^1.0
+                diseaseId^1.0
+                diseaseName^1.0
+                diseaseSynonyms^1.0
+            </str>
+        </lst>
+    </requestHandler>
+
+    <requestHandler name="/diagramOccurrences" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <str name="df">stId</str>
+        </lst>
+    </requestHandler>
+
     <requestHandler name="/update" class="solr.UpdateRequestHandler"></requestHandler>
 
     <!-- Field Analysis Request Handler analyses the filed given in the query-->
