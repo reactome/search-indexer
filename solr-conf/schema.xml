@@ -57,6 +57,7 @@
         <field name="fireworksSpecies"              type="facet_field"      indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="diagrams"                      type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="occurrences"                   type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
+        <field name="llps"                          type="stored_value"     indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="true" />
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>

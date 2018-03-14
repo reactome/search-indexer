@@ -8,6 +8,7 @@ import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.DiagramService;
+import org.reactome.server.graph.service.PathwaysService;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.model.SpeciesResult;
@@ -38,6 +39,7 @@ class DocumentBuilder {
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
     private DiagramService diagramService;
+    private PathwaysService pathwaysService;
 
     private Map<Long, Set<String>> simpleEntitiesSpecies = null;
 
@@ -93,10 +95,8 @@ class DocumentBuilder {
             // SPECIFIC FOR PHYSICAL ENTITIES
             setGoTerms(document, physicalEntity.getGoCellularComponent());
             setReferenceEntity(document, physicalEntity);
-
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
-
             // GENERAL ATTRIBUTES
             setNameAndSynonyms(document, event, event.getName());
             setLiteratureReference(document, event.getLiteratureReference());
@@ -106,33 +106,27 @@ class DocumentBuilder {
             setCrossReference(document, event.getCrossReference());
             setSpecies(document, event);
             setAuthorAndReviewed(document, event);
-
             // SPECIFIC FOR EVENT
             setGoTerms(document, event.getGoBiologicalProcess());
             if (event instanceof ReactionLikeEvent) {
                 ReactionLikeEvent reactionLikeEvent = (ReactionLikeEvent) event;
                 setCatalystActivities(document, reactionLikeEvent.getCatalystActivity());
             }
-
         } else if (databaseObject instanceof Regulation) {
             Regulation regulation = (Regulation) databaseObject;
-
             // GENERAL ATTRIBUTES
             setNameAndSynonyms(document, regulation, regulation.getName());
             setLiteratureReference(document, regulation.getLiteratureReference());
             setSummation(document, regulation.getSummation());
             setSpecies(document, regulation);
-
             // SPECIFIC FOR REGULATIONS
             setRegulatedEntity(document, regulation.getRegulatedEntity());
             setRegulator(document, regulation.getRegulator());
-
         }
 
         setFireworksSpecies(document, databaseObject);
-
         setDiagramOccurrences(document, databaseObject);
-
+        setLowerLevelPathways(document, databaseObject);
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
@@ -595,24 +589,25 @@ class DocumentBuilder {
     }
 
     private void setDiagramOccurrences(IndexDocument document, DatabaseObject databaseObject) {
-        Set<String> diagrams = new HashSet<>();
-        Set<String> occurrences = new HashSet<>();
-
-        long queryStart = System.currentTimeMillis();
-        Collection<DiagramOccurrences> dos = diagramService.getDiagramOccurrences(databaseObject.getStId());
-        long queryEnd = System.currentTimeMillis();
-        for (DiagramOccurrences diagramOccurrence : dos) {
-            diagrams.add(diagramOccurrence.getPathway().getStId());
-
-            if (diagramOccurrence.getSubpathway() != null) {
-                occurrences.add(diagramOccurrence.getPathway().getStId() + ":" + diagramOccurrence.getSubpathway().getStId());
+        List<String> diagrams = new ArrayList<>();
+        List<String> occurrences = new ArrayList<>();
+        Collection<DiagramOccurrences> dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
+        for (DiagramOccurrences diagramOccurrence : dgoc) {
+            diagrams.add(diagramOccurrence.getDiagram().getStId());
+            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram())  + ":";
+            if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
+                occurrences.add(d +  StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
             } else {
-                occurrences.add(diagramOccurrence.getPathway().getStId() + ":" + diagramOccurrence.getPathway().getStId());
+                occurrences.add(d +  "#"); // no occurrences, using one char so less bytes in the solr index
             }
         }
-
         document.setDiagrams(diagrams);
-        document.setDiagramOccurrences(occurrences);
+        document.setOccurrences(occurrences);
+    }
+
+    private void setLowerLevelPathways(IndexDocument document, DatabaseObject databaseObject) {
+        Collection<Pathway> pathways = pathwaysService.getLowerLevelPathwaysIncludingEncapsulation(databaseObject.getStId());
+        document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));
     }
 
     /**
@@ -663,5 +658,10 @@ class DocumentBuilder {
     @Autowired
     public void setDiagramService(DiagramService diagramService) {
         this.diagramService = diagramService;
+    }
+
+    @Autowired
+    public void setPathwaysService(PathwaysService pathwaysService) {
+        this.pathwaysService = pathwaysService;
     }
 }

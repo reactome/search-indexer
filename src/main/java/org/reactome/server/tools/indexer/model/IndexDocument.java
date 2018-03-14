@@ -134,10 +134,13 @@ public class IndexDocument {
     private Set<String> fireworksSpecies;
 
     @Field
-    private Set<String> diagrams;
+    private List<String> diagrams;
 
     @Field
-    private Set<String> diagramOccurrences;
+    private List<String> occurrences;
+
+    @Field
+    private List<String> llps; // lower level pathways ( for flagging in the Fireworks
 
     // Auto Generated Getters Setters
 
@@ -545,19 +548,27 @@ public class IndexDocument {
         this.fireworksSpecies = fireworksSpecies;
     }
 
-    public Set<String> getDiagrams() {
+    public List<String> getDiagrams() {
         return diagrams;
     }
 
-    public void setDiagrams(Set<String> diagrams) {
+    public void setDiagrams(List<String> diagrams) {
         this.diagrams = diagrams;
     }
 
-    public Set<String> getDiagramOccurrences() {
-        return diagramOccurrences;
+    public List<String> getOccurrences() {
+        return occurrences;
     }
 
-    public void setDiagramOccurrences(Set<String> diagramOccurrences) {
-        this.diagramOccurrences = diagramOccurrences;
+    public void setOccurrences(List<String> occurrences) {
+        this.occurrences = occurrences;
+    }
+
+    public List<String> getLlps() {
+        return llps;
+    }
+
+    public void setLlps(List<String> llps) {
+        this.llps = llps;
     }
 }
