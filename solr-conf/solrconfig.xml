@@ -662,6 +662,7 @@
             <str name="defType">edismax</str>
             <str name="q.alt">*:*</str>
             <str name="df">stId</str>
+            <str name="fq">species_facet:"Homo sapiens" species_facet:"Entries without species"</str>
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8 species_facet:"Entries without species"^0.2</str>
