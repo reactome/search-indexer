@@ -141,10 +141,10 @@ updateSolrConfigFiles () {
 
 downloadCoreConfig () {
     _BRANCH=$1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 }
 
 generalSummary () {

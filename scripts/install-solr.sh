@@ -160,8 +160,7 @@ installSolr () {
 
     rm install_solr_service.sh
 
-    echo "Downloading latest Solr configuration from git"
-
+    echo "Creating Reactome Solr core"
     # Default directory in SolR classpath to add the config files.
     _SOLR_DATA_DIR=$_SOLR_HOME/data
     _SOLR_CORE_CONF_DIR=$_SOLR_DATA_DIR/$_SOLR_CORE/conf
@@ -169,21 +168,41 @@ installSolr () {
     sudo mkdir -p $_SOLR_CORE_CONF_DIR
 
     echo "Updating SolR Configuration files based on GitHub"
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/reactome/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/reactome/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/reactome/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/reactome/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
 
     sudo chown -R solr:solr $_SOLR_DATA_DIR/$_SOLR_CORE
-
-    echo "Creating new Solr core"
 
     _STATUS=$(curl --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/cores?action=CREATE&name=$_SOLR_CORE")
     if [ 200 != "$_STATUS" ]; then
         echo "Could not create new Solr core "$_SOLR_CORE" status is: "$_STATUS
         exit 1;
     fi
-    echo "Solr core has been created."
+    echo "Reactome core has been created."
+
+    echo "Creating Target Solr core"
+    # Default directory in SolR classpath to add the config files.
+    _TARGET_CORE=target
+    _TARGET_DATA_DIR=$_SOLR_HOME/data
+    _TARGET_CORE_CONF_DIR=$_TARGET_DATA_DIR/$_TARGET_CORE/conf
+
+    sudo mkdir -p $_TARGET_CORE_CONF_DIR
+
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/$_TARGET_CORE/schema.xml -O $_TARGET_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/$_TARGET_CORE/solrconfig.xml -O $_TARGET_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/$_TARGET_CORE/stopwords.txt -O $_TARGET_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-conf/$_TARGET_CORE/prefixstopwords.txt -O $_TARGET_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+
+    sudo chown -R solr:solr $_TARGET_DATA_DIR/$_TARGET_CORE
+
+    _STATUS=$(curl --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/cores?action=CREATE&name=$_TARGET_CORE")
+    if [ 200 != "$_STATUS" ]; then
+        echo "Could not create new Solr core [$_TARGET_CORE] status is: "$_STATUS
+        exit 1;
+    fi
+    echo "Target core has been created."
 
     echo "Enabling Solr admin authentication in Jetty"
     sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_GITBRANCH/solr-jetty-conf/jetty.xml  -O /opt/solr-$_SOLR_VERSION/server/etc/jetty.xml

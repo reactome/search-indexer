@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.reactome.server.tools.indexer.util.SolrUtility.cleanSolrIndex;
+import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServer;
+
 /**
  * This class is responsible for establishing connection to Solr
  * and the Graph Database. It iterates through the collection of
@@ -50,6 +53,7 @@ public class Indexer {
     private InteractorDocumentBuilder interactorDocumentBuilder;
 
     private SolrClient solrClient;
+    private String solrCore;
     private Marshaller marshaller;
 
     private Boolean xml = false;
@@ -73,18 +77,18 @@ public class Indexer {
                 marshaller.writeHeader(releaseNumber);
             }
 
-            cleanSolrIndex();
+            cleanSolrIndex(solrCore, solrClient);
 
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
-            commitSolrServer();
+            commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
 
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
-            commitSolrServer();
+            commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
 
             entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
-            commitSolrServer();
+            commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
 
             if (xml) {
@@ -93,7 +97,7 @@ public class Indexer {
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
-            commitSolrServer();
+            commitSolrServer(solrCore, solrClient);
             logger.info("Entries total: " + entriesCount);
 
             long end = System.currentTimeMillis() - start;
@@ -106,8 +110,6 @@ public class Indexer {
             logger.error("An error occurred during the data import", e);
             e.printStackTrace();
             throw new IndexerException(e);
-        } finally {
-            closeSolrServer();
         }
     }
 
@@ -252,50 +254,6 @@ public class Indexer {
     }
 
     /**
-     * Cleaning Solr Server (removes all current Data)
-     *
-     * @throws IndexerException not cleaning the indexer means the indexer will failed.
-     */
-    private void cleanSolrIndex() throws IndexerException {
-        try {
-            logger.info("Cleaning solr index");
-            solrClient.deleteByQuery("*:*");
-            commitSolrServer();
-            logger.info("Solr index has been cleaned");
-        } catch (SolrServerException | IOException e) {
-            logger.error("an error occurred while cleaning the SolrServer", e);
-            throw new IndexerException("an error occurred while cleaning the SolrServer", e);
-        }
-    }
-
-    /**
-     * Closes connection to Solr Server
-     */
-    private void closeSolrServer() {
-        try {
-            solrClient.close();
-            logger.info("SolrServer shutdown");
-        } catch (IOException e) {
-            logger.error("an error occurred while closing the SolrServer", e);
-        }
-    }
-
-    /**
-     * Commits Data that has been added till now to Solr Server
-     *
-     * @throws IndexerException not committing could mean that this Data will not be added to Solr
-     */
-    private void commitSolrServer() throws IndexerException {
-        try {
-            solrClient.commit();
-            logger.info("Solr index has been committed and flushed to disk");
-        } catch (Exception e) {
-            logger.error("Error occurred while committing", e);
-            throw new IndexerException("Could not commit", e);
-        }
-    }
-
-    /**
      * Safely adding Document Bean to Solr Server
      *
      * @param documents List of Documents that will be added to Solr
@@ -305,12 +263,12 @@ public class Indexer {
     private void addDocumentsToSolrServer(List<IndexDocument> documents) {
         if (documents != null && !documents.isEmpty()) {
             try {
-                solrClient.addBeans(documents);
+                solrClient.addBeans(solrCore, documents);
                 logger.debug(documents.size() + " Documents successfully added to SolR");
             } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
                 for (IndexDocument document : documents) {
                     try {
-                        solrClient.addBean(document);
+                        solrClient.addBean(solrCore, document);
                         logger.debug("A single document was added to Solr");
                     } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e1) {
                         logger.error("Could not add document", e);
@@ -326,6 +284,10 @@ public class Indexer {
 
     public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
+    }
+
+    public void setSolrCore(String solrCore) {
+        this.solrCore = solrCore;
     }
 
     public Boolean getXml() {
