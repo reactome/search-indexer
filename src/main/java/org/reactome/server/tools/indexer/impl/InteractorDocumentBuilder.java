@@ -22,12 +22,16 @@ class InteractorDocumentBuilder {
     IndexDocument createInteractorSolrDocument(ReferenceEntity interactor) {
         IndexDocument document = new IndexDocument();
         document.setDbId(interactor.getIdentifier()); // For interactors, dbId is the accession.
-        document.setName(getName(interactor));
+        document.setName(getName(interactor)); // is mandatory
         document.setType(TYPE);
         document.setExactType(TYPE);
-        document.setSynonyms(getSecondaryIdentifier(interactor));
+
+        document.setReferenceName(getReferenceName(interactor));
+        document.setReferenceGeneNames(getGeneName(interactor));
+        document.setReferenceSynonyms(getSecondaryIdentifier(interactor));
         document.setReferenceIdentifiers(Collections.singletonList(interactor.getIdentifier()));
         document.setReferenceURL(interactor.getUrl());
+
         document.setDatabaseName(interactor.getDatabaseName());
         document.setSpecies(Collections.singletonList(getSpeciesName(interactor)));
 
@@ -84,12 +88,16 @@ class InteractorDocumentBuilder {
     }
 
     private String getName(ReferenceEntity interactor) {
-        List<String> geneName = getGeneName(interactor);
-        if (geneName != null && !geneName.isEmpty()) return geneName.get(0);
-
         List<String> names = interactor.getName();
         if (names != null && !names.isEmpty()) return names.get(0);
 
         return interactor.getIdentifier();
+    }
+
+    private String getReferenceName(ReferenceEntity interactor) {
+        List<String> names = interactor.getName();
+        if (names != null && !names.isEmpty()) return names.get(0);
+
+        return null;
     }
 }
