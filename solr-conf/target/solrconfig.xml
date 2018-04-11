@@ -79,6 +79,7 @@
             <str name="df">identifier</str>
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 identifier^100.0
+                id_only^80.0
                 geneNames^70.0
                 synonyms^50.0
                 accessions^100.0
