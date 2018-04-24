@@ -1,16 +1,12 @@
 package org.reactome.server.tools.indexer.impl;
 
-import org.reactome.server.graph.domain.model.DatabaseObject;
-import org.reactome.server.graph.domain.model.ReferenceEntity;
-import org.reactome.server.graph.domain.model.ReferenceIsoform;
-import org.reactome.server.graph.domain.model.Species;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -43,6 +39,9 @@ class InteractorDocumentBuilder {
                 document.setReferenceIdentifiers(Collections.singletonList(variantIdentifier));
             }
         }
+
+        setFireworksSpecies(document, interactor);
+
         return document;
     }
 
@@ -99,5 +98,30 @@ class InteractorDocumentBuilder {
         if (names != null && !names.isEmpty()) return names.get(0);
 
         return null;
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void setFireworksSpecies(IndexDocument document, ReferenceEntity interactor) {
+        Set<String> fireworksSpecies = new HashSet<>();
+        try {
+            Method getSpecies = interactor.getClass().getMethod("getSpecies");
+            Object species = getSpecies.invoke(interactor);
+            // some cases like DefinedSet it has species as an attribute but it does not have value in it.
+            if (species != null) {
+                if (species instanceof Collection) {
+                    //noinspection Convert2streamapi,unchecked
+                    for (Taxon t : (Collection<? extends Taxon>) species) {
+                        fireworksSpecies.add(t.getDisplayName());
+                    }
+                } else {
+                    Taxon t = (Taxon) species;
+                    fireworksSpecies.add(t.getDisplayName());
+                }
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            //Nothing here
+        }
+
+        document.setFireworksSpecies(fireworksSpecies.isEmpty() ? null : fireworksSpecies);
     }
 }
