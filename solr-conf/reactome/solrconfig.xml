@@ -642,6 +642,13 @@
                 diseaseName^1.0
                 diseaseSynonyms^1.0
             </str>
+
+            <!-- activates Faceting-->
+            <str name="facet">on</str>
+            <!--minimum count of a facet field to be returned (eliminates null values)-->
+            <str name="facet.mincount">1</str>
+            <!--fields selected for faceting, {!ex=tf} excludes type filter when faceting for types-->
+            <str name="facet.field">{!ex=tf}type_facet</str>
         </lst>
     </requestHandler>
 
