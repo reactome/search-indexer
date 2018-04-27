@@ -52,7 +52,7 @@ public class Main {
                         new QualifiedSwitch("xml", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "xml", "XML output file for the EBeye"),
                         new QualifiedSwitch("mail", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "mail", "Activates mail option"),
                         new QualifiedSwitch("sitemap", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'n', "sitemap", "Generates sitemap files and sitemapindex"),
-                        new QualifiedSwitch("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core")
+                        new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core")
                 }
         );
 
