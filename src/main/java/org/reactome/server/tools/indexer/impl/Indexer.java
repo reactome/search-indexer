@@ -233,7 +233,7 @@ public class Indexer {
                 "RETURN DISTINCT in";
 
         try {
-            rtn = advancedDatabaseObjectService.customQueryForDatabaseObjects(ReferenceEntity.class, query, null);
+            rtn = advancedDatabaseObjectService.getCustomQueryResults(ReferenceEntity.class, query, null);
         } catch (CustomQueryException e) {
             logger.error(e.getMessage(), e);
             rtn = new ArrayList<>();
