@@ -685,7 +685,7 @@
         </lst>
     </requestHandler>
 
-    <!-- swissprot indexer consumes this handler -->
+    <!-- search targets indexer consumes this handler -->
     <requestHandler name="/target" class="solr.SearchHandler">
         <lst name="defaults">
             <str name="q.op">OR</str>

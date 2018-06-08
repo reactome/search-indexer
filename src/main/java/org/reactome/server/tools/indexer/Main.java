@@ -5,7 +5,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.impl.Indexer;
-import org.reactome.server.tools.indexer.swissprot.impl.TargetIndexer;
+import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.SiteMapUtil;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

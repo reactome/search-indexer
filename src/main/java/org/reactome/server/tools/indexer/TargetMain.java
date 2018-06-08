@@ -2,13 +2,13 @@ package org.reactome.server.tools.indexer;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.reactome.server.tools.indexer.exception.IndexerException;
-import org.reactome.server.tools.indexer.swissprot.impl.TargetIndexer;
+import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 
 import static org.reactome.server.tools.indexer.util.SolrUtility.closeSolrServer;
 import static org.reactome.server.tools.indexer.util.SolrUtility.getSolrClient;
 
 /**
- * Simple main class only to index swissprot targets
+ * Simple main class only to index targets
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 public class TargetMain {

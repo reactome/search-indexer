@@ -6,6 +6,7 @@
         <field name="accessions"      type="text_field"     indexed="true"  stored="true"   omitNorms="true"    required="true"     multiValued="true" />
         <field name="geneNames"       type="text_field"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="synonyms"        type="text_field"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
+        <field name="resource"        type="text_field"     indexed="true"  stored="true"   omitNorms="true"    required="true"     multiValued="false" />
         <field name="id_only"         type="clean_id_field" indexed="true"  stored="false"  omitNorms="true"    required="true"     multiValued="false" />
     </fields>
 

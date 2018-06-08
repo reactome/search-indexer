@@ -1,4 +1,4 @@
-package org.reactome.server.tools.indexer.swissprot.impl;
+package org.reactome.server.tools.indexer.target.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -7,8 +7,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.reactome.server.tools.indexer.exception.IndexerException;
-import org.reactome.server.tools.indexer.swissprot.model.SwissProt;
-import org.reactome.server.tools.indexer.swissprot.parser.SwissProtParser;
+import org.reactome.server.tools.indexer.target.model.Target;
+import org.reactome.server.tools.indexer.target.parser.SwissProtParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +43,8 @@ public class TargetIndexer {
         long start = System.currentTimeMillis();
         try {
             cleanSolrIndex(solrCoreTarget, solrClient);
-            List<SwissProt> targets = SwissProtParser.getInstance().getTargets();
-            List<SwissProt> addToSolr = new ArrayList<>();
+            List<Target> targets = SwissProtParser.getInstance().getTargets();
+            List<Target> addToSolr = new ArrayList<>();
             targets.parallelStream().forEach(target -> {
                 try {
                     if (!isInReactome(target)) {
@@ -72,15 +72,15 @@ public class TargetIndexer {
      *                  <p>
      *                  REMOTE_SOLR_EXCEPTION is a Runtime Exception
      */
-    private void addDocumentsToSolrServer(List<SwissProt> documents) {
+    private void addDocumentsToSolrServer(List<Target> documents) {
         if (documents != null && !documents.isEmpty()) {
             try {
                 solrClient.addBeans(solrCoreTarget, documents);
                 logger.debug(documents.size() + " Documents successfully added to SolR");
             } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
-                for (SwissProt swissProt : documents) {
+                for (Target target : documents) {
                     try {
-                        solrClient.addBean(solrCoreTarget, swissProt);
+                        solrClient.addBean(solrCoreTarget, target);
                         logger.debug("A single document was added to Solr");
                     } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e1) {
                         logger.error("Could not add document", e);
@@ -93,12 +93,12 @@ public class TargetIndexer {
         }
     }
 
-    private boolean isInReactome(SwissProt target) throws SolrServerException, IOException {
+    private boolean isInReactome(Target target) throws SolrServerException, IOException {
         QueryResponse response = solrClient.query(solrCoreSource, getSolrQuery(target));
         return response.getResults().getNumFound() > 0;
     }
 
-    private SolrQuery getSolrQuery(SwissProt target) {
+    private SolrQuery getSolrQuery(Target target) {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler("/search");
         solrQuery.setQuery(StringUtils.join(target.getAccessions(), "\" OR \""));

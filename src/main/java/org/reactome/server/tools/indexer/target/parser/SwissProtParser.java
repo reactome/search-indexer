@@ -1,9 +1,10 @@
-package org.reactome.server.tools.indexer.swissprot.parser;
+package org.reactome.server.tools.indexer.target.parser;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.reactome.server.tools.indexer.swissprot.model.SwissProt;
+import org.reactome.server.tools.indexer.target.model.Target;
+import org.reactome.server.tools.indexer.target.model.TargetResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class SwissProtParser {
     private static String SIMPLIFIED_FILE = "/tmp/uniprot_sprot_human_simplified.txt";
 
     private static SwissProtParser instance;
-    private List<SwissProt> targets = new ArrayList<>();
+    private List<Target> targets = new ArrayList<>();
 
     private SwissProtParser() {}
 
@@ -53,7 +54,7 @@ public class SwissProtParser {
         s.deleteFiles();
     }
 
-    public List<SwissProt> getTargets() {
+    public List<Target> getTargets() {
         if(!targets.isEmpty()) {
             return targets;
         }
@@ -117,7 +118,7 @@ public class SwissProtParser {
 
         StringBuffer entry = new StringBuffer();
         for (String line : lines) {
-            SwissProt swissProt = new SwissProt();
+            Target target = new Target(TargetResource.UNIPROT.name());
             if (!line.startsWith("//")) {
                 entry.append(line);
                 entry.append("\n");
@@ -127,13 +128,13 @@ public class SwissProtParser {
             Pattern idPattern = Pattern.compile("(^ID\\s+)(.+)(?:Reviewed)", Pattern.MULTILINE);
             Matcher idMatcher = idPattern.matcher(entry.toString());
             while (idMatcher.find()) {
-                swissProt.setIdentifier(idMatcher.group(2).trim());
+                target.setIdentifier(idMatcher.group(2).trim());
             }
 
             Pattern acPattern = Pattern.compile("(^AC\\s+)(.+)", Pattern.MULTILINE);
             Matcher acMatcher = acPattern.matcher(entry.toString());
             while (acMatcher.find()) {
-                swissProt.setAccessions(Arrays.asList(acMatcher.group(2).split(";")));
+                target.setAccessions(Arrays.asList(acMatcher.group(2).split(";")));
             }
 
             Pattern gnPattern = Pattern.compile("(^GN\\s+)(.+)", Pattern.MULTILINE);
@@ -147,17 +148,17 @@ public class SwissProtParser {
             Matcher nameMatcher = namePattern.matcher(gn);
             while (nameMatcher.find()) {
                 String name = nameMatcher.group(2).replaceAll("\\{.*?}", "").replaceAll("\\s+;", ";").replaceAll("\\s+,", ";").replaceAll(",", ";");
-                swissProt.addGene(name);
+                target.addGene(name);
             }
 
             Pattern synonymPattern = Pattern.compile("(Synonyms=)(.+?)[;]");
             Matcher synonymMatcher = synonymPattern.matcher(gn);
             while (synonymMatcher.find()) {
                 String cleanSynonyms = synonymMatcher.group(2).replaceAll("\\{.*?}", "").replaceAll("\\s+;", ";").replaceAll("\\s+,", ";").replaceAll(",", ";");
-                swissProt.setSynonyms(Arrays.asList(cleanSynonyms.split(";")));
+                target.setSynonyms(Arrays.asList(cleanSynonyms.split(";")));
             }
 
-            targets.add(swissProt);
+            targets.add(target);
             entry = new StringBuffer();
         }
     }

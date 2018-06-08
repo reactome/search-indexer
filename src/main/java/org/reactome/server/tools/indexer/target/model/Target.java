@@ -1,4 +1,4 @@
-package org.reactome.server.tools.indexer.swissprot.model;
+package org.reactome.server.tools.indexer.target.model;
 
 import org.apache.solr.client.solrj.beans.Field;
 
@@ -9,7 +9,7 @@ import java.util.List;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 
-public class SwissProt {
+public class Target {
     @Field
     private String identifier;
 
@@ -21,6 +21,13 @@ public class SwissProt {
 
     @Field
     private List<String> synonyms;
+
+    @Field
+    private String resource;
+
+    public Target(String resource) {
+        this.resource = resource;
+    }
 
     public String getIdentifier() {
         return identifier;
@@ -73,5 +80,13 @@ public class SwissProt {
             this.geneNames = new ArrayList<>();
         }
         this.geneNames.add(gn.trim());
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }
