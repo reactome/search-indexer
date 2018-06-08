@@ -140,7 +140,7 @@ class DocumentBuilder {
                 "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
         try {
-            Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.customQueryForObjects(SpeciesResult.class, query, null);
+            Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query, null);
             simpleEntitiesSpecies = new HashMap<>(speciesResultList.size());
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
