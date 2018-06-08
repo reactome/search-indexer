@@ -148,7 +148,7 @@
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
             </analyzer>
             <analyzer type="query">
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
@@ -159,7 +159,7 @@
 
         <fieldType name="author_field" class="solr.TextField" positionIncrementGap="100" omitNorms="false" >
             <analyzer>
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
                 <filter class="solr.ClassicFilterFactory"/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
@@ -177,7 +177,7 @@
                 <filter class="solr.EdgeNGramFilterFactory" minGramSize="3" maxGramSize="15" />
             </analyzer>
             <analyzer type="query">
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
@@ -196,7 +196,7 @@
                 <filter class="solr.KStemFilterFactory" />
             </analyzer>
             <analyzer type="query">
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
