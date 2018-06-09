@@ -589,21 +589,19 @@ class DocumentBuilder {
     }
 
     private void setDiagramOccurrences(IndexDocument document, DatabaseObject databaseObject) {
+        Collection<DiagramOccurrences> dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
+        if (dgoc == null || dgoc.isEmpty()) return;
+
         List<String> diagrams = new ArrayList<>();
         List<String> occurrences = new ArrayList<>();
-        Collection<DiagramOccurrences> dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
-        if (dgoc != null && !dgoc.isEmpty()) {
-            for (DiagramOccurrences diagramOccurrence : dgoc) {
-                diagrams.add(diagramOccurrence.getDiagram().getStId());
-                String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram())  + ":";
-                if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
-                    occurrences.add(d +  StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
-                } else {
-                    occurrences.add(d +  "#"); // no occurrences, using one char so less bytes in the solr index
-                }
+        for (DiagramOccurrences diagramOccurrence : dgoc) {
+            diagrams.add(diagramOccurrence.getDiagram().getStId());
+            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram())  + ":";
+            if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
+                occurrences.add(d +  StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+            } else {
+                occurrences.add(d +  "#"); // no occurrences, using one char so less bytes in the solr index
             }
-        } else {
-            logger.info("The stable identifier " + databaseObject.getStId() + " does not have any diagram occurrences");
         }
         document.setDiagrams(diagrams);
         document.setOccurrences(occurrences);
@@ -611,6 +609,8 @@ class DocumentBuilder {
 
     private void setLowerLevelPathways(IndexDocument document, DatabaseObject databaseObject) {
         Collection<Pathway> pathways = pathwaysService.getLowerLevelPathwaysIncludingEncapsulation(databaseObject.getStId());
+        if (pathways == null || pathways.isEmpty()) return;
+
         document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));
     }
 
