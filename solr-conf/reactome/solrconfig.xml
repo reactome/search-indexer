@@ -554,9 +554,16 @@
                 relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
+                summation^0.1
+                literatureReferenceTitle^1.0
+                literatureReferenceAuthor^1.0
+                literatureReferencePubMedId^1.0
+                literatureReferenceIsbn^1.0
+                compartmentName^5.0
                 goBiologicalProcessName^1.0
                 goCellularComponentName^1.0
                 goMolecularFunctionName^1.0
+                compartmentAccession^5.0
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
@@ -564,6 +571,7 @@
                 referenceIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -572,6 +580,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
                 fireworksSpecies^25.0
             </str>
 
@@ -623,9 +633,16 @@
                 relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
+                summation^0.1
+                literatureReferenceTitle^1.0
+                literatureReferenceAuthor^1.0
+                literatureReferencePubMedId^1.0
+                literatureReferenceIsbn^1.0
+                compartmentName^5.0
                 goBiologicalProcessName^1.0
                 goCellularComponentName^1.0
                 goMolecularFunctionName^1.0
+                compartmentAccession^5.0
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
@@ -633,6 +650,7 @@
                 referenceIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
+                referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -641,6 +659,8 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
+                author^5.0
+                authorOrcid^1.0
             </str>
 
             <!-- activates Faceting-->
