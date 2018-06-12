@@ -4,7 +4,6 @@ import com.martiansoftware.jsap.*;
 import org.reactome.server.graph.domain.model.DatabaseObject;
 import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.domain.model.PhysicalEntity;
-import org.reactome.server.graph.domain.model.Regulation;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
@@ -101,7 +100,6 @@ public class SiteMapUtil {
             int total = 0;
             total += write(bw, PhysicalEntity.class);
             total += write(bw, Event.class);
-            total += write(bw, Regulation.class);
 
             bw.flush();
             bw.close();
