@@ -41,8 +41,8 @@ ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -f ${_S
 usage () {
     echo "Program to Index Reactome data into SolR"
     echo "usage: sudo ./$(basename "$0") neo4jpass=<neo4j_passwd> solrpass=<solr_passwd> "
-    echo "              OPTIONAL
-    echo "                       neo4jhost=<neo4j_host>""
+    echo "              OPTIONAL "
+    echo "                       neo4jhost=<neo4j_host>"
     echo "                       neo4jport=<neo4j_port>"
     echo "                       neo4juser=<neo4j_user>"
     echo "                       solruser=<solr_user>"
@@ -201,7 +201,7 @@ runIndexer () {
 
             git clone https://github.com/reactome/search-indexer.git
 
-            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout $_GIT_BRANCH
+            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout $_GITBRANCH
             _PATH="/search-indexer"
 
             echo "Started packaging reactome project"
@@ -237,7 +237,7 @@ generalSummary () {
    echo "ebeye.xml:          " $_EBEYE
    echo "SMTP Server:        " $_MAIL_SMTP":"$_MAIL_PORT
    echo "Mail Destination:   " $_MAIL_DEST
-   echo "GitHub Branch:      " $_GIT_BRANCH
+   echo "GitHub Branch:      " $_GITBRANCH
 }
 
 # -- Print variables
