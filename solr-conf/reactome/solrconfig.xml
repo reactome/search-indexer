@@ -215,8 +215,7 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
+                orcidId^10.0
             </str>
             <str name="facet">on</str>
             <!-- activates Faceting-->
@@ -288,8 +287,7 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
+                orcidId^10.0
             </str>
         </lst>
     </requestHandler>
@@ -350,15 +348,14 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
+                orcidId^10.0
             </str>
 
             <!-- Highlighting -->
             <str name="hl">true</str>
             <!-- activates highlighting-->
             <str name="hl.fl">name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity
+                regulatedEntity, orcidId
             </str>
             <!-- fields that should be highlighted-->
             <str name="hl.requireFieldMatch">true</str>
@@ -430,8 +427,7 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
+                orcidId^10.0
             </str>
 
             <!-- Grouping -->
@@ -449,7 +445,7 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <str name="hl.fl">name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity
+                regulatedEntity, orcidId
             </str>
             <str name="hl.requireFieldMatch">true</str>
             <str name="hl.preserveMulti">true</str>
@@ -540,6 +536,7 @@
             <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
+            <str name="fq">-type:Person</str>
 
             <str name="qf">
                 dbId^100.0
@@ -580,8 +577,6 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
                 fireworksSpecies^25.0
             </str>
 
@@ -620,6 +615,7 @@
             <str name="df">name</str>
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="fq">-type:Person</str>
             <str name="qf">
                 dbId^100.0
                 oldStId^90.0
@@ -659,8 +655,6 @@
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
-                author^5.0
-                authorOrcid^1.0
             </str>
 
             <!-- activates Faceting-->
@@ -692,6 +686,7 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="fq">-type:Person</str>
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
@@ -716,6 +711,7 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="fq">-type:Person</str>
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0

@@ -105,7 +105,7 @@ class DocumentBuilder {
             setCompartment(document, event.getCompartment());
             setCrossReference(document, event.getCrossReference());
             setSpecies(document, event);
-            setAuthorAndReviewed(document, event);
+//            setAuthorAndReviewed(document, event);
             // SPECIFIC FOR EVENT
             setGoTerms(document, event.getGoBiologicalProcess());
             if (event instanceof ReactionLikeEvent) {
@@ -541,26 +541,26 @@ class DocumentBuilder {
         }
     }
 
-    private void setAuthorAndReviewed(IndexDocument document, Event event) {
-        if (event.getAuthored() == null && event.getReviewed() == null) return;
-
-        // Using a set to avoid duplication
-        Set<String> authorAndReviewerNames = new HashSet<>();
-        Set<String> authorAndReviewerOrcid = new HashSet<>();
-
-        if (event.getAuthored() != null) {
-            authorAndReviewerNames.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
-            authorAndReviewerOrcid.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
-        }
-
-        if (event.getReviewed() != null) {
-            authorAndReviewerNames.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
-            authorAndReviewerOrcid.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
-        }
-
-        document.setAuthor(authorAndReviewerNames.isEmpty() ? null : authorAndReviewerNames);
-        document.setAuthorOrcid(authorAndReviewerOrcid.isEmpty() ? null : authorAndReviewerOrcid);
-    }
+//    private void setAuthorAndReviewed(IndexDocument document, Event event) {
+//        if (event.getAuthored() == null && event.getReviewed() == null) return;
+//
+//        // Using a set to avoid duplication
+//        Set<String> authorAndReviewerNames = new HashSet<>();
+//        Set<String> authorAndReviewerOrcid = new HashSet<>();
+//
+//        if (event.getAuthored() != null) {
+//            authorAndReviewerNames.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
+//            authorAndReviewerOrcid.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
+//        }
+//
+//        if (event.getReviewed() != null) {
+//            authorAndReviewerNames.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
+//            authorAndReviewerOrcid.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
+//        }
+//
+//        document.setAuthor(authorAndReviewerNames.isEmpty() ? null : authorAndReviewerNames);
+//        document.setAuthorOrcid(authorAndReviewerOrcid.isEmpty() ? null : authorAndReviewerOrcid);
+//    }
 
     private void setRegulator(IndexDocument document, DatabaseObject regulator) {
         if (regulator == null) return;

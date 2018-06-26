@@ -5,9 +5,11 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.GeneralService;
+import org.reactome.server.graph.service.PersonService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.model.IndexDocument;
@@ -47,10 +49,12 @@ public class Indexer {
     private SchemaService schemaService;
     private GeneralService generalService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
+    private PersonService personService;
 
     // Creating SolR Document querying the Graph in Transactional execution
     private DocumentBuilder documentBuilder;
     private InteractorDocumentBuilder interactorDocumentBuilder;
+    private PersonDocumentBuilder personDocumentBuilder;
 
     private SolrClient solrClient;
     private String solrCore;
@@ -97,6 +101,11 @@ public class Indexer {
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
+            commitSolrServer(solrCore, solrClient);
+            logger.info("Entries total: " + entriesCount);
+
+            logger.info("Started importing Person records to SolR");
+            entriesCount += indexPeople();
             commitSolrServer(solrCore, solrClient);
             logger.info("Entries total: " + entriesCount);
 
@@ -218,6 +227,40 @@ public class Indexer {
     }
 
     /**
+     * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
+     * with Reactome proteins
+     */
+    private int indexPeople() {
+        logger.info("Start indexing people into Solr");
+
+        int numberOfDocuments = 0;
+        List<IndexDocument> collection = new ArrayList<>();
+
+        System.out.println("\n[People] Started adding to SolR");
+
+        Collection<PersonAuthorReviewer> personAuthorReviewers = personService.getAuthorsReviewers();
+
+        logger.info("Preparing SolR documents for people [" + personAuthorReviewers.size() + "]");
+        total = personAuthorReviewers.size();
+        int preparingSolrDocuments = 0;
+        for (PersonAuthorReviewer par : personAuthorReviewers) {
+            IndexDocument indexDocument = personDocumentBuilder.createPersonSolrDocument(par);
+            collection.add(indexDocument);
+            numberOfDocuments++;
+            preparingSolrDocuments++;
+            if (preparingSolrDocuments % 100 == 0) {
+                updateProgressBar(preparingSolrDocuments);
+            }
+        }
+        logger.info("  >> preparing person SolR Documents [" + preparingSolrDocuments + "]");
+        // Save the indexDocument into Solr.
+        addDocumentsToSolrServer(collection);
+        logger.info(numberOfDocuments + " people have now been added to SolR");
+        updateProgressBar(preparingSolrDocuments);
+        return numberOfDocuments;
+    }
+
+    /**
      * Interactors (ReferenceEntities) that ARE NOT in Reactome but
      * interact with proteins/chemicals that ARE in Reactome
      *
@@ -335,6 +378,11 @@ public class Indexer {
     }
 
     @Autowired
+    public void setPersonService(PersonService personService) {
+        this.personService = personService;
+    }
+
+    @Autowired
     public void setAdvancedDatabaseObjectService(AdvancedDatabaseObjectService advancedDatabaseObjectService) {
         this.advancedDatabaseObjectService = advancedDatabaseObjectService;
     }
@@ -348,5 +396,11 @@ public class Indexer {
     public void setInteractorDocumentBuilder(InteractorDocumentBuilder interactorDocumentBuilder) {
         this.interactorDocumentBuilder = interactorDocumentBuilder;
     }
+
+    @Autowired
+    public void setPersonDocumentBuilder(PersonDocumentBuilder personDocumentBuilder) {
+        this.personDocumentBuilder = personDocumentBuilder;
+    }
+
 }
 
