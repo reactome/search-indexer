@@ -9,6 +9,7 @@ import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -40,12 +41,21 @@ public class SiteMapUtil {
     private final static String DETAIL_URL = BASE_URL + "content/detail/";
 
     private Set<String> sitemapFiles = new TreeSet<>();
-
     private String outputPath;
+    private AnnotationConfigApplicationContext neo4jContext;
+    private SchemaService schemaService;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public SiteMapUtil(String outputPath) {
         this.outputPath = outputPath;
+        File dirs = new File(outputPath);
+        dirs.mkdirs();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public SiteMapUtil(AnnotationConfigApplicationContext neo4jContext, String outputPath) {
+        this.outputPath = outputPath;
+        this.schemaService = neo4jContext.getBean(SchemaService.class);
         File dirs = new File(outputPath);
         dirs.mkdirs();
     }
@@ -66,6 +76,7 @@ public class SiteMapUtil {
         ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), IndexerNeo4jConfig.class);
 
         SiteMapUtil smu = new SiteMapUtil(".");
+        smu.setSchemaService(ReactomeGraphCore.getService(SchemaService.class));
         smu.generate();
     }
 
@@ -75,8 +86,8 @@ public class SiteMapUtil {
      * Warning: Cannot use sitemap.txt/xml directly
      * All formats limit a single sitemap to 50MB (uncompressed) and 50,000 URLs.
      */
-    private static int write(BufferedWriter bw, Class<? extends DatabaseObject> clazz) throws IOException {
-        Collection<String> allOfGivenClass = ReactomeGraphCore.getService(SchemaService.class).getStIdsByClass(clazz);
+    private int write(BufferedWriter bw, Class<? extends DatabaseObject> clazz) throws IOException {
+        Collection<String> allOfGivenClass = schemaService.getStIdsByClass(clazz);
         int count = 0;
         for (String stId : allOfGivenClass) {
             if(stId.startsWith("R-HSA-")) {
@@ -185,5 +196,9 @@ public class SiteMapUtil {
         bw.write("</sitemapindex>");
         bw.flush();
         bw.close();
+    }
+
+    private void setSchemaService(SchemaService schemaService) {
+        this.schemaService = schemaService;
     }
 }

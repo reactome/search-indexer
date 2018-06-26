@@ -80,7 +80,7 @@ public class Main {
             int entriesCount = indexer.index();
 
             if (target) doTargetIndexer(solrClient, solrCore);
-            if (siteMap) generateSitemap();
+            if (siteMap) generateSitemap(ctx);
 
             if (mail) {
                 MailUtil mailUtil = MailUtil.getInstance(config.getString("mailSmtp"), config.getInt("mailPort"));
@@ -135,8 +135,8 @@ public class Main {
         return new AnnotationConfigApplicationContext(IndexerNeo4jConfig.class); // Use annotated beans from the specified package
     }
 
-    private static void generateSitemap() {
-        SiteMapUtil smg = new SiteMapUtil("/tmp");
+    private static void generateSitemap(AnnotationConfigApplicationContext ctx) {
+        SiteMapUtil smg = new SiteMapUtil(ctx,"/tmp");
         smg.generate();
     }
 
