@@ -9,6 +9,10 @@
 #
 #-----------------------------------------------------------
 
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd ${DIR}
+echo ${DIR}
+
 # Default value
 _SOLR_HOME="/var/solr"
 
@@ -32,6 +36,8 @@ _MAIL=""
 _MAIL_SMTP="smtp.oicr.on.ca"
 _MAIL_PORT="25"
 _MAIL_DEST="reactome-developer@reactome.org"
+
+_MVN=`which mvn`
 
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as sudo." ; exit 1 ; fi
 
@@ -160,7 +166,7 @@ runIndexer () {
 
     _MSG=$(checkNeo4j)
     if [ "$_MSG" != "OK" ]; then
-        echo $_MSG
+        echo ${_MSG}
         exit 1
     fi
 
@@ -190,7 +196,7 @@ runIndexer () {
     echo "Reactome core is available!"
 
     echo "Checking if current directory is valid project"
-    if ! mvn -q -U clean package -DskipTests ; then
+    if ! ${_MVN} -q -U clean package -DskipTests ; then
         if [ ! -f ./target/Indexer-jar-with-dependencies.jar ]; then
 
             echo "Cloning project from repository..."
@@ -198,19 +204,19 @@ runIndexer () {
             git clone https://github.com/${_GITREPO}/${_GITPROJECT}.git
 
             git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout ${_GITBRANCH}
-            _PATH="/search-indexer"
 
-            echo "Started packaging reactome project"
-            if ! mvn -q -f -U .${_PATH}/pom.xml clean package -DskipTests 2>&1 /dev/null; then
-               echo "An error occurred when packaging the project."
-               exit 1
-	          fi
         fi
+    fi
+
+    echo "Started packaging reactome project"
+    if ! mvn -q -f -U ./${_GITPROJECT}/pom.xml clean package -DskipTests 2>&1 /dev/null; then
+       echo "An error occurred when packaging the project."
+       exit 1
     fi
 
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
 
-    if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_EBEYEXML} ${_MAIL} ${_SITEMAP}; then
+    if ! java -jar ./${_GITPROJECT}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_EBEYEXML} ${_MAIL} ${_SITEMAP}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
     fi
@@ -224,6 +230,17 @@ generalSummary () {
         _EBEYE="YES";
     fi
 
+    _SENDMAIL="NO"
+    if [ "$_MAIL" == "-m" ]; then
+        _SENDMAIL="YES";
+    fi
+
+    _SITEMAPOPT="NO"
+    if [ "$_SITEMAP" == "-n" ]; then
+        _SITEMAPOPT="YES";
+    fi
+
+
     echo "======================================"
     echo "================ SOLR ================"
     echo "======================================"
@@ -231,7 +248,11 @@ generalSummary () {
     echo "SolR Core:          " ${_SOLR_CORE}
     echo "SolR Port:          " ${_SOLR_PORT}
     echo "SolR User:          " ${_SOLR_USER}
+    echo "Neo4j Host:         " ${_NEO4J_HOST}":"${_NEO4J_PORT}
+    echo "Neo4j User:         " ${_NEO4J_USER}
     echo "ebeye.xml:          " ${_EBEYE}
+    echo "SiteMap:            " ${_SITEMAPOPT}
+    echo "SendMail:           " ${_SENDMAIL}
     echo "SMTP Server:        " ${_MAIL_SMTP}":"${_MAIL_PORT}
     echo "Mail Destination:   " ${_MAIL_DEST}
     echo "GitHub Branch:      " ${_GITBRANCH}
