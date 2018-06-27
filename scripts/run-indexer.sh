@@ -22,12 +22,12 @@ _NEO4J_PORT="7474"
 _NEO4J_USER="neo4j"
 _NEO4J_PASSWORD=""
 
-_GITRAWURL="https://raw.githubusercontent.com"
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
 _GITBRANCH="master"
 
-_XML=""
+_EBEYEXML=""
+_SITEMAP=""
 _MAIL=""
 _MAIL_SMTP="smtp.oicr.on.ca"
 _MAIL_PORT="25"
@@ -35,23 +35,22 @@ _MAIL_DEST="reactome-developer@reactome.org"
 
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as sudo." ; exit 1 ; fi
 
-
-${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}
-
 usage () {
     echo "Program to Index Reactome data into SolR"
     echo "usage: sudo ./$(basename "$0") neo4jpass=<neo4j_passwd> solrpass=<solr_passwd> "
     echo "              OPTIONAL "
-    echo "                       neo4jhost=<neo4j_host>"
+    echo "                       neo4jhost=<neo4j_host> without protocol"
     echo "                       neo4jport=<neo4j_port>"
     echo "                       neo4juser=<neo4j_user>"
     echo "                       solruser=<solr_user>"
-    echo "                       solrcore=<solr_port>"
-    echo "                       solruser=<solr_user>"
+    echo "                       solrcore=<solr_core>"
     echo "                       gitbranch=<git_branch>"
+    echo "                       mail=[Send email <y or n>]"
     echo "                       mailsmtp=<mail_smtp>"
     echo "                       mailport=<mail_port>"
     echo "                       maildest=<mail_destination>"
+    echo "                       ebeyexml=<y or n>"
+    echo "                       sitemap=<y or n>"
     echo ""
     echo "   where:"
     echo "       solrpass         REQUIRED"
@@ -76,10 +75,14 @@ do
             solrcore)       _SOLR_CORE=${VALUE} ;;
             solruser)       _SOLR_USER=${VALUE} ;;
             solrpass)       _SOLR_PASSWORD=${VALUE} ;;
-            neo4j)          _SOLR_PASSWORD=${VALUE} ;;
-            neo4j)          _SOLR_PASSWORD=${VALUE} ;;
-            neo4j)          _SOLR_PASSWORD=${VALUE} ;;
+            neo4jhost)      _NEO4J_HOST=${VALUE} ;;
+            neo4jport)      _NEO4J_PORT=${VALUE} ;;
+            neo4juser)      _NEO4J_USER=${VALUE} ;;
+            neo4jpass)      _NEO4J_PASSWORD=${VALUE} ;;
             gitbranch)      _GITBRANCH=${VALUE} ;;
+            ebeyexml)       _EBEYEXML="-l" ;;
+            mail)           _MAIL="-m" ;;
+            sitemap)        _SITEMAP="-n" ;;
             help)           _HELP="help-me" ;;
             -h)             _HELP="help-me" ;;
             *)
@@ -95,7 +98,10 @@ if [ -z $_SOLR_PASSWORD ]; then
     exit 1
 fi;
 
-
+if [ -z $_NEO4J_PASSWORD ]; then
+    echo "missing argument for neo4jpass=<password>"
+    exit 1
+fi;
 
 # -- Check if neo4j is running and stops program otherwise
 # -- If something was wrong with n4j we only knew after a java exception during the program execution
@@ -152,16 +158,6 @@ getNeo4jVersion() {
 # SolR Data is created in $_SOLR_HOME/data/$_SOLR_CORE/data
 runIndexer () {
 
-    if [ -z $_SOLR_PASSWORD ]; then
-        echo "missing argument for -m <solr_passwd>"
-        exit 1
-    fi;
-
-    if [ -z $_NEO4J_PASSWORD ]; then
-        echo "missing argument for -g <neo4j_passwd>"
-        exit 1
-    fi;
-
     _MSG=$(checkNeo4j)
     if [ "$_MSG" != "OK" ]; then
         echo $_MSG
@@ -199,9 +195,9 @@ runIndexer () {
 
             echo "Cloning project from repository..."
 
-            git clone https://github.com/reactome/search-indexer.git
+            git clone https://github.com/${_GITREPO}/${_GITPROJECT}.git
 
-            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout $_GITBRANCH
+            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout ${_GITBRANCH}
             _PATH="/search-indexer"
 
             echo "Started packaging reactome project"
@@ -214,7 +210,7 @@ runIndexer () {
 
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
 
-    if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_XML} ${_MAIL}; then
+    if ! java -jar .${_PATH}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_EBEYEXML} ${_MAIL} ${_SITEMAP}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
     fi
@@ -223,21 +219,22 @@ runIndexer () {
 }
 
 generalSummary () {
-   _EBEYE="NO"
-   if [ "$_XML" == "-l" ]; then
+    _EBEYE="NO"
+    if [ "$_EBEYEXML" == "-l" ]; then
         _EBEYE="YES";
-   fi
-   echo "======================================"
-   echo "================ SOLR ================"
-   echo "======================================"
-   echo "SolR Default Home:  " $_SOLR_HOME
-   echo "SolR Core:          " $_SOLR_CORE
-   echo "SolR Port:          " $_SOLR_PORT
-   echo "SolR User:          " $_SOLR_USER
-   echo "ebeye.xml:          " $_EBEYE
-   echo "SMTP Server:        " $_MAIL_SMTP":"$_MAIL_PORT
-   echo "Mail Destination:   " $_MAIL_DEST
-   echo "GitHub Branch:      " $_GITBRANCH
+    fi
+
+    echo "======================================"
+    echo "================ SOLR ================"
+    echo "======================================"
+    echo "SolR Default Home:  " ${_SOLR_HOME}
+    echo "SolR Core:          " ${_SOLR_CORE}
+    echo "SolR Port:          " ${_SOLR_PORT}
+    echo "SolR User:          " ${_SOLR_USER}
+    echo "ebeye.xml:          " ${_EBEYE}
+    echo "SMTP Server:        " ${_MAIL_SMTP}":"${_MAIL_PORT}
+    echo "Mail Destination:   " ${_MAIL_DEST}
+    echo "GitHub Branch:      " ${_GITBRANCH}
 }
 
 # -- Print variables
