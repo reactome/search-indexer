@@ -14,7 +14,7 @@
 #
 #-----------------------------------------------------------
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd && cd .. && pwd)
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd)
 cd ${DIR}
 
 # Default value
@@ -179,6 +179,14 @@ runIndexer () {
     echo "DB Content:         " $(getReleaseInfo)
     echo "======================================"
 
+    if [ ! -z "$_GITBRANCH" ]; then
+        _CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+        if [ "$_GITBRANCH" != "$_CURRENT_BRANCH" ]; then
+            echo "Your git branch [${_GITBRANCH}] parameter does not match the selected git branch in the project [${_CURRENT_BRANCH}]"
+            exit 1
+        fi
+    fi
+
     echo "Checking if Solr is running..."
     _STATUS=$(curl -H "Content-Type: application/json" --user $_SOLR_USER:$_SOLR_PASSWORD --write-out "%{http_code}\n" --silent --output /dev/null http://localhost:$_SOLR_PORT/solr/admin/cores?action=STATUS)
     if [ 200 != "$_STATUS" ]; then
@@ -186,8 +194,9 @@ runIndexer () {
             echo "Solr is not running and can not be started"
             exit 1;
         fi
+        sleep 30s
     fi
-    sleep 30s
+
     echo "Solr is running!"
 
     echo "Checking if Reactome core is available..."
@@ -197,14 +206,6 @@ runIndexer () {
         exit 1;
     fi
     echo "Reactome core is available!"
-
-    if [ -z "$_GITBRANCH" ]; then
-        _CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        if [ "$_GITBRANCH" != "$_CURRENT_BRANCH" ]; then
-            echo "Your git branch [${_GITBRANCH}] parameter does not match the selected git branch in the project [${_CURRENT_BRANCH}]"
-            exit 1
-        fi
-    fi
 
     echo "Checking if current directory is valid project"
     if ! ${_MVN} -q -U clean package -DskipTests ; then
