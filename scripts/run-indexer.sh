@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 
 #-----------------------------------------------------------
-# Script that automates the Reactome Solr initial setup.
-# Execute the files as $sudo ./run-indexer.sh -h
+# Script that automates the Indexer execution
+#
+# How to execute ?
+# * Clone indexer project
+#    > git clone https://github.com/reactome/search-indexer.git
+# * Go to search-indexer/scripts
+# * Execute the file as ./run-indexer.sh help
 #
 # Florian Korninger - fkorn@ebi.ac.uk
 # Guilherme Viteri  - gviteri@ebi.ac.uk
 #
 #-----------------------------------------------------------
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd && cd .. && pwd)
 cd ${DIR}
-echo ${DIR}
 
 # Default value
 _SOLR_HOME="/var/solr"
@@ -38,8 +42,6 @@ _MAIL_PORT="25"
 _MAIL_DEST="reactome-developer@reactome.org"
 
 _MVN=`which mvn`
-
-if [[ $(id -u) -ne 0 ]] ; then echo "Please run as sudo." ; exit 1 ; fi
 
 usage () {
     echo "Program to Index Reactome data into SolR"
@@ -185,6 +187,7 @@ runIndexer () {
             exit 1;
         fi
     fi
+    sleep 30s
     echo "Solr is running!"
 
     echo "Checking if Reactome core is available..."
@@ -195,28 +198,26 @@ runIndexer () {
     fi
     echo "Reactome core is available!"
 
-    echo "Checking if current directory is valid project"
-    if ! ${_MVN} -q -U clean package -DskipTests ; then
-        if [ ! -f ./target/Indexer-jar-with-dependencies.jar ]; then
-
-            echo "Cloning project from repository..."
-
-            git clone https://github.com/${_GITREPO}/${_GITPROJECT}.git
-
-            git -C ./search-indexer/ fetch && git -C ./search-indexer/ checkout ${_GITBRANCH}
-
+    if [ -z "$_GITBRANCH" ]; then
+        _CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+        if [ "$_GITBRANCH" != "$_CURRENT_BRANCH" ]; then
+            echo "Your git branch [${_GITBRANCH}] parameter does not match the selected git branch in the project [${_CURRENT_BRANCH}]"
+            exit 1
         fi
     fi
 
-    echo "Started packaging reactome project"
-    if ! mvn -q -f -U ./${_GITPROJECT}/pom.xml clean package -DskipTests 2>&1 /dev/null; then
-       echo "An error occurred when packaging the project."
-       exit 1
+    echo "Checking if current directory is valid project"
+    if ! ${_MVN} -q -U clean package -DskipTests ; then
+        if [ ! -f ./target/Indexer-jar-with-dependencies.jar ]; then
+            echo "An error occurred when packaging the project."
+            exit 1
+        fi
     fi
 
-    _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/${_SOLR_CORE}
+    # Without core. Use -o <solr_core> in the java command
+    _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/
 
-    if ! java -jar ./${_GITPROJECT}/target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_EBEYEXML} ${_MAIL} ${_SITEMAP}; then
+    if ! java -jar ./target/Indexer-jar-with-dependencies.jar -a ${_NEO4J_HOST} -b ${_NEO4J_PORT} -c ${_NEO4J_USER} -d ${_NEO4J_PASSWORD} -e ${_SOLR_URL} -o ${_SOLR_CORE} -f ${_SOLR_USER} -g ${_SOLR_PASSWORD} -i ${_MAIL_SMTP} -j ${_MAIL_PORT} -k ${_MAIL_DEST} ${_EBEYEXML} ${_MAIL} ${_SITEMAP}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
     fi
