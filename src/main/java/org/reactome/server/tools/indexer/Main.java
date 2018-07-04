@@ -52,7 +52,9 @@ public class Main {
                         new QualifiedSwitch("xml", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "xml", "XML output file for the EBeye"),
                         new QualifiedSwitch("mail", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "mail", "Activates mail option"),
                         new QualifiedSwitch("sitemap", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'n', "sitemap", "Generates sitemap files and sitemapindex"),
-                        new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core")
+                        new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core"),
+                        new FlaggedOption("iconsDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "iconsDir", "The Solr user"),
+                        new FlaggedOption("ehldDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "ehldDir", "The Solr user"),
                 }
         );
 
@@ -79,6 +81,7 @@ public class Main {
 
             int entriesCount = indexer.index();
 
+//            if (icon) doIconIndexer(solrClient, solrCore, iconsDir, ehldDir);
             if (target) doTargetIndexer(solrClient, solrCore);
             if (siteMap) generateSitemap(ctx);
 
@@ -144,4 +147,10 @@ public class Main {
         TargetIndexer targetIndexer = new TargetIndexer(solrClient, solrCore);
         targetIndexer.index();
     }
+
+//    private static void doIconIndexer(SolrClient solrClient, String solrCore) throws IndexerException {
+//        IconIndexer iconIndexer = new IconIndexer(solrClient, solrCore);
+//        iconIndexer.index();
+//    }
+
 }

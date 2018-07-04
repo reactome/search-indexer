@@ -48,9 +48,18 @@ public class SolrUtility {
      * @throws IndexerException not cleaning the indexer means the indexer will failed.
      */
     public static void cleanSolrIndex(String solrCore, SolrClient solrClient) throws IndexerException {
+        cleanSolrIndex(solrCore, solrClient, "*:*");
+    }
+
+    /**
+     * Cleaning Solr Server (removes all current Data)
+     *
+     * @throws IndexerException not cleaning the indexer means the indexer will failed.
+     */
+    public static void cleanSolrIndex(String solrCore, SolrClient solrClient, String query) throws IndexerException {
         try {
             logger.info("Cleaning solr index");
-            solrClient.deleteByQuery(solrCore,"*:*");
+            solrClient.deleteByQuery(solrCore,query);
             commitSolrServer(solrCore, solrClient);
             logger.info("Solr index has been cleaned");
         } catch (SolrServerException | IOException e) {

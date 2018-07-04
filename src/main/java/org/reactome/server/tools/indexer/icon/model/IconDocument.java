@@ -1,0 +1,124 @@
+package org.reactome.server.tools.indexer.icon.model;
+
+import org.apache.solr.client.solrj.beans.Field;
+import org.reactome.server.tools.indexer.model.IndexDocument;
+
+import java.util.List;
+
+/**
+ * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
+ */
+
+public class IconDocument extends IndexDocument {
+
+    @Field
+    private String iconGroup;
+    @Field
+    private String iconCuratorName;
+    @Field
+    private String iconCuratorOrcidId;
+    @Field
+    private String iconCuratorUrl;
+    @Field
+    private String iconDesignerName;
+    @Field
+    private String iconDesignerOrcidId;
+    @Field
+    private String iconDesignerUrl;
+    @Field
+    private List<String> iconCVTerms;
+    @Field
+    private List<String> iconXRefs;
+    @Field
+    private List<String> iconStIds;
+    @Field
+    private List<String> iconEhlds;
+
+    public String getIconGroup() {
+        return iconGroup;
+    }
+
+    public void setIconGroup(String iconGroup) {
+        this.iconGroup = iconGroup;
+    }
+
+    public String getIconCuratorName() {
+        return iconCuratorName;
+    }
+
+    public void setIconCuratorName(String iconCuratorName) {
+        this.iconCuratorName = iconCuratorName;
+    }
+
+    public String getIconCuratorOrcidId() {
+        return iconCuratorOrcidId;
+    }
+
+    public void setIconCuratorOrcidId(String iconCuratorOrcidId) {
+        this.iconCuratorOrcidId = iconCuratorOrcidId;
+    }
+
+    public String getIconCuratorUrl() {
+        return iconCuratorUrl;
+    }
+
+    public void setIconCuratorUrl(String iconCuratorUrl) {
+        this.iconCuratorUrl = iconCuratorUrl;
+    }
+
+    public String getIconDesignerName() {
+        return iconDesignerName;
+    }
+
+    public void setIconDesignerName(String iconDesignerName) {
+        this.iconDesignerName = iconDesignerName;
+    }
+
+    public String getIconDesignerOrcidId() {
+        return iconDesignerOrcidId;
+    }
+
+    public void setIconDesignerOrcidId(String iconDesignerOrcidId) {
+        this.iconDesignerOrcidId = iconDesignerOrcidId;
+    }
+
+    public String getIconDesignerUrl() {
+        return iconDesignerUrl;
+    }
+
+    public void setIconDesignerUrl(String iconDesignerUrl) {
+        this.iconDesignerUrl = iconDesignerUrl;
+    }
+
+    public List<String> getIconCVTerms() {
+        return iconCVTerms;
+    }
+
+    public void setIconCVTerms(List<String> iconCVTerms) {
+        this.iconCVTerms = iconCVTerms;
+    }
+
+    public List<String> getIconXRefs() {
+        return iconXRefs;
+    }
+
+    public void setIconXRefs(List<String> iconXRefs) {
+        this.iconXRefs = iconXRefs;
+    }
+
+    public List<String> getIconStIds() {
+        return iconStIds;
+    }
+
+    public void setIconStIds(List<String> iconStIds) {
+        this.iconStIds = iconStIds;
+    }
+
+    public List<String> getIconEhlds() {
+        return iconEhlds;
+    }
+
+    public void setIconEhlds(List<String> iconEhlds) {
+        this.iconEhlds = iconEhlds;
+    }
+}

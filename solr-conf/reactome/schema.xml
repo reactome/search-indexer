@@ -61,6 +61,22 @@
         <field name="orcidId"                       type="id"               indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="false" />
         <field name="authored"                      type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
         <field name="reviewed"                      type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
+
+        <!-- Icons -->
+        <!-- name, type, species and summation are reused -->
+        <field name="iconGroup"                 type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconGroup_facet"           type="facet_field"      indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCuratorName"           type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCuratorOrcidId"        type="id"               indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCuratorUrl"            type="text_field"       indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerName"          type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerOrcidId"       type="id"               indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerUrl"           type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCVTerms"               type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconXRefs"                 type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconStIds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconEhlds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>
@@ -73,6 +89,7 @@
     <copyField source="type"                            dest="type_facet"/>
     <copyField source="compartmentName"                 dest="compartment_facet"/>
     <copyField source="keywords"                        dest="keywords_facet"/>
+    <copyField source="iconGroup"                       dest="iconGroup_facet"/>
 
     <copyField source="stId"                            dest="spellcheck"/>
     <copyField source="oldStId"                         dest="spellcheck"/>

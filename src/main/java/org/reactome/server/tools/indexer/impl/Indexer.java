@@ -103,11 +103,13 @@ public class Indexer {
             entriesCount += indexInteractors();
             commitSolrServer(solrCore, solrClient);
             logger.info("Entries total: " + entriesCount);
+            cleanNeo4jCache();
 
             logger.info("Started importing Person records to SolR");
             entriesCount += indexPeople();
             commitSolrServer(solrCore, solrClient);
             logger.info("Entries total: " + entriesCount);
+            cleanNeo4jCache();
 
             long end = System.currentTimeMillis() - start;
             logger.info("Full indexing took " + end + " .ms");
@@ -226,10 +228,6 @@ public class Indexer {
         return numberOfDocuments;
     }
 
-    /**
-     * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
-     * with Reactome proteins
-     */
     private int indexPeople() {
         logger.info("Start indexing people into Solr");
 
