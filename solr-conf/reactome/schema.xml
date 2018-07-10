@@ -59,8 +59,10 @@
         <field name="occurrences"                   type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="llps"                          type="stored_value"     indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="orcidId"                       type="id"               indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="false" />
-        <field name="authored"                      type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
-        <field name="reviewed"                      type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
+        <field name="authoredPathways"              type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
+        <field name="authoredReactions"             type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
+        <field name="reviewedPathways"              type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
+        <field name="reviewedReactions"             type="id"               indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false" />
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>
