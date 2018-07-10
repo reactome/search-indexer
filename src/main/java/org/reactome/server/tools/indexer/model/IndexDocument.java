@@ -137,10 +137,16 @@ public class IndexDocument {
     private String orcidId;
 
     @Field
-    private Long reviewed;
+    private Long authoredPathways;
 
     @Field
-    private Long authored;
+    private Long authoredReactions;
+
+    @Field
+    private Long reviewedPathways;
+
+    @Field
+    private Long reviewedReactions;
 
     // Auto Generated Getters Setters
 
@@ -563,19 +569,35 @@ public class IndexDocument {
         this.orcidId = orcidId;
     }
 
-    public Long getReviewed() {
-        return reviewed;
+    public Long getAuthoredPathways() {
+        return authoredPathways;
     }
 
-    public void setReviewed(Long reviewed) {
-        this.reviewed = reviewed;
+    public void setAuthoredPathways(Long authoredPathways) {
+        this.authoredPathways = authoredPathways;
     }
 
-    public Long getAuthored() {
-        return authored;
+    public Long getAuthoredReactions() {
+        return authoredReactions;
     }
 
-    public void setAuthored(Long authored) {
-        this.authored = authored;
+    public void setAuthoredReactions(Long authoredReactions) {
+        this.authoredReactions = authoredReactions;
+    }
+
+    public Long getReviewedPathways() {
+        return reviewedPathways;
+    }
+
+    public void setReviewedPathways(Long reviewedPathways) {
+        this.reviewedPathways = reviewedPathways;
+    }
+
+    public Long getReviewedReactions() {
+        return reviewedReactions;
+    }
+
+    public void setReviewedReactions(Long reviewedReactions) {
+        this.reviewedReactions = reviewedReactions;
     }
 }
