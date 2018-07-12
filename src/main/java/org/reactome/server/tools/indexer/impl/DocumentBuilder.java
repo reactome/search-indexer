@@ -41,12 +41,12 @@ class DocumentBuilder {
     private DiagramService diagramService;
     private PathwaysService pathwaysService;
 
-    private Map<Long, Set<String>> simpleEntitiesSpecies = null;
+    private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
 
     private List<String> keywords;
 
     public DocumentBuilder() {
-        keywords = loadFile(CONTROLLED_VOCABULARY);
+        keywords = loadFile();
         if (keywords == null) {
             logger.error("No keywords available");
         }
@@ -55,8 +55,8 @@ class DocumentBuilder {
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
 
-        if (simpleEntitiesSpecies == null) {
-            cacheSimpleEntitySpecies();
+        if (simpleEntitiesAndDrugSpecies == null) {
+            cacheSimpleEntityAndDrugSpecies();
         }
 
         IndexDocument document = new IndexDocument();
@@ -133,17 +133,18 @@ class DocumentBuilder {
         return document;
     }
 
-    private void cacheSimpleEntitySpecies() {
-        logger.info("Caching SimpleEntity Species");
+    private void cacheSimpleEntityAndDrugSpecies() {
+        logger.info("Caching SimpleEntity and Drug Species");
         String query = "" +
-                "MATCH (n:SimpleEntity)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "WHERE (n:SimpleEntity) OR (n:Drug) " +
                 "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query, null);
-            simpleEntitiesSpecies = new HashMap<>(speciesResultList.size());
+            simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
             for (SpeciesResult speciesResult : speciesResultList) {
-                simpleEntitiesSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
+                simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
         } catch (CustomQueryException e) {
             logger.error("Could not cache fireworks species");
@@ -154,9 +155,10 @@ class DocumentBuilder {
 
     private void setFireworksSpecies(IndexDocument document, DatabaseObject databaseObject) {
         Set<String> fireworksSpecies = new HashSet<>();
-        if ((databaseObject instanceof SimpleEntity)) {
-            fireworksSpecies = simpleEntitiesSpecies.get(databaseObject.getDbId());
+        if ((databaseObject instanceof SimpleEntity || databaseObject instanceof Drug)) {
+            fireworksSpecies = simpleEntitiesAndDrugSpecies.get(databaseObject.getDbId());
         } else {
+            //noinspection Duplicates
             try {
                 Method getSpecies = databaseObject.getClass().getMethod("getSpecies");
                 Object species = getSpecies.invoke(databaseObject);
@@ -256,21 +258,21 @@ class DocumentBuilder {
     private void setSummation(IndexDocument document, List<Summation> summations) {
         if (summations == null) return;
 
-        String summationText = "";
+        StringBuilder summationText = new StringBuilder();
         boolean first = true;
         for (Summation summation : summations) {
             if (first) {
-                summationText = summation.getText();
+                summationText = new StringBuilder(summation.getText());
                 first = false;
             } else {
-                summationText = summationText + "<br>" + summation.getText();
+                summationText.append("<br>").append(summation.getText());
             }
         }
 
-        if (!summationText.contains("computationally inferred")) {
-            document.setSummation(summationText);
+        if (!summationText.toString().contains("computationally inferred")) {
+            document.setSummation(summationText.toString());
         } else {
-            document.setInferredSummation(summationText);
+            document.setInferredSummation(summationText.toString());
         }
     }
 
@@ -541,27 +543,6 @@ class DocumentBuilder {
         }
     }
 
-//    private void setAuthorAndReviewed(IndexDocument document, Event event) {
-//        if (event.getAuthored() == null && event.getReviewed() == null) return;
-//
-//        // Using a set to avoid duplication
-//        Set<String> authorAndReviewerNames = new HashSet<>();
-//        Set<String> authorAndReviewerOrcid = new HashSet<>();
-//
-//        if (event.getAuthored() != null) {
-//            authorAndReviewerNames.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
-//            authorAndReviewerOrcid.addAll(event.getAuthored().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
-//        }
-//
-//        if (event.getReviewed() != null) {
-//            authorAndReviewerNames.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().map(p -> (StringUtils.isEmpty(p.getFirstname()) ? p.getInitial() : p.getFirstname()) + " " + p.getSurname())).collect(Collectors.toList()));
-//            authorAndReviewerOrcid.addAll(event.getReviewed().stream().filter(f -> f.getAuthor() != null).flatMap(e -> e.getAuthor().stream().filter(p -> p.getOrcidId() != null).map(Person::getOrcidId)).collect(Collectors.toList()));
-//        }
-//
-//        document.setAuthor(authorAndReviewerNames.isEmpty() ? null : authorAndReviewerNames);
-//        document.setAuthorOrcid(authorAndReviewerOrcid.isEmpty() ? null : authorAndReviewerOrcid);
-//    }
-
     private void setRegulator(IndexDocument document, DatabaseObject regulator) {
         if (regulator == null) return;
 
@@ -596,11 +577,11 @@ class DocumentBuilder {
         List<String> occurrences = new ArrayList<>();
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram())  + ":";
+            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
             if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
-                occurrences.add(d +  StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+                occurrences.add(d + StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
             } else {
-                occurrences.add(d +  "#"); // no occurrences, using one char so less bytes in the solr index
+                occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
             }
         }
         document.setDiagrams(diagrams);
@@ -629,13 +610,12 @@ class DocumentBuilder {
     /**
      * Load a file that is present in classpath
      *
-     * @param fileName the file name
      * @return the content file in a List of String
      */
-    private List<String> loadFile(String fileName) {
+    private List<String> loadFile() {
         try {
             List<String> list = new ArrayList<>();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + CONTROLLED_VOCABULARY)));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);
