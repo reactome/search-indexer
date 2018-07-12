@@ -155,6 +155,25 @@
         </lst>
     </requestHandler>
 
+    <!--This request handler will provide general faceting information, it is supposed to be used with a *:* query -->
+    <!--and will return the absolute numbers of entries within the different facets-->
+    <requestHandler name="/iconFacet" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <int name="start">0</int>
+            <!--no search results returned because we are only interested in faceting information-->
+            <int name="rows">0</int>
+            <!--no search results returned because we are only interested in faceting information-->
+            <str name="facet">on</str>
+            <!-- activates Faceting-->
+            <str name="facet.mincount">1</str>
+            <!--minimum count of a facet field to be returned (eliminates null values)-->
+            <str name="facet.field">iconGroup_facet</str>
+            <!--fields selected for faceting-->
+        </lst>
+    </requestHandler>
+
     <!--This request handler will provide faceting information on a specific query. It has the same parameters as the standard-->
     <!--request handler used to query with addition to faceting and exception of spellchecking information and result grouping-->
     <requestHandler name="/facet" class="solr.SearchHandler">
