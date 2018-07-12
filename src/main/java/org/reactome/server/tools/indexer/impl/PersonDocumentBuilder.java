@@ -22,8 +22,10 @@ class PersonDocumentBuilder {
         document.setName(getName(person));
         document.setType(TYPE);
         document.setExactType(TYPE);
-        document.setAuthored(par.getAuthored());
-        document.setReviewed(par.getReviewed());
+        document.setAuthoredPathways(par.getAuthoredPathways());
+        document.setAuthoredReactions(par.getAuthoredReactions());
+        document.setReviewedPathways(par.getReviewedPathways());
+        document.setReviewedReactions(par.getReviewedReactions());
         document.setOrcidId(person.getOrcidId());
         document.setSpecies(Collections.singletonList("Entries without species"));
         return document;
