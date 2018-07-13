@@ -21,6 +21,7 @@ class IconDocumentBuilder {
         document.setDbId(icon.getId().toString());
         document.setName(icon.getName());
         document.setSummation(icon.getDescription());
+        document.setIconName(icon.getName().replaceAll("_", " "));
         document.setIconGroup(icon.getGroup());
         document.setType(icon.getType());
         document.setExactType(icon.getType());

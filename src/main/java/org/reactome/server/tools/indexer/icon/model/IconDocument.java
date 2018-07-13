@@ -12,6 +12,8 @@ import java.util.List;
 public class IconDocument extends IndexDocument {
 
     @Field
+    private String iconName;
+    @Field
     private String iconGroup;
     @Field
     private String iconCuratorName;
@@ -33,6 +35,14 @@ public class IconDocument extends IndexDocument {
     private List<String> iconStIds;
     @Field
     private List<String> iconEhlds;
+
+    public String getIconName() {
+        return iconName;
+    }
+
+    public void setIconName(String iconName) {
+        this.iconName = iconName;
+    }
 
     public String getIconGroup() {
         return iconGroup;
