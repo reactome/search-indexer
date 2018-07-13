@@ -70,7 +70,7 @@ class InteractorDocumentBuilder {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
             String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
             if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
-                occurrences.add(d + StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+                occurrences.add(d + StringUtils.join(diagramOccurrence.getEntities().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
             } else {
                 occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
             }
