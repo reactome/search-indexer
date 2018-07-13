@@ -27,6 +27,7 @@ class InteractorDocumentBuilder {
     IndexDocument createInteractorSolrDocument(ReferenceEntity interactor) {
         IndexDocument document = new IndexDocument();
         document.setDbId(interactor.getIdentifier()); // For interactors, dbId is the accession.
+        document.setStId(interactor.getIdentifier()); // For interactors, stId is the accession.
         document.setName(getName(interactor)); // is mandatory
         document.setType(TYPE);
         document.setExactType(TYPE);
@@ -69,8 +70,8 @@ class InteractorDocumentBuilder {
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
             String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
-            if (diagramOccurrence.getEntities() != null && !diagramOccurrence.getEntities().isEmpty()) {
-                occurrences.add(d + StringUtils.join(diagramOccurrence.getEntities().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+            if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
+                occurrences.add(d + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
             } else {
                 occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
             }
