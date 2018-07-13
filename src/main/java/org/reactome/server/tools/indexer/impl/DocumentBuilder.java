@@ -5,10 +5,7 @@ import org.neo4j.ogm.exception.MappingException;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.DiagramOccurrences;
 import org.reactome.server.graph.exception.CustomQueryException;
-import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
-import org.reactome.server.graph.service.DatabaseObjectService;
-import org.reactome.server.graph.service.DiagramService;
-import org.reactome.server.graph.service.PathwaysService;
+import org.reactome.server.graph.service.*;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.model.SpeciesResult;
@@ -39,6 +36,7 @@ class DocumentBuilder {
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
     private DiagramService diagramService;
+    private InteractionsService interactionsService;
     private PathwaysService pathwaysService;
 
     private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
@@ -570,7 +568,22 @@ class DocumentBuilder {
     }
 
     private void setDiagramOccurrences(IndexDocument document, DatabaseObject databaseObject) {
-        Collection<DiagramOccurrences> dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
+        Collection<DiagramOccurrences> dgoc = null;
+        if(document.getExactType().equals("Interactor")){
+            String identifier = null;
+            try {
+                Method getIdentifier = databaseObject.getClass().getMethod("getIdentifier");
+                identifier = (String) getIdentifier.invoke(databaseObject);
+                Method getVariantIdentifier = databaseObject.getClass().getMethod("getVariantIdentifier");
+                String aux = (String) getVariantIdentifier.invoke(databaseObject);
+                if (aux != null && !aux.isEmpty()) identifier = aux;
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                //Nothing here
+            }
+            if (identifier != null) dgoc = interactionsService.getDiagramOccurrences(identifier);
+        } else {
+            dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
+        }
         if (dgoc == null || dgoc.isEmpty()) return;
 
         List<String> diagrams = new ArrayList<>();
@@ -642,6 +655,11 @@ class DocumentBuilder {
     @Autowired
     public void setDiagramService(DiagramService diagramService) {
         this.diagramService = diagramService;
+    }
+
+    @Autowired
+    public void setInteractionsService(InteractionsService interactionsService) {
+        this.interactionsService = interactionsService;
     }
 
     @Autowired
