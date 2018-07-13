@@ -575,6 +575,7 @@ class DocumentBuilder {
 
         List<String> diagrams = new ArrayList<>();
         List<String> occurrences = new ArrayList<>();
+        //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
             String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
