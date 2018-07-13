@@ -50,6 +50,7 @@ class InteractorDocumentBuilder {
         }
 
         setFireworksSpecies(document, interactor);
+        setLowerLevelPathways(document, interactor);
         setDiagramOccurrences(document, interactor);
 
         return document;
@@ -76,6 +77,16 @@ class InteractorDocumentBuilder {
         }
         document.setDiagrams(diagrams);
         document.setOccurrences(occurrences);
+    }
+
+    private void setLowerLevelPathways(IndexDocument document, ReferenceEntity re) {
+        String identifier = getVariantIdentifier(re);
+        if (identifier == null || identifier.isEmpty()) identifier = re.getIdentifier();
+
+        Collection<Pathway> pathways = interactionsService.getLowerLevelPathways(identifier);
+        if (pathways == null || pathways.isEmpty()) return;
+
+        document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
