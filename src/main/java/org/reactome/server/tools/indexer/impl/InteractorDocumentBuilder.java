@@ -1,19 +1,28 @@
 package org.reactome.server.tools.indexer.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.result.DiagramOccurrences;
+import org.reactome.server.graph.service.InteractionsService;
 import org.reactome.server.tools.indexer.model.IndexDocument;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 @Service
 class InteractorDocumentBuilder {
+
     private static final String TYPE = "Interactor";
+
+    private InteractionsService interactionsService;
+
 
     IndexDocument createInteractorSolrDocument(ReferenceEntity interactor) {
         IndexDocument document = new IndexDocument();
@@ -41,8 +50,32 @@ class InteractorDocumentBuilder {
         }
 
         setFireworksSpecies(document, interactor);
+        setDiagramOccurrences(document, interactor);
 
         return document;
+    }
+
+    private void setDiagramOccurrences(IndexDocument document, ReferenceEntity re){
+        String identifier = getVariantIdentifier(re);
+        if (identifier == null || identifier.isEmpty()) identifier = re.getIdentifier();
+
+        Collection<DiagramOccurrences> dgoc = interactionsService.getDiagramOccurrences(identifier);
+        if (dgoc == null || dgoc.isEmpty()) return;
+
+        List<String> diagrams = new ArrayList<>();
+        List<String> occurrences = new ArrayList<>();
+        //noinspection Duplicates
+        for (DiagramOccurrences diagramOccurrence : dgoc) {
+            diagrams.add(diagramOccurrence.getDiagram().getStId());
+            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
+            if (diagramOccurrence.getSubpathways() != null && !diagramOccurrence.getSubpathways().isEmpty()) {
+                occurrences.add(d + StringUtils.join(diagramOccurrence.getSubpathways().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+            } else {
+                occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
+            }
+        }
+        document.setDiagrams(diagrams);
+        document.setOccurrences(occurrences);
     }
 
     @SuppressWarnings("unchecked")
@@ -123,5 +156,10 @@ class InteractorDocumentBuilder {
         }
 
         document.setFireworksSpecies(fireworksSpecies.isEmpty() ? null : fireworksSpecies);
+    }
+
+    @Autowired
+    public void setInteractionsService(InteractionsService interactionsService) {
+        this.interactionsService = interactionsService;
     }
 }
