@@ -46,6 +46,7 @@ class InteractorDocumentBuilder {
             if (variantIdentifier != null && !variantIdentifier.isEmpty()) {
                 // For interactors, dbId is the accession, if Isoform then get variantIdentifier
                 document.setDbId(variantIdentifier);
+                document.setStId(variantIdentifier);
                 document.setReferenceIdentifiers(Collections.singletonList(variantIdentifier));
             }
         }
@@ -134,6 +135,8 @@ class InteractorDocumentBuilder {
     private String getName(ReferenceEntity interactor) {
         List<String> names = interactor.getName();
         if (names != null && !names.isEmpty()) return names.get(0);
+
+        if (interactor instanceof ReferenceIsoform) return ((ReferenceIsoform) interactor).getVariantIdentifier();
 
         return interactor.getIdentifier();
     }
