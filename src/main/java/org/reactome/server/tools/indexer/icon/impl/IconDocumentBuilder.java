@@ -19,9 +19,9 @@ class IconDocumentBuilder {
     IconDocument createIconSolrDocument(Icon icon) {
         IconDocument document = new IconDocument();
         document.setDbId(icon.getId().toString());
-        document.setName(icon.getName());
+        document.setName(icon.getName()); // as it is named in the file
         document.setSummation(icon.getDescription());
-        document.setIconName(icon.getName().replaceAll("_", " "));
+        document.setIconName(icon.getName().replaceAll("_", " ")); // human readable name
         document.setIconGroup(icon.getGroup());
         document.setType(icon.getType());
         document.setExactType(icon.getType());

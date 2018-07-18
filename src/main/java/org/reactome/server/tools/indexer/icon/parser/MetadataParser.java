@@ -29,11 +29,6 @@ public class MetadataParser {
     private String iconsDir;
     private String ehldsDir;
     private List<Icon> icons = new ArrayList<>();
-    private List<String> messages = new ArrayList<>();
-
-    private MetadataParser() {
-
-    }
 
     private MetadataParser(String iconsDir, String ehldsDir) {
         if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir)) {
@@ -44,19 +39,12 @@ public class MetadataParser {
         this.ehldsDir = ehldsDir;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         MetadataParser metadataParser = MetadataParser.getInstance("/Users/reactome/Dev/icons/icon-lib", "/Users/reactome/Dev/icons/ehld");
         List<Icon> finalList = metadataParser.getIcons();
         for (Icon icon : finalList) {
             System.out.println(icon);
         }
-    }
-
-    public static MetadataParser getInstance() {
-        if (instance == null) {
-            instance = new MetadataParser();
-        }
-        return instance;
     }
 
     public static MetadataParser getInstance(String iconsDir, String ehldDir) {
@@ -70,7 +58,7 @@ public class MetadataParser {
         long startParse = System.currentTimeMillis();
         File iconLibDir = new File(iconsDir);
         if (!iconLibDir.exists()) {
-            parserLogger.info("Cannot find folder: " + iconsDir);
+            parserLogger.info("Cannot find folder: {}", iconsDir);
             System.exit(1);
         }
 
@@ -92,7 +80,7 @@ public class MetadataParser {
                 icons.add(icon);
             } catch (JAXBException e) {
                 e.printStackTrace();
-                messages.add("Could not unmarshall file: " + xml.getPath());
+                parserLogger.info("Could not unmarshall file: {}", xml.getPath());
             }
         });
 
@@ -119,7 +107,7 @@ public class MetadataParser {
         } catch (IOException e) {
             //nothing here
         }
-        if (ehlds.isEmpty()) messages.add(xml.getPath() + " not found in any EHLD");
+        if (ehlds.isEmpty()) parserLogger.info("{} not found in any EHLD", xml.getPath());
         return ehlds;
         // TODO ARROW are not named as indication arrow, process arrow - they are just arrow
     }
