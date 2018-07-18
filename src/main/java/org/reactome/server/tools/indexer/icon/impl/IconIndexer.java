@@ -43,11 +43,14 @@ public class IconIndexer {
         cleanSolrIndex(solrCore, solrClient, "{!term f=type}icon");
         List<IconDocument> collection = new ArrayList<>();
         System.out.println("\n[Icons] Started adding to SolR");
-        List<Icon> icons = MetadataParser.getInstance(iconDir, ehldsDir).getIcons();
+        MetadataParser parser = MetadataParser.getInstance(iconDir, ehldsDir);
+        List<Icon> icons = parser.getIcons();
         logger.info("Preparing SolR documents for icons [" + icons.size() + "]");
         icons.forEach(icon -> collection.add(new IconDocumentBuilder().createIconSolrDocument(icon)));
         addDocumentsToSolrServer(collection);
         commitSolrServer(solrCore, solrClient);
+
+//        parser.getMessages();
         return collection.size();
     }
 
@@ -78,11 +81,4 @@ public class IconIndexer {
             logger.error("Solr Documents are null or empty");
         }
     }
-
-    //    private SolrQuery getSolrQuery(Target target) {
-//        SolrQuery solrQuery = new SolrQuery();
-//        solrQuery.setRequestHandler("/search");
-//        solrQuery.setQuery(StringUtils.join(target.getAccessions(), "\" OR \""));
-//        return solrQuery;
-//    }
 }

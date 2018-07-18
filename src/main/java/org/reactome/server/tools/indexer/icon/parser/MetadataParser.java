@@ -4,6 +4,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.reactome.server.tools.indexer.icon.model.Icon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -22,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class MetadataParser {
-
+    private static final Logger parserLogger = LoggerFactory.getLogger("parserLogger");
     private static MetadataParser instance;
     private String iconsDir;
     private String ehldsDir;
@@ -68,7 +70,7 @@ public class MetadataParser {
         long startParse = System.currentTimeMillis();
         File iconLibDir = new File(iconsDir);
         if (!iconLibDir.exists()) {
-            messages.add("Cannot find folder: " + iconsDir);
+            parserLogger.info("Cannot find folder: " + iconsDir);
             System.exit(1);
         }
 
@@ -122,12 +124,13 @@ public class MetadataParser {
         // TODO ARROW are not named as indication arrow, process arrow - they are just arrow
     }
 
+    /**
+     * Also invoke the parser, if icons list is Empty.
+     *
+     * @return icons
+     */
     public List<Icon> getIcons() {
         if (icons == null || icons.isEmpty()) parse();
         return icons;
-    }
-
-    public List<String> getMessages() {
-        return messages;
     }
 }
