@@ -70,12 +70,19 @@ class InteractorDocumentBuilder {
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
+
+            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram());
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
-                occurrences.add(d + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
             } else {
-                occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
+                occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
             }
+            if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+            } else {
+                occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
+            }
+            occurrences.add(occurr);
         }
         document.setDiagrams(diagrams);
         document.setOccurrences(occurrences);
