@@ -39,7 +39,8 @@ class InteractorDocumentBuilder {
         document.setReferenceURL(interactor.getUrl());
 
         document.setDatabaseName(interactor.getDatabaseName());
-        document.setSpecies(Collections.singletonList(getSpeciesName(interactor)));
+        String speciesName = getSpeciesName(interactor);
+        document.setSpecies(Collections.singletonList(speciesName));
 
         if (interactor instanceof ReferenceIsoform) {
             String variantIdentifier = getVariantIdentifier(interactor);
@@ -52,7 +53,7 @@ class InteractorDocumentBuilder {
         }
 
         setFireworksSpecies(document, interactor);
-        setLowerLevelPathways(document, interactor);
+        setLowerLevelPathways(document, interactor, speciesName);
         setDiagramOccurrences(document, interactor);
 
         return document;
@@ -88,11 +89,11 @@ class InteractorDocumentBuilder {
         document.setOccurrences(occurrences);
     }
 
-    private void setLowerLevelPathways(IndexDocument document, ReferenceEntity re) {
+    private void setLowerLevelPathways(IndexDocument document, ReferenceEntity re, String speciesName) {
         String identifier = getVariantIdentifier(re);
         if (identifier == null || identifier.isEmpty()) identifier = re.getIdentifier();
 
-        Collection<Pathway> pathways = interactionsService.getLowerLevelPathways(identifier);
+        Collection<Pathway> pathways = interactionsService.getLowerLevelPathways(identifier, speciesName);
         if (pathways == null || pathways.isEmpty()) return;
 
         document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));
