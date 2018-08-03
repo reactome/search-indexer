@@ -22,7 +22,7 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServe
  */
 public class IconIndexer {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
-    private final String solrCore = "reactome";
+    private String solrCore;
     private SolrClient solrClient;
     private String iconDir;
     private String ehldsDir;
@@ -32,8 +32,9 @@ public class IconIndexer {
      *
      * @param solrClient holds solr connection for target core
      */
-    public IconIndexer(SolrClient solrClient, String iconDir, String ehldsDir) {
+    public IconIndexer(SolrClient solrClient, String solrCore, String iconDir, String ehldsDir) {
         this.solrClient = solrClient;
+        this.solrCore = solrCore;
         this.iconDir = iconDir;
         this.ehldsDir = ehldsDir;
     }
@@ -42,15 +43,13 @@ public class IconIndexer {
         logger.info("Start indexing icons into Solr");
         cleanSolrIndex(solrCore, solrClient, "{!term f=type}icon");
         List<IconDocument> collection = new ArrayList<>();
-        System.out.println("\n[Icons] Started adding to SolR");
+        logger.info("[Icons] Started adding to SolR");
         MetadataParser parser = MetadataParser.getInstance(iconDir, ehldsDir);
         List<Icon> icons = parser.getIcons();
         logger.info("Preparing SolR documents for icons [" + icons.size() + "]");
         icons.forEach(icon -> collection.add(new IconDocumentBuilder().createIconSolrDocument(icon)));
         addDocumentsToSolrServer(collection);
         commitSolrServer(solrCore, solrClient);
-
-//        parser.getMessages();
         return collection.size();
     }
 

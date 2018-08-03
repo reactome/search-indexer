@@ -2,15 +2,10 @@
 
 <config>
     <luceneMatchVersion>6.0.1</luceneMatchVersion>
-
     <dataDir>${solr.data.dir:}</dataDir>
-
     <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/>
-
     <codecFactory class="solr.SchemaCodecFactory"/>
-
     <schemaFactory class="ClassicIndexSchemaFactory"/>
-
     <indexConfig>
         <!-- ramBufferSizeMB sets the amount of RAM that may be used by Lucene
              indexing for buffering added documents and deletions before they are
@@ -21,20 +16,6 @@
              Lucene will flush based on whichever limit is hit first.
              The default is 100 MB.  -->
         <ramBufferSizeMB>128</ramBufferSizeMB>
-        <!-- Merge Factor
-             The merge factor controls how many segments will get merged at a time.
-             For TieredMergePolicy, mergeFactor is a convenience parameter which
-             will set both MaxMergeAtOnce and SegmentsPerTier at once.
-             For LogByteSizeMergePolicy, mergeFactor decides how many new segments
-             will be allowed before they are merged into one.
-             Default is 10 for both merge policies.
-          -->
-        <!-- DEPRECATED -->
-        <!--
-            <mergeFactor>2</mergeFactor>
-        -->
-
-
         <lockType>${solr.lock.type:native}</lockType>
         <infoStream>true</infoStream>
     </indexConfig>
@@ -60,24 +41,10 @@
 
     <query>
         <maxBooleanClauses>1024</maxBooleanClauses>
-        <filterCache class="solr.FastLRUCache"
-                     size="512"
-                     initialSize="512"
-                     autowarmCount="0"/>
-        <queryResultCache class="solr.LRUCache"
-                          size="512"
-                          initialSize="512"
-                          autowarmCount="0"/>
-        <documentCache class="solr.LRUCache"
-                       size="512"
-                       initialSize="512"
-                       autowarmCount="0"/>
-        <cache name="perSegFilter"
-               class="solr.search.LRUCache"
-               size="10"
-               initialSize="0"
-               autowarmCount="10"
-               regenerator="solr.NoOpRegenerator"/>
+        <filterCache class="solr.FastLRUCache" size="512" initialSize="512" autowarmCount="0"/>
+        <queryResultCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
+        <documentCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
+        <cache name="perSegFilter" class="solr.search.LRUCache" size="10" initialSize="0" autowarmCount="10" regenerator="solr.NoOpRegenerator"/>
         <enableLazyFieldLoading>true</enableLazyFieldLoading>
         <queryResultWindowSize>100</queryResultWindowSize>
         <queryResultMaxDocsCached>200</queryResultMaxDocsCached>
@@ -95,12 +62,9 @@
              firstSearcher - fired whenever a new searcher is being
              prepared but there is no current registered searcher to handle
              requests or to gain autowarming data from.
-
-
           -->
         <listener event="newSearcher" class="solr.QuerySenderListener">
-            <arr name="queries">
-            </arr>
+            <arr name="queries"/>
         </listener>
         <listener event="firstSearcher" class="solr.QuerySenderListener">
             <arr name="queries">
@@ -114,10 +78,7 @@
     </query>
 
     <requestDispatcher handleSelect="false">
-        <requestParsers enableRemoteStreaming="true"
-                        multipartUploadLimitInKB="2048000"
-                        formdataUploadLimitInKB="2048"
-                        addHttpRequestToContext="false"/>
+        <requestParsers enableRemoteStreaming="true" multipartUploadLimitInKB="2048000" formdataUploadLimitInKB="2048" addHttpRequestToContext="false"/>
         <httpCaching never304="true"/>
     </requestDispatcher>
 
@@ -235,6 +196,17 @@
                 diseaseName^1.0
                 diseaseSynonyms^1.0
                 orcidId^10.0
+
+                iconName^1.0
+                iconGroup^1.0
+                iconGroup_facet^1.0
+                iconCuratorName^1.0
+                iconCuratorOrcidId^1.0
+                iconDesignerName^1.0
+                iconDesignerOrcidId^1.0
+                iconCVTerms^1.0
+                iconXRefs^1.0
+
             </str>
             <str name="facet">on</str>
             <!-- activates Faceting-->
@@ -307,13 +279,22 @@
                 diseaseName^1.0
                 diseaseSynonyms^1.0
                 orcidId^10.0
+
+                iconName^1.0
+                iconGroup^1.0
+                iconGroup_facet^1.0
+                iconCuratorName^1.0
+                iconCuratorOrcidId^1.0
+                iconDesignerName^1.0
+                iconDesignerOrcidId^1.0
+                iconCVTerms^1.0
+                iconXRefs^1.0
             </str>
         </lst>
     </requestHandler>
 
     <!--this request handler is used for searching without grouping the result-->
     <requestHandler name="/search" class="solr.SearchHandler">
-
         <lst name="defaults">
             <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
@@ -327,6 +308,8 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
+            <str name="bq">(*:* -exactType:Icon)^1000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -368,14 +351,27 @@
                 diseaseName^1.0
                 diseaseSynonyms^1.0
                 orcidId^10.0
+
+                iconName^1.0
+                iconGroup^1.0
+                iconGroup_facet^1.0
+                iconCuratorName^1.0
+                iconCuratorOrcidId^1.0
+                iconDesignerName^1.0
+                iconDesignerOrcidId^1.0
+                iconCVTerms^1.0
+                iconXRefs^1.0
+
             </str>
 
             <!-- Highlighting -->
             <str name="hl">true</str>
             <!-- activates highlighting-->
-            <str name="hl.fl">name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId
+            <str name="hl.fl">
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
+                regulatedEntity, orcidId, iconGroup, iconCuratorName, iconDesignerName
             </str>
+
             <!-- fields that should be highlighted-->
             <str name="hl.requireFieldMatch">true</str>
             <!-- a field will only be highlighted if the query matched in this particular field-->
@@ -406,6 +402,8 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
+            <str name="bq">(*:* -exactType:Icon)^1000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -447,6 +445,16 @@
                 diseaseName^1.0
                 diseaseSynonyms^1.0
                 orcidId^10.0
+
+                iconName^1.0
+                iconGroup^1.0
+                iconCuratorName^1.0
+                iconCuratorOrcidId^1.0
+                iconDesignerName^1.0
+                iconDesignerOrcidId^1.0
+                iconCVTerms^1.0
+                iconXRefs^1.0
+
             </str>
 
             <!-- Grouping -->
@@ -463,8 +471,9 @@
 
             <!-- Highlighting -->
             <str name="hl">true</str>
-            <str name="hl.fl">name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId
+            <str name="hl.fl">
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
+                regulatedEntity, orcidId, iconGroup, iconCuratorName, iconDesignerName
             </str>
             <str name="hl.requireFieldMatch">true</str>
             <str name="hl.preserveMulti">true</str>
@@ -556,6 +565,7 @@
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
 
             <str name="qf">
                 dbId^100.0
@@ -635,6 +645,7 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
             <str name="qf">
                 dbId^100.0
                 oldStId^90.0
@@ -706,6 +717,7 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
@@ -731,6 +743,7 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
@@ -744,17 +757,15 @@
         </lst>
     </requestHandler>
 
-    <requestHandler name="/update" class="solr.UpdateRequestHandler"></requestHandler>
+    <requestHandler name="/update" class="solr.UpdateRequestHandler" />
 
     <!-- Field Analysis Request Handler analyses the filed given in the query-->
-
     <requestHandler name="/analysis/field"
                     startup="lazy"
                     class="solr.FieldAnalysisRequestHandler"/>
 
 
     <!-- Document Analysis Handler analyses a single document -->
-
     <requestHandler name="/analysis/document"
                     class="solr.DocumentAnalysisRequestHandler"
                     startup="lazy"/>
@@ -777,15 +788,13 @@
         </lst>
     </requestHandler>
 
-    <!-- Solr Replication Index Replication distributes complete copies of a master index to one or more slave servers. The master 				server continues to 	  	manage updates to the index. All querying is handled by the slaves. This division of labor enables 
-			Solr to scale to provide 		 			adequate responsiveness to queries against large search volumes.-->
-
+    <!--
+        Solr Replication Index Replication distributes complete copies of a master index to one or more slave servers. The master server continues to manage updates to the index. All querying is handled by the slaves. This division of labor enables
+		Solr to scale to provide adequate responsiveness to queries against large search volumes.
+	-->
     <requestHandler name="/replication" class="solr.ReplicationHandler"/>
 
-    <!-- Spell Check
-         The spell check component can return a list of alternative spelling
-         suggestions.
-      -->
+    <!-- The spell check component can return a list of alternative spelling suggestions. -->
     <!-- A request handler for demonstrating the terms component -->
     <requestHandler name="/terms" class="solr.SearchHandler" startup="lazy">
         <lst name="defaults">
@@ -799,7 +808,6 @@
 
     <!--search component for spellchecking-->
     <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
-
         <str name="queryAnalyzerFieldType">text_general</str>
 
         <!--standard spellchecker using the values in specific fields to build up a dictionary from them -->

@@ -4,6 +4,7 @@ import com.martiansoftware.jsap.*;
 import org.apache.solr.client.solrj.SolrClient;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
 import org.reactome.server.tools.indexer.exception.IndexerException;
+import org.reactome.server.tools.indexer.icon.impl.IconIndexer;
 import org.reactome.server.tools.indexer.impl.Indexer;
 import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
@@ -72,6 +73,8 @@ public class Main {
         Boolean siteMap = config.getBoolean("sitemap");
         Boolean xml     = config.getBoolean("xml");
         Boolean target  = config.getBoolean("target"); // flag to run TargetIndexer: default true
+        String iconsDir = config.getString("iconsDir");
+        String ehldDir  = config.getString("ehldDir");
 
         try {
             Indexer indexer = ctx.getBean(Indexer.class);
@@ -81,7 +84,7 @@ public class Main {
 
             int entriesCount = indexer.index();
 
-//            if (icon) doIconIndexer(solrClient, solrCore, iconsDir, ehldDir);
+            if (iconsDir != null && ehldDir != null) entriesCount += doIconIndexer(solrClient, solrCore, iconsDir, ehldDir);
             if (target) doTargetIndexer(solrClient, solrCore);
             if (siteMap) generateSitemap(ctx);
 
@@ -148,9 +151,9 @@ public class Main {
         targetIndexer.index();
     }
 
-//    private static void doIconIndexer(SolrClient solrClient, String solrCore) throws IndexerException {
-//        IconIndexer iconIndexer = new IconIndexer(solrClient, solrCore);
-//        iconIndexer.index();
-//    }
+    private static Integer doIconIndexer(SolrClient solrClient, String solrCore, String iconsLib, String ehldDir) throws IndexerException {
+        IconIndexer iconIndexer = new IconIndexer(solrClient, solrCore, iconsLib, ehldDir);
+        return iconIndexer.indexIcons();
+    }
 
 }

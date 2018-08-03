@@ -19,9 +19,9 @@ class IconDocumentBuilder {
     IconDocument createIconSolrDocument(Icon icon) {
         IconDocument document = new IconDocument();
         document.setDbId(icon.getId().toString());
-        document.setName(icon.getName()); // as it is named in the file
+        document.setName(icon.getName().replaceAll("_", " ")); // using space as separator instead underscore
         document.setSummation(icon.getDescription());
-        document.setIconName(icon.getName().replaceAll("_", " ")); // human readable name
+        document.setIconName(icon.getName()); // we rely on the name to build file path and name may have solr highlighting class
         document.setIconGroup(icon.getGroup());
         document.setType(icon.getType());
         document.setExactType(icon.getType());
@@ -29,7 +29,7 @@ class IconDocumentBuilder {
         document.setIconEhlds(icon.getEhlds());
         document.setIconXRefs(icon.getXrefs());
 
-        // SET STIDS
+        // TODO SET StIDS for those icons that are already an entry in Reactome.
         // document.setIconStIds(null);
 
         if (icon.getTerms() != null) {
@@ -46,10 +46,6 @@ class IconDocumentBuilder {
                 document.setIconDesignerName(person.getName());
                 document.setIconDesignerOrcidId(person.getOrcidId());
                 document.setIconDesignerUrl(person.getUrl());
-            } else {
-                int i = 10;
-                System.out.println(i);
-                // TODO what todo ?!
             }
         }
 

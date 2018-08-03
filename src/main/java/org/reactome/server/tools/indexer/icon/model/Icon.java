@@ -83,7 +83,7 @@ public class Icon {
      * @param group the folder that contains the icon
      */
     private void setSpecies(String group) {
-        if (group == null || group.isEmpty()) throw new IllegalArgumentException("Could assign species. Invalid group");
+        if (group == null || group.isEmpty()) throw new IllegalArgumentException("Couldn't assign species. Invalid group");
         this.species = "Homo sapiens";
         if (group.equalsIgnoreCase("arrows") || group.equalsIgnoreCase("compounds")) {
             this.species = "Entries without species";
@@ -93,7 +93,6 @@ public class Icon {
     public List<CVTerm> getTerms() {
         return terms;
     }
-
 
     @XmlElementWrapper(name="cvterms")
     @XmlElement(name="cvterm")

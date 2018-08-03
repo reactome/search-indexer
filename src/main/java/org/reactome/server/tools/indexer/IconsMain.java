@@ -18,9 +18,8 @@ public class IconsMain {
 
     public static void main(String[] args) throws IndexerException {
         SolrClient solrClient = getSolrClient("admin", "admin", DEF_SOLR_URL);
-        IconIndexer indexer = new IconIndexer(solrClient, "/Users/reactome/Dev/icons/icon-lib", "/Users/reactome/Dev/icons/ehld");
-        int i = indexer.indexIcons();
-        System.out.println(i);
+        IconIndexer indexer = new IconIndexer(solrClient, "reactome-icon","/Users/reactome/Dev/icons/icon-lib/lib", "/Users/reactome/Dev/icons/ehld");
+        indexer.indexIcons();
         closeSolrServer(solrClient);
     }
 }

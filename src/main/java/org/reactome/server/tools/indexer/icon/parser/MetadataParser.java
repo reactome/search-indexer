@@ -2,6 +2,7 @@ package org.reactome.server.tools.indexer.icon.parser;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.reactome.server.tools.indexer.icon.model.Icon;
 import org.slf4j.Logger;
@@ -22,9 +23,10 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
-
 public class MetadataParser {
     private static final Logger parserLogger = LoggerFactory.getLogger("parserLogger");
+    private static final Logger logger = LoggerFactory.getLogger("importLogger");
+
     private static MetadataParser instance;
     private String iconsDir;
     private String ehldsDir;
@@ -40,11 +42,11 @@ public class MetadataParser {
     }
 
     public static void main(String[] args) {
-        MetadataParser metadataParser = MetadataParser.getInstance("/Users/reactome/Dev/icons/icon-lib", "/Users/reactome/Dev/icons/ehld");
-        List<Icon> finalList = metadataParser.getIcons();
-        for (Icon icon : finalList) {
-            System.out.println(icon);
-        }
+        String iconsDir = "/Users/reactome/Dev/icons/icon-lib/lib";
+        String ehldsDir = "/Users/reactome/Dev/icons/ehld";
+        MetadataParser metadataParser = MetadataParser.getInstance(iconsDir, ehldsDir);
+        List<Icon> icons = metadataParser.getIcons();
+        icons.forEach(System.out::println);
     }
 
     public static MetadataParser getInstance(String iconsDir, String ehldDir) {
@@ -58,12 +60,12 @@ public class MetadataParser {
         long startParse = System.currentTimeMillis();
         File iconLibDir = new File(iconsDir);
         if (!iconLibDir.exists()) {
-            parserLogger.info("Cannot find folder: {}", iconsDir);
+            logger.error("Cannot find folder: {}", iconsDir);
             System.exit(1);
         }
 
         Collection<File> files = FileUtils.listFiles(iconLibDir, new String[]{"xml"}, true);
-        System.out.println("Parsing " + files.size() + " icons");
+        logger.info("Parsing " + files.size() + " icons");
         AtomicLong id = new AtomicLong(1L);
         files.parallelStream().forEach(xml -> {
             String fileNameWithoutExtension = FilenameUtils.removeExtension(xml.getName());
@@ -75,26 +77,25 @@ public class MetadataParser {
                 icon.setId(id.getAndIncrement());
                 icon.setName(fileNameWithoutExtension);
                 icon.setGroup(group);
-                icon.setEhlds(getEhlds(xml));
-                System.out.println(icon.getId() + " -- " + icon.getName());
+                icon.setEhlds(getEhlds(group, fileNameWithoutExtension));
                 icons.add(icon);
             } catch (JAXBException e) {
                 e.printStackTrace();
-                parserLogger.info("Could not unmarshall file: {}", xml.getPath());
+                logger.error("Could not unmarshall file: {}", xml.getPath());
             }
         });
-
-        System.out.println((System.currentTimeMillis() - startParse) + ".ms");
+        logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
     }
 
     /**
-     * @param xml which has the file name
+     * @param fileNameWithoutExtension File name only
      * @return stIds where the icon is present
      */
-    private List<String> getEhlds(File xml) {
-        String fileName = xml.getName().replace(".xml", "");
+    private List<String> getEhlds(String group, String fileNameWithoutExtension) {
         List<String> ehlds = new ArrayList<>();
-        final String command = "grep -i -l -E 'id=\"" + fileName + "\"|data-name=\"" + fileName + "\"' "+ ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
+
+        final String command = "grep -i -l -E 'id=\"" + escapedFileName + "\"|data-name=\"" + escapedFileName + "\"' "+ ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
         try {
             Process p = pb.start();
@@ -105,9 +106,11 @@ public class MetadataParser {
             }
             p.destroyForcibly();
         } catch (IOException e) {
-            //nothing here
+            parserLogger.error("Error while getting the EHLDs for the file {}/{}", group, fileNameWithoutExtension);
         }
-        if (ehlds.isEmpty()) parserLogger.info("{} not found in any EHLD", xml.getPath());
+
+        if (ehlds.isEmpty()) parserLogger.info("{}/{} not found in any EHLD", group, fileNameWithoutExtension);
+
         return ehlds;
         // TODO ARROW are not named as indication arrow, process arrow - they are just arrow
     }
