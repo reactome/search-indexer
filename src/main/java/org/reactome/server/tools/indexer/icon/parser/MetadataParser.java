@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -36,17 +37,8 @@ public class MetadataParser {
         if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir)) {
             throw new IllegalArgumentException("Icons directory or EHLDs directory can't be null or empty.");
         }
-
         this.iconsDir = iconsDir;
         this.ehldsDir = ehldsDir;
-    }
-
-    public static void main(String[] args) {
-        String iconsDir = "/Users/reactome/Dev/icons/icon-lib/lib";
-        String ehldsDir = "/Users/reactome/Dev/icons/ehld";
-        MetadataParser metadataParser = MetadataParser.getInstance(iconsDir, ehldsDir);
-        List<Icon> icons = metadataParser.getIcons();
-        icons.forEach(System.out::println);
     }
 
     public static MetadataParser getInstance(String iconsDir, String ehldDir) {
@@ -66,8 +58,9 @@ public class MetadataParser {
 
         Collection<File> files = FileUtils.listFiles(iconLibDir, new String[]{"xml"}, true);
         logger.info("Parsing " + files.size() + " icons");
+        logger.info("Start unmarshalling xml metadata");
         AtomicLong id = new AtomicLong(1L);
-        files.parallelStream().forEach(xml -> {
+        files.forEach(xml -> {
             String fileNameWithoutExtension = FilenameUtils.removeExtension(xml.getName());
             String group = xml.getParentFile().getName();
             try {
@@ -77,13 +70,17 @@ public class MetadataParser {
                 icon.setId(id.getAndIncrement());
                 icon.setName(fileNameWithoutExtension);
                 icon.setGroup(group);
-                icon.setEhlds(getEhlds(group, fileNameWithoutExtension));
                 icons.add(icon);
             } catch (JAXBException e) {
                 e.printStackTrace();
                 logger.error("Could not unmarshall file: {}", xml.getPath());
             }
         });
+
+        logger.info("Unmarshalling is completed");
+        logger.info("Getting the EHLDs where the icon is present");
+        // Get EHLDs that the icon is in.
+        icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon.getGroup(), icon.getName())));
         logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
     }
 
@@ -94,8 +91,8 @@ public class MetadataParser {
     private List<String> getEhlds(String group, String fileNameWithoutExtension) {
         List<String> ehlds = new ArrayList<>();
         String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
-
-        final String command = "grep -i -l -E 'id=\"" + escapedFileName + "\"|data-name=\"" + escapedFileName + "\"' "+ ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        String quotedFilename = Pattern.quote(escapedFileName);
+        final String command = "grep -i -l -E 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' "+ ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
         try {
             Process p = pb.start();
@@ -108,11 +105,8 @@ public class MetadataParser {
         } catch (IOException e) {
             parserLogger.error("Error while getting the EHLDs for the file {}/{}", group, fileNameWithoutExtension);
         }
-
         if (ehlds.isEmpty()) parserLogger.info("{}/{} not found in any EHLD", group, fileNameWithoutExtension);
-
         return ehlds;
-        // TODO ARROW are not named as indication arrow, process arrow - they are just arrow
     }
 
     /**

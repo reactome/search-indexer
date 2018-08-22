@@ -76,7 +76,7 @@
         <field name="iconDesignerOrcidId"       type="id"               indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconDesignerUrl"           type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconCVTerms"               type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
-        <field name="iconXRefs"                 type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconReferences"            type="keyword_field"    indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
         <field name="iconStIds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
         <field name="iconEhlds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
     </fields>

@@ -18,7 +18,7 @@ public class Icon {
     private String species;
     private String description;
     private List<CVTerm> terms;
-    private List<String> xrefs;
+    private List<Reference> references;
     private List<Person> person;
     private List<String> ehlds;
     private List<String> stIds;
@@ -100,12 +100,14 @@ public class Icon {
         this.terms = terms;
     }
 
-    public List<String> getXrefs() {
-        return xrefs;
+    public List<Reference> getReferences() {
+        return references;
     }
 
-    public void setXrefs(List<String> xrefs) {
-        this.xrefs = xrefs;
+    @XmlElementWrapper(name="refs")
+    @XmlElement(name="ref")
+    public void setReferences(List<Reference> references) {
+        this.references = references;
     }
 
     public List<String> getEhlds() {

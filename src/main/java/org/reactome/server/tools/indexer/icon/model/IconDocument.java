@@ -4,6 +4,7 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -30,9 +31,9 @@ public class IconDocument extends IndexDocument {
     @Field
     private List<String> iconCVTerms;
     @Field
-    private List<String> iconXRefs;
+    private List<String> iconReferences;
     @Field
-    private List<String> iconStIds;
+    private Set<String> iconStIds;
     @Field
     private List<String> iconEhlds;
 
@@ -108,19 +109,19 @@ public class IconDocument extends IndexDocument {
         this.iconCVTerms = iconCVTerms;
     }
 
-    public List<String> getIconXRefs() {
-        return iconXRefs;
+    public List<String> getIconReferences() {
+        return iconReferences;
     }
 
-    public void setIconXRefs(List<String> iconXRefs) {
-        this.iconXRefs = iconXRefs;
+    public void setIconReferences(List<String> iconReferences) {
+        this.iconReferences = iconReferences;
     }
 
-    public List<String> getIconStIds() {
+    public Set<String> getIconStIds() {
         return iconStIds;
     }
 
-    public void setIconStIds(List<String> iconStIds) {
+    public void setIconStIds(Set<String> iconStIds) {
         this.iconStIds = iconStIds;
     }
 

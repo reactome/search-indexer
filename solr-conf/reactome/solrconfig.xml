@@ -205,7 +205,7 @@
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
                 iconCVTerms^1.0
-                iconXRefs^1.0
+                iconReferences^1.0
 
             </str>
             <str name="facet">on</str>
@@ -288,7 +288,7 @@
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
                 iconCVTerms^1.0
-                iconXRefs^1.0
+                iconReferences^1.0
             </str>
         </lst>
     </requestHandler>
@@ -360,7 +360,7 @@
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
                 iconCVTerms^1.0
-                iconXRefs^1.0
+                iconReferences^1.0
 
             </str>
 
@@ -453,7 +453,7 @@
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
                 iconCVTerms^1.0
-                iconXRefs^1.0
+                iconReferences^1.0
 
             </str>
 
@@ -480,6 +480,36 @@
             <str name="hl.fragsize">0</str>
             <str name="hl.simple.pre">&lt;span class=&quot;highlighting&quot; &gt;</str>
             <str name="hl.simple.post">&lt;/span&gt;</str>
+        </lst>
+    </requestHandler>
+
+    <!-- this request handler is used to search PEs and map with the icon -->
+    <requestHandler name="/iconPEStId" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+
+            <!-- general Parameters -->
+            <str name="q.alt">*:*</str>
+            <str name="df">name</str>
+
+            <!-- scoring parameters-->
+            <str name="fq">species_facet:"Homo sapiens" OR species_facet:"Entries without species"</str>
+            <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
+            <str name="fl">stId</str>
+
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+                name^30.0
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^20.0
+                referenceOtherIdentifier^1.0
+                referenceSecondaryIdentifier^20.0
+                referenceGeneNames^2.0
+                referenceCrossReferences^1.0
+            </str>
         </lst>
     </requestHandler>
 
