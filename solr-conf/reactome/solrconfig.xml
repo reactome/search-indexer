@@ -309,7 +309,7 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
-            <str name="bq">(*:* -exactType:Icon)^1000</str>
+            <str name="bq">(*:* -exactType:Icon)^2000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -403,7 +403,7 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
-            <str name="bq">(*:* -exactType:Icon)^1000</str>
+            <str name="bq">(*:* -exactType:Icon)^2000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
