@@ -675,6 +675,31 @@
         </lst>
     </requestHandler>
 
+    <requestHandler name="/diagramFlagging" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <!-- scoring parameters-->
+            <str name="tie">0.1</str>
+            <str name="fq">-type:Person</str>
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+                dbId^150.0
+                stId^150.0
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+                referenceSecondaryIdentifier^20
+                referenceGeneNames^1.0
+                name_exact^100.0
+                name^50.0
+                name_gram^1.0
+                name_stem^1.0
+            </str>
+        </lst>
+    </requestHandler>
+
     <!--this request handler is used for searching without grouping the result-->
     <requestHandler name="/fireworksFlagging" class="solr.SearchHandler">
         <lst name="defaults">
