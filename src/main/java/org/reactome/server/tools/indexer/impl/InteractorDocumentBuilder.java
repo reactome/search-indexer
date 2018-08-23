@@ -39,19 +39,21 @@ class InteractorDocumentBuilder {
         document.setReferenceURL(interactor.getUrl());
 
         document.setDatabaseName(interactor.getDatabaseName());
-        document.setSpecies(Collections.singletonList(getSpeciesName(interactor)));
+        String speciesName = getSpeciesName(interactor);
+        document.setSpecies(Collections.singletonList(speciesName));
 
         if (interactor instanceof ReferenceIsoform) {
             String variantIdentifier = getVariantIdentifier(interactor);
             if (variantIdentifier != null && !variantIdentifier.isEmpty()) {
                 // For interactors, dbId is the accession, if Isoform then get variantIdentifier
                 document.setDbId(variantIdentifier);
+                document.setStId(variantIdentifier);
                 document.setReferenceIdentifiers(Collections.singletonList(variantIdentifier));
             }
         }
 
         setFireworksSpecies(document, interactor);
-        setLowerLevelPathways(document, interactor);
+        setLowerLevelPathways(document, interactor, speciesName);
         setDiagramOccurrences(document, interactor);
 
         return document;
@@ -69,22 +71,29 @@ class InteractorDocumentBuilder {
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String d = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram()) + ":";
+
+            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram());
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
-                occurrences.add(d + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ","));
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
             } else {
-                occurrences.add(d + "#"); // no occurrences, using one char so less bytes in the solr index
+                occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
             }
+            if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+            } else {
+                occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
+            }
+            occurrences.add(occurr);
         }
         document.setDiagrams(diagrams);
         document.setOccurrences(occurrences);
     }
 
-    private void setLowerLevelPathways(IndexDocument document, ReferenceEntity re) {
+    private void setLowerLevelPathways(IndexDocument document, ReferenceEntity re, String speciesName) {
         String identifier = getVariantIdentifier(re);
         if (identifier == null || identifier.isEmpty()) identifier = re.getIdentifier();
 
-        Collection<Pathway> pathways = interactionsService.getLowerLevelPathways(identifier);
+        Collection<Pathway> pathways = interactionsService.getLowerLevelPathways(identifier, speciesName);
         if (pathways == null || pathways.isEmpty()) return;
 
         document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));
@@ -134,6 +143,8 @@ class InteractorDocumentBuilder {
     private String getName(ReferenceEntity interactor) {
         List<String> names = interactor.getName();
         if (names != null && !names.isEmpty()) return names.get(0);
+
+        if (interactor instanceof ReferenceIsoform) return ((ReferenceIsoform) interactor).getVariantIdentifier();
 
         return interactor.getIdentifier();
     }
