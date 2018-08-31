@@ -22,6 +22,7 @@ public class Icon {
     private List<Person> person;
     private List<String> ehlds;
     private List<String> stIds;
+    private boolean skip;
 
     public Long getId() {
         return id;
@@ -61,7 +62,7 @@ public class Icon {
         return person;
     }
 
-    @XmlElement(name="person")
+    @XmlElement(name = "person")
     public void setPerson(List<Person> person) {
         this.person = person;
     }
@@ -80,10 +81,12 @@ public class Icon {
 
     /**
      * Species are set programatically based on the given group
+     *
      * @param group the folder that contains the icon
      */
     private void setSpecies(String group) {
-        if (group == null || group.isEmpty()) throw new IllegalArgumentException("Couldn't assign species. Invalid group");
+        if (group == null || group.isEmpty())
+            throw new IllegalArgumentException("Couldn't assign species. Invalid group");
         this.species = "Homo sapiens";
         if (group.equalsIgnoreCase("arrows") || group.equalsIgnoreCase("compounds")) {
             this.species = "Entries without species";
@@ -94,8 +97,8 @@ public class Icon {
         return terms;
     }
 
-    @XmlElementWrapper(name="cvterms")
-    @XmlElement(name="cvterm")
+    @XmlElementWrapper(name = "cvterms")
+    @XmlElement(name = "cvterm")
     public void setTerms(List<CVTerm> terms) {
         this.terms = terms;
     }
@@ -104,8 +107,8 @@ public class Icon {
         return references;
     }
 
-    @XmlElementWrapper(name="refs")
-    @XmlElement(name="ref")
+    @XmlElementWrapper(name = "refs")
+    @XmlElement(name = "ref")
     public void setReferences(List<Reference> references) {
         this.references = references;
     }
@@ -124,5 +127,14 @@ public class Icon {
 
     public void setStIds(List<String> stIds) {
         this.stIds = stIds;
+    }
+
+    @XmlElement
+    public boolean isSkip() {
+        return skip;
+    }
+
+    public void setSkip(boolean skip) {
+        this.skip = skip;
     }
 }

@@ -498,7 +498,7 @@
             <str name="fq">species_facet:"Homo sapiens" OR species_facet:"Entries without species"</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
-            <str name="fl">stId</str>
+            <str name="fl">stId, name, exactType, compartmentName</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 name^30.0

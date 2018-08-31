@@ -52,10 +52,9 @@
         <field name="referenceSecondaryIdentifier"  type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="referenceGeneNames"            type="text_field"       indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
         <field name="spellcheck"                    type="suggest_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
-        <!--<field name="author"                        type="author_field"     indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true" />-->
-        <!--<field name="authorOrcid"                   type="id"               indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true" />-->
         <field name="fireworksSpecies"              type="facet_field"      indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="diagrams"                      type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
+        <!-- occurrences: diagramStid#isInDiagram#occurrences#interactsWith-->
         <field name="occurrences"                   type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="llps"                          type="stored_value"     indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="orcidId"                       type="id"               indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="false" />
@@ -77,7 +76,8 @@
         <field name="iconDesignerUrl"           type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconCVTerms"               type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
         <field name="iconReferences"            type="keyword_field"    indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
-        <field name="iconStIds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <!-- iconPhysicalEntity: stId#type#name#compartment-->
+        <field name="iconPhysicalEntity"        type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
         <field name="iconEhlds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
     </fields>
 

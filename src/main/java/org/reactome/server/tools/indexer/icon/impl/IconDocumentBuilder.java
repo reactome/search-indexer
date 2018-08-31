@@ -10,10 +10,7 @@ import org.reactome.server.tools.indexer.icon.model.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +45,7 @@ class IconDocumentBuilder {
             // then adding db:Id. This is how referenceIdentifiers are stored
             refIds.addAll(icon.getReferences().stream().map(Reference::toString).collect(Collectors.toList()));
             document.setIconReferences(refIds);
-            document.setIconStIds(getIconStIds(icon.getReferences()));
+            document.setIconPhysicalEntity(getIconPhysicalEntities(icon.getReferences()));
         }
 
         if (icon.getTerms() != null) {
@@ -72,28 +69,41 @@ class IconDocumentBuilder {
     }
 
     /**
-     * Based on the references and CVTerms annotated in the XMLs
-     * we will search them in the Reactome core and retrieve the ST_ID.
+     * Based on the annotated references in the XMLs
+     * we will search them in the Reactome core and retrieve the ST_ID, NAME, EXACT_TYPE, COMPARTMENT.
      *
      * @return stId(s) mapping the icon and the physical entities
      */
-    private Set<String> getIconStIds(List<Reference> references) {
+    private Set<String> getIconPhysicalEntities(List<Reference> references) {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
         query.setRequestHandler("/iconPEStId");
         query.setQuery(StringUtils.join(references, " OR "));
         query.setRows(300);
+        query.setFields("stId, name, exactType, compartmentName");
         try {
             QueryResponse response = solrClient.query(solrCore, query);
-            SolrDocumentList docs = response.getResults();
-            if (docs != null && !docs.isEmpty()) {
+            SolrDocumentList solrDocument = response.getResults();
+            if (solrDocument != null && !solrDocument.isEmpty()) {
                 /* if query returns more than 300 docs, query all of them */
-                if (docs.getNumFound() > 300) {
-                    query.setRows(((Long) docs.getNumFound()).intValue());
+                if (solrDocument.getNumFound() > 300) {
+                    query.setRows(((Long) solrDocument.getNumFound()).intValue());
                     response = solrClient.query(solrCore, query);
-                    docs = response.getResults();
+                    solrDocument = response.getResults();
                 }
-                docs.forEach(d -> ret.add((String) d.getFieldValue("stId")));
+                solrDocument.forEach(doc -> {
+                    String stId = (String) doc.getFieldValue("stId");
+                    String name = (String) doc.getFieldValue("name");
+                    String type = (String) doc.getFieldValue("exactType");
+                    String compartments = "";
+                    Collection<Object> compartmentsList = doc.getFieldValues("compartmentName");
+                    if (compartmentsList != null && !compartmentsList.isEmpty()) {
+                        compartments = compartmentsList.stream().map(Object::toString).collect(Collectors.joining(", "));
+                    }
+
+                    // stIds is multivalued field, additionally we add name and type.
+                    ret.add(stId + "#" + type + "#" + name + "#" + compartments);
+                });
             }
         } catch (SolrServerException | IOException e) {
             // nothing here

@@ -11,7 +11,7 @@
     </appender>
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
     <appender name="PARSER" class="ch.qos.logback.core.FileAppender">
-        <file>./logs/ReactomeIconSolrIndexer-${bySecond}.log</file>
+        <file>./logs/MetadataParser-${bySecond}.log</file>
         <append>true</append>
         <encoder>
             <pattern>%msg%n</pattern>

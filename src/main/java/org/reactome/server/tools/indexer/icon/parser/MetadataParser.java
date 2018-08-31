@@ -1,5 +1,6 @@
 package org.reactome.server.tools.indexer.icon.parser;
 
+import jodd.util.collection.SortedArrayList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 public class MetadataParser {
     private static final Logger parserLogger = LoggerFactory.getLogger("parserLogger");
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
+    private static List<String> parserMessages = new SortedArrayList<>();
 
     private static MetadataParser instance;
     private String iconsDir;
@@ -80,19 +82,22 @@ public class MetadataParser {
         logger.info("Unmarshalling is completed");
         logger.info("Getting the EHLDs where the icon is present");
         // Get EHLDs that the icon is in.
-        icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon.getGroup(), icon.getName())));
+        icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon)));
         logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
+        parserMessages.forEach(parserLogger::info);
     }
 
     /**
-     * @param fileNameWithoutExtension File name only
+     * @param icon the icon
      * @return stIds where the icon is present
      */
-    private List<String> getEhlds(String group, String fileNameWithoutExtension) {
+    private List<String> getEhlds(Icon icon) {
+        String group = icon.getGroup();
+        String fileNameWithoutExtension = icon.getName();
         List<String> ehlds = new ArrayList<>();
         String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
         String quotedFilename = Pattern.quote(escapedFileName);
-        final String command = "grep -i -l -E 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' "+ ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        final String command = "grep -i -l -E 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
         try {
             Process p = pb.start();
@@ -103,9 +108,17 @@ public class MetadataParser {
             }
             p.destroyForcibly();
         } catch (IOException e) {
-            parserLogger.error("Error while getting the EHLDs for the file {}/{}", group, fileNameWithoutExtension);
+            //parserLogger.error("Error while getting the EHLDs for the file {}/{}", group, fileNameWithoutExtension);
         }
-        if (ehlds.isEmpty()) parserLogger.info("{}/{} not found in any EHLD", group, fileNameWithoutExtension);
+
+        if (ehlds.isEmpty()) {
+            if (!icon.isSkip()) {
+                parserMessages.add(group + "/" + fileNameWithoutExtension);
+            }
+        } else if (icon.isSkip()) {
+            System.out.println("This is flagged to be skipped and was found in a EHLD, please fix its metadata: " + group + "/" + fileNameWithoutExtension);
+        }
+
         return ehlds;
     }
 

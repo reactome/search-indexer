@@ -33,7 +33,7 @@ public class IconDocument extends IndexDocument {
     @Field
     private List<String> iconReferences;
     @Field
-    private Set<String> iconStIds;
+    private Set<String> iconPhysicalEntity;
     @Field
     private List<String> iconEhlds;
 
@@ -117,12 +117,12 @@ public class IconDocument extends IndexDocument {
         this.iconReferences = iconReferences;
     }
 
-    public Set<String> getIconStIds() {
-        return iconStIds;
+    public Set<String> getIconPhysicalEntity() {
+        return iconPhysicalEntity;
     }
 
-    public void setIconStIds(Set<String> iconStIds) {
-        this.iconStIds = iconStIds;
+    public void setIconPhysicalEntity(Set<String> iconPhysicalEntity) {
+        this.iconPhysicalEntity = iconPhysicalEntity;
     }
 
     public List<String> getIconEhlds() {
