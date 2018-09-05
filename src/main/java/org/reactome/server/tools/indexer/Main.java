@@ -55,7 +55,7 @@ public class Main {
                         new QualifiedSwitch("sitemap", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'n', "sitemap", "Generates sitemap files and sitemapindex"),
                         new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core"),
                         new FlaggedOption("iconsDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "iconsDir", "The Solr user"),
-                        new FlaggedOption("ehldDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "ehldDir", "The Solr user"),
+                        new FlaggedOption("ehldDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'r', "ehldDir", "The Solr user"),
                 }
         );
 
