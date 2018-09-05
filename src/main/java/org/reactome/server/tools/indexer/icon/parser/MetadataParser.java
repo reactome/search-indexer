@@ -97,8 +97,12 @@ public class MetadataParser {
         List<String> ehlds = new ArrayList<>();
         String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
         String quotedFilename = Pattern.quote(escapedFileName);
-        final String command = "grep -i -l -E 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
-        System.out.println(command);
+        // Grep command works differently in Linux and Mac, so we need to detect OS and apply the proper grep command
+        String os = System.getProperty("os.name").toLowerCase();
+        String command = "grep -i -l -###OS### 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        String grepPattern = "P"; // works on linux
+        if (os.contains("mac")) grepPattern = "E"; // works on MacOS
+        command = command.replace("###OS###", grepPattern);
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
         try {
             Process p = pb.start();
