@@ -98,6 +98,7 @@ public class MetadataParser {
         String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
         String quotedFilename = Pattern.quote(escapedFileName);
         final String command = "grep -i -l -E 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        System.out.println(command);
         ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
         try {
             Process p = pb.start();
@@ -108,6 +109,7 @@ public class MetadataParser {
             }
             p.destroyForcibly();
         } catch (IOException e) {
+            e.printStackTrace();
             //parserLogger.error("Error while getting the EHLDs for the file {}/{}", group, fileNameWithoutExtension);
         }
 
