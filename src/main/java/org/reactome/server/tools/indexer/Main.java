@@ -68,11 +68,11 @@ public class Main {
         AnnotationConfigApplicationContext ctx = getNeo4jContext(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"));
 
         String solrCore = config.getString("solrCore"); // for reactome normal search
-        Boolean mail    = config.getBoolean("mail");
+        boolean mail    = config.getBoolean("mail");
         String mailDest = config.getString("mailDest");
-        Boolean siteMap = config.getBoolean("sitemap");
-        Boolean xml     = config.getBoolean("xml");
-        Boolean target  = config.getBoolean("target"); // flag to run TargetIndexer: default true
+        boolean siteMap = config.getBoolean("sitemap");
+        boolean xml     = config.getBoolean("xml");
+        boolean target  = config.getBoolean("target"); // flag to run TargetIndexer: default true
         String iconsDir = config.getString("iconsDir");
         String ehldDir  = config.getString("ehldDir");
 

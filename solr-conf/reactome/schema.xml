@@ -66,6 +66,7 @@
         <!-- Icons -->
         <!-- name, type, species and summation are reused -->
         <field name="iconName"                  type="text_field_exact" indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconName_sort"             type="keyword_field"    indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconGroup"                 type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconGroup_facet"           type="facet_field"      indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="false" />
         <field name="iconCuratorName"           type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
@@ -115,6 +116,8 @@
     <copyField source="diseaseId"                       dest="spellcheck"/>
     <copyField source="diseaseName"                     dest="spellcheck"/>
     <copyField source="diseaseSynonyms"                 dest="spellcheck"/>
+
+    <copyField source="iconName"                        dest="iconName_sort"/>
 
     <uniqueKey>dbId</uniqueKey>
 
