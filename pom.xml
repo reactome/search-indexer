@@ -35,7 +35,7 @@
     </developers>
 
     <properties>
-        <graph.core>1.1.12-SNAPSHOT</graph.core>
+        <graph.core>1.1.12</graph.core>
         <solr.version>6.6.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
