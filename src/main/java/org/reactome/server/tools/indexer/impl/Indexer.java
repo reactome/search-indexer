@@ -74,7 +74,7 @@ public class Indexer {
                 marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
                 int releaseNumber = 0;
                 try {
-                    releaseNumber = generalService.getDBVersion();
+                    releaseNumber = generalService.getDBInfo().getVersion();
                 } catch (Exception e) {
                     logger.error("An error occurred when trying to retrieve the release number from the database.");
                 }
