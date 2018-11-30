@@ -30,7 +30,11 @@ public class Reference {
 
     @Override
     public String toString() {
-        return String.join(":", db, id);
+        if (id.contains(db)) {
+            return id;
+        } else {
+            return String.join(":", db, id);
+        }
     }
 }
 

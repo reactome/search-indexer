@@ -1,8 +1,6 @@
 package org.reactome.server.tools.indexer.icon.model;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.List;
 
 /**
@@ -10,26 +8,38 @@ import java.util.List;
  */
 
 @XmlRootElement(name = "metadata")
+@XmlType(propOrder={"categories","person","name","description","info","references","synonyms","skip"})
 public class Icon {
-    private Long id;
+    private String id;
+    private String stId;
     private String name;
-    private String group;
     private String type = "Icon";
     private String species;
     private String description;
-    private List<CVTerm> terms;
+    private String info = "https://reactome.org/icon-info";
+    private List<Category> categories;
     private List<Reference> references;
     private List<Person> person;
     private List<String> ehlds;
-    private List<String> stIds;
-    private boolean skip;
+    private List<Synonym> synonyms;
+    private Boolean skip;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    @XmlTransient
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public String getStId() {
+        return stId;
+    }
+
+    @XmlTransient
+    public void setStId(String stId) {
+        this.stId = stId;
     }
 
     public String getName() {
@@ -40,13 +50,22 @@ public class Icon {
         this.name = name;
     }
 
-    public String getGroup() {
-        return group;
+    @XmlTransient
+    public String getType() {
+        return type;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
-        setSpecies(group);
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @XmlTransient
+    public String getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(String species) {
+        this.species = species;
     }
 
     public String getDescription() {
@@ -58,6 +77,35 @@ public class Icon {
         this.description = description;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
+    @XmlElement
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    @XmlElementWrapper(name = "categories")
+    @XmlElement(name = "category")
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
+    }
+
+    public List<Reference> getReferences() {
+        return references;
+    }
+
+    @XmlElementWrapper(name = "references")
+    @XmlElement(name = "reference")
+    public void setReferences(List<Reference> references) {
+        this.references = references;
+    }
+
     public List<Person> getPerson() {
         return person;
     }
@@ -67,52 +115,7 @@ public class Icon {
         this.person = person;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    /**
-     * Species are set programatically based on the given group
-     *
-     * @param group the folder that contains the icon
-     */
-    private void setSpecies(String group) {
-        if (group == null || group.isEmpty())
-            throw new IllegalArgumentException("Couldn't assign species. Invalid group");
-        this.species = "Homo sapiens";
-        if (group.equalsIgnoreCase("arrows") || group.equalsIgnoreCase("compounds")) {
-            this.species = "Entries without species";
-        }
-    }
-
-    public List<CVTerm> getTerms() {
-        return terms;
-    }
-
-    @XmlElementWrapper(name = "cvterms")
-    @XmlElement(name = "cvterm")
-    public void setTerms(List<CVTerm> terms) {
-        this.terms = terms;
-    }
-
-    public List<Reference> getReferences() {
-        return references;
-    }
-
-    @XmlElementWrapper(name = "refs")
-    @XmlElement(name = "ref")
-    public void setReferences(List<Reference> references) {
-        this.references = references;
-    }
-
+    @XmlTransient
     public List<String> getEhlds() {
         return ehlds;
     }
@@ -121,20 +124,22 @@ public class Icon {
         this.ehlds = ehlds;
     }
 
-    public List<String> getStIds() {
-        return stIds;
+    public List<Synonym> getSynonyms() {
+        return synonyms;
     }
 
-    public void setStIds(List<String> stIds) {
-        this.stIds = stIds;
+    @XmlElementWrapper(name = "synonyms")
+    @XmlElement(name = "synonym")
+    public void setSynonyms(List<Synonym> synonyms) {
+        this.synonyms = synonyms;
     }
 
     @XmlElement
-    public boolean isSkip() {
+    public Boolean isSkip() {
         return skip;
     }
 
-    public void setSkip(boolean skip) {
+    public void setSkip(Boolean skip) {
         this.skip = skip;
     }
 }

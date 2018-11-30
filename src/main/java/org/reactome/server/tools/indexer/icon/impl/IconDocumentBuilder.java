@@ -29,27 +29,36 @@ class IconDocumentBuilder {
 
     IconDocument createIconSolrDocument(Icon icon) {
         IconDocument document = new IconDocument();
-        document.setDbId(icon.getId().toString());
-        document.setName(icon.getName().replaceAll("_", " ")); // using space as separator instead underscore
+        document.setDbId(icon.getId());
+        document.setStId(icon.getStId());
         document.setSummation(icon.getDescription());
-        document.setIconName(icon.getName()); // we rely on the name to build file path and name may have solr highlighting class
-        document.setIconGroup(icon.getGroup());
+        document.setName(icon.getName()); // solr applies highlighting and we may need the name without it. use iconName to get plain name
+        document.setIconName(icon.getName()); // plain name, no highlighting on it
+        document.setIconCategories(icon.getCategories().stream().sorted().map(Category::getName).collect(Collectors.toList()));
         document.setType(icon.getType());
         document.setExactType(icon.getType());
         document.setSpecies(Collections.singletonList(icon.getSpecies()));
         document.setIconEhlds(icon.getEhlds());
 
-        if (icon.getReferences() != null) {
-            // adding Ids only
-            List<String> refIds = icon.getReferences().stream().map(Reference::getId).collect(Collectors.toList());
-            // then adding db:Id. This is how referenceIdentifiers are stored
-            refIds.addAll(icon.getReferences().stream().map(Reference::toString).collect(Collectors.toList()));
-            document.setIconReferences(refIds);
-            document.setIconPhysicalEntity(getIconPhysicalEntities(icon.getReferences()));
+        if (icon.getSynonyms() != null) {
+            document.setSynonyms(icon.getSynonyms().stream().map(Synonym::getName).collect(Collectors.toList()));
         }
 
-        if (icon.getTerms() != null) {
-            document.setIconCVTerms(icon.getTerms().stream().map(CVTerm::toString).collect(Collectors.toList()));
+        if (icon.getReferences() != null) {
+            List<String> references = new ArrayList<>();
+            for (Reference reference : icon.getReferences()) {
+                if(reference.getId().contains(reference.getDb())) { // db as part of the id
+                    String id = reference.getId();
+                    id = id.replace(reference.getDb() + ":", ""); //remove db from the id and save id only
+                    references.add(id);
+                    references.add(reference.getId()); // also save whole id (db:id)
+                } else {
+                    references.add(reference.getId()); // id
+                    references.add(reference.toString()); //db:id
+                }
+            }
+            document.setIconReferences(references);
+            document.setIconPhysicalEntities(getIconPhysicalEntities(references));
         }
 
         List<Person> iconPerson = icon.getPerson();
@@ -74,7 +83,7 @@ class IconDocumentBuilder {
      *
      * @return stId(s) mapping the icon and the physical entities
      */
-    private Set<String> getIconPhysicalEntities(List<Reference> references) {
+    private Set<String> getIconPhysicalEntities(List<String> references) {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
         query.setRequestHandler("/iconPEStId");
@@ -95,7 +104,7 @@ class IconDocumentBuilder {
                     String stId = (String) doc.getFieldValue("stId");
                     String name = (String) doc.getFieldValue("name");
                     String type = (String) doc.getFieldValue("exactType");
-                    String compartments = "";
+                    String compartments = null; // interactors don't have compartment
                     Collection<Object> compartmentsList = doc.getFieldValues("compartmentName");
                     if (compartmentsList != null && !compartmentsList.isEmpty()) {
                         compartments = compartmentsList.stream().map(Object::toString).collect(Collectors.joining(", "));

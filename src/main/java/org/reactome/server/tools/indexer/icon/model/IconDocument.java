@@ -15,7 +15,7 @@ public class IconDocument extends IndexDocument {
     @Field
     private String iconName;
     @Field
-    private String iconGroup;
+    private List<String> iconCategories;
     @Field
     private String iconCuratorName;
     @Field
@@ -29,13 +29,13 @@ public class IconDocument extends IndexDocument {
     @Field
     private String iconDesignerUrl;
     @Field
-    private List<String> iconCVTerms;
-    @Field
     private List<String> iconReferences;
     @Field
-    private Set<String> iconPhysicalEntity;
+    private Set<String> iconPhysicalEntities;
     @Field
     private List<String> iconEhlds;
+    @Field
+    private List<String> iconSynonyms;
 
     public String getIconName() {
         return iconName;
@@ -45,12 +45,12 @@ public class IconDocument extends IndexDocument {
         this.iconName = iconName;
     }
 
-    public String getIconGroup() {
-        return iconGroup;
+    public List<String> getIconCategories() {
+        return iconCategories;
     }
 
-    public void setIconGroup(String iconGroup) {
-        this.iconGroup = iconGroup;
+    public void setIconCategories(List<String> iconCategories) {
+        this.iconCategories = iconCategories;
     }
 
     public String getIconCuratorName() {
@@ -101,14 +101,6 @@ public class IconDocument extends IndexDocument {
         this.iconDesignerUrl = iconDesignerUrl;
     }
 
-    public List<String> getIconCVTerms() {
-        return iconCVTerms;
-    }
-
-    public void setIconCVTerms(List<String> iconCVTerms) {
-        this.iconCVTerms = iconCVTerms;
-    }
-
     public List<String> getIconReferences() {
         return iconReferences;
     }
@@ -117,12 +109,12 @@ public class IconDocument extends IndexDocument {
         this.iconReferences = iconReferences;
     }
 
-    public Set<String> getIconPhysicalEntity() {
-        return iconPhysicalEntity;
+    public Set<String> getIconPhysicalEntities() {
+        return iconPhysicalEntities;
     }
 
-    public void setIconPhysicalEntity(Set<String> iconPhysicalEntity) {
-        this.iconPhysicalEntity = iconPhysicalEntity;
+    public void setIconPhysicalEntities(Set<String> iconPhysicalEntities) {
+        this.iconPhysicalEntities = iconPhysicalEntities;
     }
 
     public List<String> getIconEhlds() {
@@ -131,5 +123,13 @@ public class IconDocument extends IndexDocument {
 
     public void setIconEhlds(List<String> iconEhlds) {
         this.iconEhlds = iconEhlds;
+    }
+
+    public List<String> getIconSynonyms() {
+        return iconSynonyms;
+    }
+
+    public void setIconSynonyms(List<String> iconSynonyms) {
+        this.iconSynonyms = iconSynonyms;
     }
 }

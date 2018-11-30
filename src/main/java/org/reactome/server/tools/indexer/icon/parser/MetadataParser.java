@@ -5,21 +5,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.reactome.server.tools.indexer.icon.model.Category;
 import org.reactome.server.tools.indexer.icon.model.Icon;
+import org.reactome.server.tools.indexer.icon.model.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 /**
@@ -61,21 +59,22 @@ public class MetadataParser {
         Collection<File> files = FileUtils.listFiles(iconLibDir, new String[]{"xml"}, true);
         logger.info("Parsing " + files.size() + " icons");
         logger.info("Start unmarshalling xml metadata");
-        AtomicLong id = new AtomicLong(1L);
         files.forEach(xml -> {
-            String fileNameWithoutExtension = FilenameUtils.removeExtension(xml.getName());
-            String group = xml.getParentFile().getName();
+            String stId = FilenameUtils.removeExtension(xml.getName());
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Icon.class);
                 Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
                 Icon icon = (Icon) jaxbUnmarshaller.unmarshal(xml);
-                icon.setId(id.getAndIncrement());
-                icon.setName(fileNameWithoutExtension);
-                icon.setGroup(group);
+                icon.setId(stId.replaceAll("R-ICO-", ""));
+                icon.setStId(stId);
+                assignSpecies(icon);
+                validateReferences(icon);
                 icons.add(icon);
             } catch (JAXBException e) {
                 e.printStackTrace();
                 logger.error("Could not unmarshall file: {}", xml.getPath());
+            } catch (InvalidObjectException e) {
+                logger.error(e.getMessage());
             }
         });
 
@@ -88,14 +87,43 @@ public class MetadataParser {
     }
 
     /**
+     * Species are set programmatically based on the given categories
+     *
+     * @param icon given icon
+     */
+    private void assignSpecies(Icon icon) {
+        if (icon.getCategories() == null || icon.getCategories().isEmpty())
+            throw new IllegalArgumentException("Couldn't assign species. Category is missing.");
+
+        icon.setSpecies("Homo sapiens");
+        if (icon.getCategories().contains(new Category("arrow")) || icon.getCategories().contains(new Category("compound"))) {
+            icon.setSpecies("Entries without species");
+        }
+    }
+
+    private void validateReferences(Icon icon) throws InvalidObjectException {
+        List<Reference> references = icon.getReferences();
+        if (references == null) {
+            logger.error("The file " + icon.getStId() + " (category: " + icon.getCategories().toString() + ") doesn't contain any reference.");
+        } else {
+            for (Reference reference : references) {
+                if ((reference.getDb().equalsIgnoreCase("UNIPROT") ||
+                        reference.getDb().equalsIgnoreCase("KEGG") ||
+                        reference.getDb().equalsIgnoreCase("MESH") ||
+                        reference.getDb().equalsIgnoreCase("INTERPRO")) && reference.getId().contains(":")) {
+                    throw new InvalidObjectException("Potential Invalid reference. It contains colon where it shouldn't have [File: " + icon.getStId() + " RefId: " + reference.getId() + ", RefDB: " + reference.getDb() + "]");
+                }
+            }
+        }
+    }
+
+    /**
      * @param icon the icon
      * @return stIds where the icon is present
      */
     private List<String> getEhlds(Icon icon) {
-        String group = icon.getGroup();
-        String fileNameWithoutExtension = icon.getName();
         List<String> ehlds = new ArrayList<>();
-        String escapedFileName = StringEscapeUtils.escapeXml11(fileNameWithoutExtension);
+        String escapedFileName = StringEscapeUtils.escapeXml11(icon.getStId());
         String quotedFilename = Pattern.quote(escapedFileName);
         // Grep command works differently in Linux and Mac, so we need to detect OS and apply the proper grep command
         String os = System.getProperty("os.name").toLowerCase();
@@ -118,11 +146,11 @@ public class MetadataParser {
         }
 
         if (ehlds.isEmpty()) {
-            if (!icon.isSkip()) {
-                parserMessages.add(group + "/" + fileNameWithoutExtension);
+            if (icon.isSkip() != null && !icon.isSkip()) {
+                parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
             }
-        } else if (icon.isSkip()) {
-            System.out.println("This is flagged to be skipped and was found in a EHLD, please fix its metadata: " + group + "/" + fileNameWithoutExtension);
+        } else if (icon.isSkip() != null && icon.isSkip()) {
+            System.out.println("This is flagged to be skipped and was found in a EHLD, please fix its metadata: " + icon.getStId());
         }
 
         return ehlds;

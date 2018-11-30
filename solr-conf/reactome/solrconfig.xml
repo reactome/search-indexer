@@ -130,7 +130,7 @@
             <!-- activates Faceting-->
             <str name="facet.mincount">1</str>
             <!--minimum count of a facet field to be returned (eliminates null values)-->
-            <str name="facet.field">iconGroup_facet</str>
+            <str name="facet.field">iconCategories_facet</str>
             <!--fields selected for faceting-->
         </lst>
     </requestHandler>
@@ -198,14 +198,14 @@
                 orcidId^10.0
 
                 iconName^1.0
-                iconGroup^1.0
-                iconGroup_facet^1.0
+                iconCategories^1.0
+                iconCategories_facet^1.0
                 iconCuratorName^1.0
                 iconCuratorOrcidId^1.0
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
-                iconCVTerms^1.0
                 iconReferences^1.0
+                iconSynonyms^1.0
 
             </str>
             <str name="facet">on</str>
@@ -281,14 +281,14 @@
                 orcidId^10.0
 
                 iconName^1.0
-                iconGroup^1.0
-                iconGroup_facet^1.0
+                iconCategories^1.0
+                iconCategories_facet^1.0
                 iconCuratorName^1.0
                 iconCuratorOrcidId^1.0
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
-                iconCVTerms^1.0
                 iconReferences^1.0
+                iconSynonyms^1.0
             </str>
         </lst>
     </requestHandler>
@@ -353,14 +353,14 @@
                 orcidId^10.0
 
                 iconName^1.0
-                iconGroup^1.0
-                iconGroup_facet^1.0
+                iconCategories^1.0
+                iconCategories_facet^1.0
                 iconCuratorName^1.0
                 iconCuratorOrcidId^1.0
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
-                iconCVTerms^1.0
                 iconReferences^1.0
+                iconSynonyms^1.0
 
             </str>
 
@@ -369,7 +369,7 @@
             <!-- activates highlighting-->
             <str name="hl.fl">
                 name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId, iconGroup, iconCuratorName, iconDesignerName
+                regulatedEntity, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
 
             <!-- fields that should be highlighted-->
@@ -447,13 +447,13 @@
                 orcidId^10.0
 
                 iconName^1.0
-                iconGroup^1.0
+                iconCategories^1.0
                 iconCuratorName^1.0
                 iconCuratorOrcidId^1.0
                 iconDesignerName^1.0
                 iconDesignerOrcidId^1.0
-                iconCVTerms^1.0
                 iconReferences^1.0
+                iconSynonyms^1.0
 
             </str>
 
@@ -473,7 +473,7 @@
             <str name="hl">true</str>
             <str name="hl.fl">
                 name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId, iconGroup, iconCuratorName, iconDesignerName
+                regulatedEntity, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
             <str name="hl.requireFieldMatch">true</str>
             <str name="hl.preserveMulti">true</str>
