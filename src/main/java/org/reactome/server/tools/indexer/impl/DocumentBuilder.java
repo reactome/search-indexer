@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.crypto.Data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -115,7 +116,7 @@ class DocumentBuilder {
         } else if (databaseObject instanceof Regulation) {
             Regulation regulation = (Regulation) databaseObject;
             // GENERAL ATTRIBUTES
-            setNameAndSynonyms(document, regulation, regulation.getName());
+            document.setName(databaseObject.getDisplayName());
             setLiteratureReference(document, regulation.getLiteratureReference());
             setSummation(document, regulation.getSummation());
             setSpecies(document, regulation);
@@ -402,9 +403,6 @@ class DocumentBuilder {
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
             referenceEntity = ewas.getReferenceEntity();
-        } else if (databaseObject instanceof OpenSet) {
-            OpenSet openSet = (OpenSet) databaseObject;
-            referenceEntity = openSet.getReferenceEntity();
         } else if (databaseObject instanceof SimpleEntity) {
             SimpleEntity simpleEntity = (SimpleEntity) databaseObject;
             referenceEntity = simpleEntity.getReferenceEntity();
