@@ -150,7 +150,7 @@ public class MetadataParser {
                 parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
             }
         } else if (icon.isSkip() != null && icon.isSkip()) {
-            System.out.println("This is flagged to be skipped and was found in a EHLD, please fix its metadata: " + icon.getStId());
+            parserMessages.add("This is flagged to be skipped and was found in a EHLD, please fix its metadata: " + icon.getStId());
         }
 
         return ehlds;
