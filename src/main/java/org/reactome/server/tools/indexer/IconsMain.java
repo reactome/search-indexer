@@ -21,7 +21,7 @@ public class IconsMain {
 
     public static void main(String[] args) throws IndexerException, JSAPException {
 
-        SimpleJSAP jsap = new SimpleJSAP(Main.class.getName(), "A tool for generating a Solr Index.",
+        SimpleJSAP jsap = new SimpleJSAP(IconsMain.class.getName(), "A tool for generating a Solr Index for Icons.",
                 new Parameter[]{
                         new FlaggedOption("solrUrl", JSAP.STRING_PARSER, DEF_SOLR_URL, JSAP.REQUIRED,           'a', "solrUrl",     "Url of the running Solr server"),
                         new FlaggedOption("solrCore", JSAP.STRING_PARSER, DEF_SOLR_CORE, JSAP.REQUIRED,         'b', "solrCore",    "The Reactome solr core"),
