@@ -24,7 +24,7 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.getSolrClient;
 public class IconsExporter {
 
     private static final String DEF_SOLR_URL = "http://localhost:8983/solr";
-    private static final String DEF_SOLR_CORE = "reactome-icon";
+    private static final String DEF_SOLR_CORE = "reactome";
     private SolrClient solrClient;
     private String solrCore;
 
