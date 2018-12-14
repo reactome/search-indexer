@@ -22,6 +22,9 @@ class IconDocumentBuilder {
     private String solrCore;
     private SolrClient solrClient;
 
+    public IconDocumentBuilder() {
+    }
+
     IconDocumentBuilder(String solrCore, SolrClient solrClient) {
         this.solrCore = solrCore;
         this.solrClient = solrClient;
