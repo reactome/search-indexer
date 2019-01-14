@@ -269,7 +269,7 @@ public class Indexer {
 
         String query = "" +
                 "MATCH (in:ReferenceEntity)<-[:interactor]-(:Interaction)-[:interactor]->(re:ReferenceEntity) " +
-                "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
+                "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|entityFunctionalStatus|diseaseEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
                 "      NOT (:PhysicalEntity)-[:referenceEntity]->(in) " +
                 "RETURN DISTINCT in";
 
