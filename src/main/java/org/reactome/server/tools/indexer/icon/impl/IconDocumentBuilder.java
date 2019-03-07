@@ -44,7 +44,7 @@ class IconDocumentBuilder {
         document.setIconEhlds(icon.getEhlds());
 
         if (icon.getSynonyms() != null) {
-            document.setSynonyms(icon.getSynonyms().stream().map(Synonym::getName).collect(Collectors.toList()));
+            document.setIconSynonyms(icon.getSynonyms().stream().map(Synonym::getName).collect(Collectors.toList()));
         }
 
         if (icon.getReferences() != null) {
