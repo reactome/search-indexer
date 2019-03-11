@@ -43,14 +43,14 @@
         <field name="goMolecularFunctionAccession"  type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="crossReferences"               type="keyword_field"    indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
         <field name="referenceCrossReferences"      type="keyword_field"    indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
-        <field name="referenceName"                 type="text_field"       indexed="true"  stored="true"   omitNorms="false"   required="false"    multiValued="false"/>
+        <field name="referenceName"                 type="hyphenated_field" indexed="true"  stored="true"   omitNorms="false"   required="false"    multiValued="false"/>
         <field name="referenceIdentifiers"          type="keyword_field"    indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true"/>
         <field name="referenceURL"                  type="stored_value"     indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false"/>
         <field name="databaseName"                  type="stored_value"     indexed="false" stored="true"   omitNorms="true"    required="false"    multiValued="false"/>
-        <field name="referenceSynonyms"             type="text_field"       indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
+        <field name="referenceSynonyms"             type="hyphenated_field" indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
         <field name="referenceOtherIdentifier"      type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="referenceSecondaryIdentifier"  type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
-        <field name="referenceGeneNames"            type="text_field"       indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
+        <field name="referenceGeneNames"            type="hyphenated_field" indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
         <field name="spellcheck"                    type="suggest_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="fireworksSpecies"              type="facet_field"      indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="diagrams"                      type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
@@ -65,21 +65,21 @@
 
         <!-- Icons -->
         <!-- name, type, species and summation are reused -->
-        <field name="iconName"                  type="text_field_exact" indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconName_sort"             type="keyword_field"    indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconCategories"            type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true" />
-        <field name="iconCategories_facet"      type="facet_field"      indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="true" />
-        <field name="iconCuratorName"           type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconCuratorOrcidId"        type="id"               indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconCuratorUrl"            type="text_field"       indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconDesignerName"          type="text_field"       indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconDesignerOrcidId"       type="id"               indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconDesignerUrl"           type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
-        <field name="iconReferences"            type="keyword_field"    indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
-        <field name="iconSynonyms"              type="text_field"       indexed="true"      stored="false"  omitNorms="false"  required="false"    multiValued="true"/>
+        <field name="iconName"                  type="text_field_exact"     indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconName_sort"             type="keyword_field"        indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCategories"            type="text_field"           indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true" />
+        <field name="iconCategories_facet"      type="facet_field"          indexed="true"      stored="false"  omitNorms="true"   required="false"    multiValued="true" />
+        <field name="iconCuratorName"           type="text_field"           indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCuratorOrcidId"        type="id"                   indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconCuratorUrl"            type="text_field"           indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerName"          type="text_field"           indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerOrcidId"       type="id"                   indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconDesignerUrl"           type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false" />
+        <field name="iconReferences"            type="keyword_field"        indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconSynonyms"              type="hyphenated_field"     indexed="true"      stored="false"  omitNorms="false"  required="false"    multiValued="true"/>
         <!-- iconPhysicalEntity: stId#type#name#compartment-->
-        <field name="iconPhysicalEntities"      type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
-        <field name="iconEhlds"                 type="stored_value"     indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconPhysicalEntities"      type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+        <field name="iconEhlds"                 type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>
@@ -157,8 +157,8 @@
 
         <fieldType name="stId_field" class="solr.TextField">
             <analyzer type="query">
-                <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="^(?!R\-[A-Z]+\-[0-9]+(\-[0-9]+)?(\.[0-9]+)?$)$" replacement=""/>
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.PatternCaptureGroupFilterFactory" pattern="^R\-[A-Z]{3}\-[0-9]+(\-[0-9]+)?(\.[0-9]+)?$" preserve_original="false" />
                 <filter class="solr.PatternReplaceFilterFactory" pattern="\.[0-9]*" replacement=""/>
                 <filter class="solr.LowerCaseFilterFactory"/>
             </analyzer>
@@ -174,10 +174,27 @@
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-_]" replacement=" "/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="hyphenated_field" class="solr.TextField" positionIncrementGap="100" omitNorms="false" >
+            <analyzer type="index">
+                <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+                <filter class="solr.HyphenatedWordsFilterFactory"/>
+                <filter class="solr.LengthFilterFactory" min="2" max="20"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+                <filter class="solr.LengthFilterFactory" min="2" max="20"/>
+                <filter class="solr.HyphenatedWordsFilterFactory"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
             </analyzer>
@@ -204,9 +221,9 @@
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-_]" replacement=" "/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
@@ -224,9 +241,9 @@
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/._:]"/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[-_]" replacement=" "/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
