@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
+import org.reactome.server.tools.indexer.exception.IndexerException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,12 +29,12 @@ public class IconsExporter {
     private SolrClient solrClient;
     private String solrCore;
 
-    private IconsExporter(SolrClient solrClient, String solrCore) {
+    public IconsExporter(SolrClient solrClient, String solrCore) {
         this.solrClient = solrClient;
         this.solrCore = solrCore;
     }
 
-    public static void main(String[] args) throws JSAPException, IOException {
+    public static void main(String[] args) throws JSAPException, IndexerException {
         SimpleJSAP jsap = new SimpleJSAP(IconsExporter.class.getName(), "Mapping resources and icons",
                 new Parameter[]{
                         new FlaggedOption("solrUrl", JSAP.STRING_PARSER, DEF_SOLR_URL, JSAP.REQUIRED, 'a', "solrUrl", "Url of the running Solr server"),
@@ -52,25 +53,29 @@ public class IconsExporter {
         tsvWriter.write(config.getString("outputDir"));
     }
 
-    private void write(String outputDir) throws IOException {
+    public void write(String outputDir) throws IndexerException {
         File output = new File(outputDir);
         if(!output.exists()) {
             outputDir = ".";
         }
 
-        Map<String, Set<SimpleIcon>> iconsPerRef = getIconsPerReference();
-        if (iconsPerRef != null) {
-            for (String db : iconsPerRef.keySet()) {
-                String prefix = getDBPrefix(db);
-                BufferedWriter writer = new BufferedWriter(new FileWriter(outputDir + File.separator + db + "2Icon.txt"));
-                Set<SimpleIcon> icons = iconsPerRef.get(db);
-                for (SimpleIcon icon : icons) {
-                    writer.write(prefix + icon.getIdentifier() + "\t" + icon.getStId() + "\t" + icon.getName());
-                    writer.newLine();
+        try {
+            Map<String, Set<SimpleIcon>> iconsPerRef = getIconsPerReference();
+            if (iconsPerRef != null) {
+                for (String db : iconsPerRef.keySet()) {
+                    String prefix = getDBPrefix(db);
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(outputDir + File.separator + db + "2Icon.txt"));
+                    Set<SimpleIcon> icons = iconsPerRef.get(db);
+                    for (SimpleIcon icon : icons) {
+                        writer.write(prefix + icon.getIdentifier() + "\t" + icon.getStId() + "\t" + icon.getName());
+                        writer.newLine();
+                    }
+                    writer.flush();
+                    writer.close();
                 }
-                writer.flush();
-                writer.close();
             }
+        } catch (IOException e ){
+            throw new IndexerException(e);
         }
     }
 
