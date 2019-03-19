@@ -335,7 +335,7 @@ public class Indexer {
         return xml;
     }
 
-    public void setXml(Boolean xml) {
+    public void setEbeyeXml(Boolean xml) {
         this.xml = xml;
     }
 
