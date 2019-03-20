@@ -51,16 +51,16 @@ public class TargetIndexer {
                         addToSolr.add(target);
                     }
                 } catch (SolrServerException | IOException e) {
-                    logger.error("An error occurred when creating SolR documents", e);
+                    logger.error("["+ solrCoreTarget +"] An error occurred when creating SolR documents", e);
                 }
             });
 
             addDocumentsToSolrServer(addToSolr);
             commitSolrServer(solrCoreTarget, solrClient);
             long end = System.currentTimeMillis() - start;
-            logger.info("Full indexing took " + end + " .ms");
+            logger.info("["+ solrCoreTarget +"] Full indexing took " + end + " .ms");
         } catch (Exception e) {
-            logger.error("An error occurred during the data import", e);
+            logger.error("["+ solrCoreTarget +"] An error occurred during the data import", e);
             throw new IndexerException(e);
         }
     }
