@@ -58,13 +58,13 @@ public class SolrUtility {
      */
     public static void cleanSolrIndex(String solrCore, SolrClient solrClient, String query) throws IndexerException {
         try {
-            logger.info("Cleaning solr index");
+            logger.info("["+ solrCore +"] - Cleaning solr index");
             solrClient.deleteByQuery(solrCore,query);
             commitSolrServer(solrCore, solrClient);
-            logger.info("Solr index has been cleaned");
+            logger.info("["+ solrCore +"] - Solr index has been cleaned");
         } catch (SolrServerException | IOException e) {
-            logger.error("an error occurred while cleaning the SolrServer", e);
-            throw new IndexerException("an error occurred while cleaning the SolrServer", e);
+            logger.error("["+ solrCore +"] Error occurred while cleaning the SolrServer", e);
+            throw new IndexerException("["+ solrCore +"] Error occurred while cleaning the SolrServer", e);
         }
     }
 
@@ -88,10 +88,10 @@ public class SolrUtility {
     public static void commitSolrServer(String solrCore, SolrClient solrClient) throws IndexerException {
         try {
             solrClient.commit(solrCore);
-            logger.info("Solr index has been committed and flushed to disk");
+            logger.info("["+ solrCore +"] Solr index has been committed and flushed to disk");
         } catch (Exception e) {
-            logger.error("Error occurred while committing", e);
-            throw new IndexerException("Could not commit", e);
+            logger.error("["+ solrCore +"] Error occurred while committing", e);
+            throw new IndexerException("["+ solrCore +"] Could not commit", e);
         }
     }
 }
