@@ -1,6 +1,7 @@
 package org.reactome.server.tools.indexer.util;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -16,7 +17,7 @@ import java.util.Properties;
  * @author Guilherme S. Viteri <gviteri@ebi.ac.uk>
  */
 public class MailUtil {
-    private static final Logger logger = Logger.getLogger(MailUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger("importLogger");
     private static MailUtil mailUtil;
     private Properties properties;
 
