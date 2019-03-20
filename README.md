@@ -21,6 +21,8 @@ The Search Project is split into 'Indexer' and 'Search':
 
 ```console
 $> git clone https://github.com/reactome/search-indexer.git
+
+$> cd search-indexer
 ```
 
 ## Installing SolR ##
@@ -92,6 +94,7 @@ $> ./scripts/run-indexer.sh neo4jpass=not2share solrpass=not4you iconsdir=/home/
 ```
 
 Note: if ```maildest``` isn't provided no notification will be sent
+
 Note 2: if ```iconsdir``` AND ```ehlddir``` aren't provided icons won't be indexed
 
 * Help / extra options
