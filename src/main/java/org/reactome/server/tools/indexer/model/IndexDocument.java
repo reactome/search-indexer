@@ -120,6 +120,8 @@ public class IndexDocument {
     private List<String> referenceSecondaryIdentifier;
     @Field
     private List<String> referenceGeneNames;
+    @Field
+    private List<String> fragmentModification;
 
     @Field
     private Set<String> fireworksSpecies;
@@ -503,6 +505,14 @@ public class IndexDocument {
 
     public void setReferenceGeneNames(List<String> referenceGeneNames) {
         this.referenceGeneNames = referenceGeneNames;
+    }
+
+    public List<String> getFragmentModification() {
+        return fragmentModification;
+    }
+
+    public void setFragmentModification(List<String> fragmentModification) {
+        this.fragmentModification = fragmentModification;
     }
 
     public String getReferenceURL() {

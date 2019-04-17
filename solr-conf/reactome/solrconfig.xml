@@ -186,6 +186,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -271,6 +272,7 @@
                 referenceOtherIdentifier^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
+                fragmentModification^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
                 regulator^1.0
@@ -341,6 +343,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -435,6 +438,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -506,6 +510,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20.0
                 referenceGeneNames^2.0
                 referenceCrossReferences^1.0
@@ -627,6 +632,7 @@
                 referenceIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
+                fragmentModification^10.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -706,6 +712,7 @@
                 referenceIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
+                fragmentModification^10.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -750,6 +757,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 name_exact^100.0
@@ -780,6 +788,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
             </str>
@@ -806,6 +815,7 @@
                 referenceIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
             </str>

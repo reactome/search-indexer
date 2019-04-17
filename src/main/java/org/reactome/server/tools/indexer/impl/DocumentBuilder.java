@@ -402,6 +402,7 @@ class DocumentBuilder {
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
             referenceEntity = ewas.getReferenceEntity();
+            setModifiedResidue(document, ewas.getHasModifiedResidue());
         } else if (databaseObject instanceof SimpleEntity) {
             SimpleEntity simpleEntity = (SimpleEntity) databaseObject;
             referenceEntity = simpleEntity.getReferenceEntity();
@@ -449,6 +450,27 @@ class DocumentBuilder {
                 }
             }
         }
+     }
+
+    private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues){
+        List<String> fragments = new ArrayList<>();
+        for (AbstractModifiedResidue amr : abstractModifiedResidues) {
+            final ReferenceSequence referenceSequence = amr.getReferenceSequence();
+            if (referenceSequence != null) {
+                fragments.add(referenceSequence.getIdentifier());
+                fragments.addAll(referenceSequence.getGeneName());
+                fragments.addAll(referenceSequence.getOtherIdentifier());
+                if(referenceSequence instanceof ReferenceGeneProduct){
+                    ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
+                    for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
+                        fragments.add(referenceDNASequence.getIdentifier());
+                        fragments.addAll(referenceDNASequence.getGeneName());
+                        fragments.addAll(referenceDNASequence.getOtherIdentifier());
+                    }
+                }
+            }
+        }
+        if (!fragments.isEmpty()) document.setFragmentModification(fragments);
     }
 
     private String getReferenceTypes(ReferenceEntity referenceEntity) {

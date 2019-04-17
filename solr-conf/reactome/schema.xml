@@ -51,6 +51,7 @@
         <field name="referenceOtherIdentifier"      type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="referenceSecondaryIdentifier"  type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="referenceGeneNames"            type="hyphenated_field" indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
+        <field name="fragmentModification"          type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="spellcheck"                    type="suggest_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="fireworksSpecies"              type="facet_field"      indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
         <field name="diagrams"                      type="stored_value"     indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="true" />
@@ -113,6 +114,7 @@
     <copyField source="referenceSynonyms"               dest="spellcheck"/>
     <copyField source="referenceOtherIdentifier"        dest="spellcheck"/>
     <copyField source="referenceGeneNames"              dest="spellcheck"/>
+    <copyField source="fragmentModification"            dest="spellcheck"/>
     <copyField source="diseaseId"                       dest="spellcheck"/>
     <copyField source="diseaseName"                     dest="spellcheck"/>
     <copyField source="diseaseSynonyms"                 dest="spellcheck"/>
