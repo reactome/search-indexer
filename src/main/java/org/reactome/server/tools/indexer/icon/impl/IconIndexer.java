@@ -40,13 +40,13 @@ public class IconIndexer {
     }
 
     public int indexIcons() throws IndexerException {
-        logger.info("Start indexing icons into Solr");
+        logger.info("["+ solrCore +"] Start indexing icons into Solr");
         cleanSolrIndex(solrCore, solrClient, "{!term f=type}icon");
         List<IconDocument> collection = new ArrayList<>();
-        logger.info("[Icons] Started adding to SolR");
+        logger.info("["+ solrCore +"]  Started adding to SolR");
         MetadataParser parser = MetadataParser.getInstance(iconDir, ehldsDir);
         List<Icon> icons = parser.getIcons();
-        logger.info("Preparing SolR documents for icons [" + icons.size() + "]");
+        logger.info("["+ solrCore +"] Preparing SolR documents for icons [" + icons.size() + "]");
         icons.forEach(icon -> collection.add(new IconDocumentBuilder(solrCore, solrClient).createIconSolrDocument(icon)));
         addDocumentsToSolrServer(collection);
         commitSolrServer(solrCore, solrClient);

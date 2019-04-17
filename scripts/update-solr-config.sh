@@ -47,8 +47,8 @@ usage () {
 # Check arguments
 for ARGUMENT in "$@"
 do
-    KEY=$(echo $ARGUMENT | cut -f1 -d=)
-    VALUE=$(echo $ARGUMENT | cut -f2 -d=)
+    KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
+    VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
 
     case "$KEY" in
             solrcore)       _SOLR_CORE=${VALUE} ;;
@@ -61,11 +61,11 @@ do
     esac
 done
 
-if [ "${_HELP}" == "help-me" ]; then
+if [[ "${_HELP}" == "help-me" ]]; then
     usage
 fi
 
-if [ -z $_SOLR_PASSWORD ]; then
+if [[ -z ${_SOLR_PASSWORD} ]]; then
     echo "missing argument for solrpass=<password>"
     exit 1
 fi;
@@ -73,7 +73,7 @@ fi;
 verifyBranch () {
     echo " > Validating GitHub Branch"
     STATUS=`curl -X GET -w "%{http_code}" --silent --output /dev/null "https://github.com/$_GITREPO/$_GITPROJECT/tree/$_GITBRANCH/"`
-    if [ 200 != "${STATUS}" ]; then
+    if [[ 200 != "${STATUS}" ]]; then
         echo " > Invalid GitHub Branch: $_GITBRANCH"
         exit 1
     fi
@@ -86,24 +86,24 @@ updateSolrConfigFiles () {
 
     verifyBranch
 
-    _SOLR_CORE_CONF_DIR=$_SOLR_HOME/data/$_SOLR_CORE/conf
+    _SOLR_CORE_CONF_DIR=${_SOLR_HOME}/data/${_SOLR_CORE}/conf
 
     echo "Checking SolR Core configuration folder [$_SOLR_CORE_CONF_DIR]"
-    if sudo [ ! -d "$_SOLR_CORE_CONF_DIR" ]; then
+    if [[ ! -d "$_SOLR_CORE_CONF_DIR" ]]; then
         echo "Wrong SolR Home path was specified [$_SOLR_CORE_CONF_DIR]. Check Solr Core name and rerun".
         exit 1
     fi
 
     echo "Checking Solr Status"
-    _STATUS=$(curl -H "Content-Type: application/json" --user $_SOLR_USER:$_SOLR_PASSWORD --write-out "%{http_code}\n" --silent --output /tmp/solr.out "http://localhost:$_SOLR_PORT/solr/admin/cores?action=STATUS&wt=json")
-    if [ 401 == "$_STATUS" ]; then
+    _STATUS=$(curl -H "Content-Type: application/json" --user ${_SOLR_USER}:${_SOLR_PASSWORD} --write-out "%{http_code}\n" --silent --output /tmp/solr.out "http://localhost:$_SOLR_PORT/solr/admin/cores?action=STATUS&wt=json")
+    if [[ 401 == "$_STATUS" ]]; then
         echo "Could not check SolR Status. Invalid user/password combination."
         exit 1
-    elif [ 200 == "$_STATUS" ]; then
+    elif [[ 200 == "$_STATUS" ]]; then
         # HTTP Return 200, but the JSON output might contain the error.
         _FAILURES=$(cat /tmp/solr.out | python -c "import json, sys; obj=json.load(sys.stdin); print obj['initFailures']['$_SOLR_CORE'];" 2>/dev/null)
         _OUT=$?
-        if [ "$_OUT" == 0 ] || [ ! -z "$_FAILURES" ]; then
+        if [[ "$_OUT" == 0 ]] || [[ ! -z "$_FAILURES" ]]; then
             echo "SolR is running but there are issues in the core: [$_FAILURES]"
             echo "This script will automatically repair the core."
             echo "Rolling back SolR Core configuration based on the files from GitHub origin master"
@@ -118,8 +118,8 @@ updateSolrConfigFiles () {
     fi
 
     echo "Checking Reactome core"
-    _STATUS=$(curl -H "Content-Type: application/json" --user $_SOLR_USER:$_SOLR_PASSWORD --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/$_SOLR_CORE/admin/ping?wt=json")
-    if [ 200 != "$_STATUS" ]; then
+    _STATUS=$(curl -H "Content-Type: application/json" --user ${_SOLR_USER}:${_SOLR_PASSWORD} --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/$_SOLR_CORE/admin/ping?wt=json")
+    if [[ 200 != "$_STATUS" ]]; then
         echo "Could not check SolR core [$_SOLR_CORE]. Consider a SolR fresh installation. Run sudo ./install-solr.sh solrpass=<solrpass>"
     fi
 
@@ -127,7 +127,7 @@ updateSolrConfigFiles () {
     sudo service solr stop >/dev/null 2>&1
 
     echo "Updating SolR Configuration files based on GitHub - branch [$_GITBRANCH]"
-    downloadCoreConfig $_GITBRANCH
+    downloadCoreConfig ${_GITBRANCH}
 
     echo "Starting Solr"
     if ! sudo service solr start ; then
@@ -141,21 +141,21 @@ updateSolrConfigFiles () {
 
 downloadCoreConfig () {
     _BRANCH=$1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/schema.xml -O $_SOLR_CORE_CONF_DIR/schema.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/solrconfig.xml -O $_SOLR_CORE_CONF_DIR/solrconfig.xml >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/stopwords.txt -O $_SOLR_CORE_CONF_DIR/stopwords.txt >/dev/null 2>&1
-    sudo wget -q --no-check-certificate $_GITRAWURL/$_GITREPO/$_GITPROJECT/$_BRANCH/solr-conf/$_SOLR_CORE/prefixstopwords.txt -O $_SOLR_CORE_CONF_DIR/prefixstopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_BRANCH}/solr-conf/${_SOLR_CORE}/schema.xml -O ${_SOLR_CORE_CONF_DIR}/schema.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_BRANCH}/solr-conf/${_SOLR_CORE}/solrconfig.xml -O ${_SOLR_CORE_CONF_DIR}/solrconfig.xml >/dev/null 2>&1
+    sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_BRANCH}/solr-conf/${_SOLR_CORE}/stopwords.txt -O ${_SOLR_CORE_CONF_DIR}/stopwords.txt >/dev/null 2>&1
+    sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_BRANCH}/solr-conf/${_SOLR_CORE}/prefixstopwords.txt -O ${_SOLR_CORE_CONF_DIR}/prefixstopwords.txt >/dev/null 2>&1
 }
 
 generalSummary () {
    echo "======================================"
    echo "============ Update SOLR ============="
    echo "======================================"
-   echo "SolR Default Home:  " $_SOLR_HOME
-   echo "SolR Core:          " $_SOLR_CORE
-   echo "SolR Port:          " $_SOLR_PORT
-   echo "SolR User:          " $_SOLR_USER
-   echo "GitHub Branch:      " $_GITBRANCH
+   echo "SolR Default Home:  " ${_SOLR_HOME}
+   echo "SolR Core:          " ${_SOLR_CORE}
+   echo "SolR Port:          " ${_SOLR_PORT}
+   echo "SolR User:          " ${_SOLR_USER}
+   echo "GitHub Branch:      " ${_GITBRANCH}
    echo "======================================"
 }
 
