@@ -121,7 +121,7 @@ public class IndexDocument {
     @Field
     private List<String> referenceGeneNames;
     @Field
-    private List<String> fragmentModification;
+    private Set<String> fragmentModification;
 
     @Field
     private Set<String> fireworksSpecies;
@@ -507,11 +507,11 @@ public class IndexDocument {
         this.referenceGeneNames = referenceGeneNames;
     }
 
-    public List<String> getFragmentModification() {
+    public Set<String> getFragmentModification() {
         return fragmentModification;
     }
 
-    public void setFragmentModification(List<String> fragmentModification) {
+    public void setFragmentModification(Set<String> fragmentModification) {
         this.fragmentModification = fragmentModification;
     }
 
