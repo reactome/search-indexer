@@ -39,14 +39,13 @@
 
     <logger name="importLogger" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="STDOUT"/>
     </logger>
 
     <!-- Setting up neo4j and sdn logging to ERROR -->
     <logger name="org.neo4j.ogm" level="ERROR" />
     <logger name="org.springframework" level="ERROR" />
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
 
