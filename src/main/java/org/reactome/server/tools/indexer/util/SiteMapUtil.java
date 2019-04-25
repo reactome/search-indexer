@@ -22,7 +22,7 @@ import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Generates a sitemap based on PhysicalEntities, Events and Regulations (aprox. 687K links)
+ * Generates a sitemap based on PhysicalEntities, Events
  * 1) Upload sitemapindex.txt to Website/static/
  * 2) Upload *txt.gz to Website/static/sitemap/
  * 3) Make sure owner and permissions are set.

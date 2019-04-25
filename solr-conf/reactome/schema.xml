@@ -18,10 +18,6 @@
         <field name="diseaseId"                     type="keyword_field"    indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="diseaseName"                   type="text_field"       indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
         <field name="diseaseSynonyms"               type="text_field"       indexed="true"  stored="false"  omitNorms="false"   required="false"    multiValued="true"/>
-        <field name="regulator"                     type="text_field"       indexed="true"  stored="true"   omitNorms="false"   required="false"    multiValued="false"/>
-        <field name="regulatedEntity"               type="text_field"       indexed="true"  stored="true"   omitNorms="false"   required="false"    multiValued="false"/>
-        <field name="regulatorId"                   type="stId_field"       indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="false"/>
-        <field name="regulatedEntityId"             type="stId_field"       indexed="true"  stored="true"   omitNorms="true"    required="false"    multiValued="false"/>
         <field name="type_facet"                    type="facet_field"      indexed="true"  stored="false"  omitNorms="true"    required="true"     multiValued="false"/>
         <field name="species_facet"                 type="facet_field"      indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>
         <field name="compartment_facet"             type="facet_field"      indexed="true"  stored="false"  omitNorms="true"    required="false"    multiValued="true"/>

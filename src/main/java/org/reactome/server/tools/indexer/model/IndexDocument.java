@@ -54,14 +54,6 @@ public class IndexDocument {
     @Field
     private String inferredSummation;
     @Field
-    private String regulatorId;
-    @Field
-    private String regulatedEntityId;
-    @Field
-    private String regulator;
-    @Field
-    private String regulatedEntity;
-    @Field
     private List<String> compartmentName;
     @Field
     private List<String> compartmentAccession;
@@ -168,22 +160,6 @@ public class IndexDocument {
         return goCellularComponentAccessions;
     }
 
-    public String getRegulatorId() {
-        return regulatorId;
-    }
-
-    public void setRegulatorId(String regulatorId) {
-        this.regulatorId = regulatorId;
-    }
-
-    public String getRegulatedEntityId() {
-        return regulatedEntityId;
-    }
-
-    public void setRegulatedEntityId(String regulatedEntityId) {
-        this.regulatedEntityId = regulatedEntityId;
-    }
-
     public Boolean getIsDisease() {
         return isDisease;
     }
@@ -267,22 +243,6 @@ public class IndexDocument {
         } else {
             this.allCrossReferences.addAll(allCrossReferences);
         }
-    }
-
-    public String getRegulatedEntity() {
-        return regulatedEntity;
-    }
-
-    public void setRegulatedEntity(String regulatedEntity) {
-        this.regulatedEntity = regulatedEntity;
-    }
-
-    public String getRegulator() {
-        return regulator;
-    }
-
-    public void setRegulator(String regulator) {
-        this.regulator = regulator;
     }
 
     public String getDbId() {

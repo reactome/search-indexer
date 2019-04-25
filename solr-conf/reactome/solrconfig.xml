@@ -191,8 +191,6 @@
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
@@ -275,8 +273,6 @@
                 fragmentModification^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
@@ -348,8 +344,6 @@
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
@@ -371,8 +365,7 @@
             <str name="hl">true</str>
             <!-- activates highlighting-->
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId, iconCategories, iconCuratorName, iconDesignerName
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
 
             <!-- fields that should be highlighted-->
@@ -443,8 +436,6 @@
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
@@ -476,8 +467,7 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, regulator,
-                regulatedEntity, orcidId, iconCategories, iconCuratorName, iconDesignerName
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
             <str name="hl.requireFieldMatch">true</str>
             <str name="hl.preserveMulti">true</str>
@@ -637,8 +627,6 @@
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0
@@ -648,7 +636,7 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <!-- activates highlighting-->
-            <str name="hl.fl">name, referenceName, referenceIdentifiers, regulator, regulatedEntity</str>
+            <str name="hl.fl">name, referenceName, referenceIdentifiers</str>
             <!-- fields that should be highlighted-->
             <str name="hl.requireFieldMatch">true</str>
             <!-- a field will only be highlighted if the query matched in this particular field-->
@@ -717,8 +705,6 @@
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
-                regulator^1.0
-                regulatedEntity^1.0
                 diseaseId^1.0
                 diseaseName^1.0
                 diseaseSynonyms^1.0

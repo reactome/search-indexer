@@ -187,12 +187,6 @@ class Marshaller {
                     writeField("keyword", keyword, iii);
                 }
             }
-            if (document.getRegulatedEntity() != null) {
-                writeField("regulated_entity", document.getRegulatedEntity(), iii);
-            }
-            if (document.getRegulator() != null) {
-                writeField("regulator", document.getRegulator(), iii);
-            }
             if (document.getCompartmentName() != null && !document.getCompartmentName().isEmpty()) {
                 for (String compartment : document.getCompartmentName()) {
                     writeField("compartment_name", compartment, iii);

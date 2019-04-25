@@ -112,16 +112,6 @@ class DocumentBuilder {
                 ReactionLikeEvent reactionLikeEvent = (ReactionLikeEvent) event;
                 setCatalystActivities(document, reactionLikeEvent.getCatalystActivity());
             }
-        } else if (databaseObject instanceof Regulation) {
-            Regulation regulation = (Regulation) databaseObject;
-            // GENERAL ATTRIBUTES
-            document.setName(databaseObject.getDisplayName());
-            setLiteratureReference(document, regulation.getLiteratureReference());
-            setSummation(document, regulation.getSummation());
-            setSpecies(document, regulation);
-            // SPECIFIC FOR REGULATIONS
-            setRegulatedEntity(document, regulation.getRegulatedEntity());
-            setRegulator(document, regulation.getRegulator());
         }
 
         setFireworksSpecies(document, databaseObject);
@@ -534,63 +524,8 @@ class DocumentBuilder {
         } else if (databaseObject instanceof ReactionLikeEvent) {
             // Also covering BlackBoxEvent, (De)Polymerisation, (Failed)Reaction
             return "Reaction";
-        } else if (databaseObject instanceof Regulation) {
-            // Also covering PositiveRegulation, NegativeRegulation, Requirement
-            return "Regulation";
         } else {
             return databaseObject.getSchemaClass();
-        }
-    }
-
-    private void setRegulatedEntity(IndexDocument document, DatabaseObject regulatedEntity) {
-        if (regulatedEntity == null) return;
-
-        // TODO: Set name as the displayName, then we avoid querying for a physical entity and get the regulated entity.
-        List<String> names = new ArrayList<>();
-        if (regulatedEntity instanceof CatalystActivity) {
-            CatalystActivity ca = (CatalystActivity) regulatedEntity;
-
-            // TODO: getPhysicalEntity is wrong. We should invoke List - getCatalizedEvents(). DISCUSS.
-            names = ca.getPhysicalEntity().getName();
-        } else if (regulatedEntity instanceof Event) {
-            Event ev = (Event) regulatedEntity;
-            names = ev.getName();
-        } else {
-            names.add(regulatedEntity.getDisplayName());
-        }
-
-        if (names != null && !names.isEmpty()) document.setRegulatedEntity(names.get(0));
-
-        if (StringUtils.isNotEmpty(regulatedEntity.getStId())) {
-            document.setRegulatedEntityId(regulatedEntity.getStId());
-        } else {
-            document.setRegulatedEntityId(regulatedEntity.getDbId().toString());
-        }
-    }
-
-    private void setRegulator(IndexDocument document, DatabaseObject regulator) {
-        if (regulator == null) return;
-
-        List<String> names = new ArrayList<>();
-        if (regulator instanceof CatalystActivity) {
-            CatalystActivity ca = (CatalystActivity) regulator;
-            names = ca.getPhysicalEntity().getName();
-        } else if (regulator instanceof Event) {
-            Event ev = (Event) regulator;
-            names = ev.getName();
-        } else if (regulator instanceof PhysicalEntity) {
-            PhysicalEntity pe = (PhysicalEntity) regulator;
-            names = pe.getName();
-        } else {
-            names.add(regulator.getDisplayName());
-        }
-
-        if (names != null && !names.isEmpty()) document.setRegulator(names.get(0));
-
-        if (StringUtils.isNotEmpty(regulator.getStId())) {
-            document.setRegulatorId(regulator.getStId());
-        } else {
-            document.setRegulatorId(regulator.getDbId().toString());
         }
     }
 

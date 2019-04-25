@@ -4,7 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.model.DatabaseObject;
+import org.reactome.server.graph.domain.model.Event;
+import org.reactome.server.graph.domain.model.PhysicalEntity;
+import org.reactome.server.graph.domain.model.ReferenceEntity;
 import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
@@ -88,10 +91,6 @@ public class Indexer {
             cleanNeo4jCache();
 
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
-            commitSolrServer(solrCore, solrClient);
-            cleanNeo4jCache();
-
-            entriesCount += indexBySchemaClass(Regulation.class, entriesCount);
             commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
 
@@ -288,10 +287,9 @@ public class Indexer {
      * This is going to be applied in the progress bar
      */
     private void totalCount() {
-        logger.info("Counting all entries for Event, PhysicalEntities and Regulation");
+        logger.info("Counting all entries for Event, PhysicalEntities");
         total = schemaService.countEntries(Event.class);
         total += schemaService.countEntries(PhysicalEntity.class);
-        total += schemaService.countEntries(Regulation.class);
     }
 
     /**
