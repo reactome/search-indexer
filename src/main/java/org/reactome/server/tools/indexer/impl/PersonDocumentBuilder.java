@@ -1,6 +1,6 @@
 package org.reactome.server.tools.indexer.impl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.reactome.server.graph.domain.model.Person;
 import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.tools.indexer.model.IndexDocument;
@@ -33,7 +33,7 @@ class PersonDocumentBuilder {
 
     private String getName(Person person) {
         if (StringUtils.isNotEmpty(person.getFirstname()) && StringUtils.isNotEmpty(person.getSurname())) {
-            return person.getFirstname() + " " + person.getSurname();
+            return person.getSurname() + ", " + person.getFirstname();
         }
         return person.getDisplayName();
     }
