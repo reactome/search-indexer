@@ -105,7 +105,7 @@ class DocumentBuilder {
             setCompartment(document, event.getCompartment());
             setCrossReference(document, event.getCrossReference());
             setSpecies(document, event);
-//            setAuthorAndReviewed(document, event);
+
             // SPECIFIC FOR EVENT
             setGoTerms(document, event.getGoBiologicalProcess());
             if (event instanceof ReactionLikeEvent) {
@@ -181,7 +181,7 @@ class DocumentBuilder {
 
         // Regulation and Other Entities may not have (fireworks)species and solr won't be able to find them
         // in the Fireworks (filter query fireworksSpecies)
-        if(fireworksSpecies.isEmpty()) {
+        if (fireworksSpecies.isEmpty()) {
             fireworksSpecies.add("Entries without species");
         }
 
@@ -450,22 +450,22 @@ class DocumentBuilder {
                 }
             }
         }
-     }
+    }
 
-    private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues){
-        List<String> fragments = new ArrayList<>();
+    private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues) {
+        Set<String> fragments = new HashSet<>();
         for (AbstractModifiedResidue amr : abstractModifiedResidues) {
             final ReferenceSequence referenceSequence = amr.getReferenceSequence();
             if (referenceSequence != null) {
-                fragments.add(referenceSequence.getIdentifier());
-                fragments.addAll(referenceSequence.getGeneName());
-                fragments.addAll(referenceSequence.getOtherIdentifier());
-                if(referenceSequence instanceof ReferenceGeneProduct){
+                if (referenceSequence.getIdentifier() != null) fragments.add(referenceSequence.getIdentifier());
+                if (referenceSequence.getGeneName() != null && !referenceSequence.getGeneName().isEmpty()) fragments.addAll(referenceSequence.getGeneName());
+                if (referenceSequence.getOtherIdentifier() != null && !referenceSequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceSequence.getOtherIdentifier());
+                if (referenceSequence instanceof ReferenceGeneProduct) {
                     ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
                     for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
-                        fragments.add(referenceDNASequence.getIdentifier());
-                        fragments.addAll(referenceDNASequence.getGeneName());
-                        fragments.addAll(referenceDNASequence.getOtherIdentifier());
+                        if (referenceDNASequence.getIdentifier() != null) fragments.add(referenceDNASequence.getIdentifier());
+                        if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty()) fragments.addAll(referenceDNASequence.getGeneName());
+                        if (referenceDNASequence.getOtherIdentifier() != null && !referenceDNASequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceDNASequence.getOtherIdentifier());
                     }
                 }
             }
