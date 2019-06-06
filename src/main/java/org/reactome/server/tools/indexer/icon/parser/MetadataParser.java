@@ -34,9 +34,12 @@ public class MetadataParser {
     private List<Icon> icons = new ArrayList<>();
 
     private MetadataParser(String iconsDir, String ehldsDir) {
-        if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir)) {
+        if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir))
             throw new IllegalArgumentException("Icons directory or EHLDs directory can't be null or empty.");
-        }
+
+        if (!new File(ehldsDir).exists() || !new File(iconsDir).exists())
+            throw new IllegalArgumentException("Icons directory or EHLDs directory doesn't exist");
+
         this.iconsDir = iconsDir;
         this.ehldsDir = ehldsDir;
     }
@@ -51,10 +54,6 @@ public class MetadataParser {
     private void parse() {
         long startParse = System.currentTimeMillis();
         File iconLibDir = new File(iconsDir);
-        if (!iconLibDir.exists()) {
-            logger.error("Cannot find folder: {}", iconsDir);
-            System.exit(1);
-        }
 
         Collection<File> files = FileUtils.listFiles(iconLibDir, new String[]{"xml"}, true);
         logger.info("Parsing " + files.size() + " icons");
@@ -146,7 +145,9 @@ public class MetadataParser {
         }
 
         if (ehlds.isEmpty()) {
-            if (icon.isSkip() != null && !icon.isSkip()) {
+            if (icon.isSkip() == null) {
+                parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
+            } else if(!icon.isSkip()) {
                 parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
             }
         } else if (icon.isSkip() != null && icon.isSkip()) {
