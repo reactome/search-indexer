@@ -1,5 +1,20 @@
 package org.reactome.server.tools.indexer.impl;
 
+import static org.reactome.server.tools.indexer.util.SolrUtility.cleanSolrIndex;
+import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServer;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -21,15 +36,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static org.reactome.server.tools.indexer.util.SolrUtility.cleanSolrIndex;
-import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServer;
-
 /**
  * This class is responsible for establishing connection to Solr
  * and the Graph Database. It iterates through the collection of
@@ -41,6 +47,8 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServe
  */
 @Service
 public class Indexer {
+    private static final String TERMINATE_TOKEN = "TERMINATE";
+
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private static final String EBEYE_NAME = "Reactome";
@@ -86,10 +94,11 @@ public class Indexer {
 
             cleanSolrIndex(solrCore, solrClient);
 
+            System.out.println("Now indexing: PhysicalEntities");
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
             commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
-
+            System.out.println("Now indexing: Events");
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
             commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
@@ -97,7 +106,7 @@ public class Indexer {
             if (xml) {
                 marshaller.writeFooter(entriesCount);
             }
-
+            System.out.println("Now indexing: Interactors");
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
             commitSolrServer(solrCore, solrClient);
@@ -134,52 +143,141 @@ public class Indexer {
         Collection<Long> allOfGivenClass = schemaService.getDbIdsByClass(clazz);
         logger.info("[" + allOfGivenClass.size() + "] " + clazz.getSimpleName());
 
-        final int addInterval = 1000;
-        int numberOfDocuments = 0;
-        int count = 0;
-        List<IndexDocument> allDocuments = new ArrayList<>();
-        List<Long> missingDocuments = new ArrayList<>();
-        for (Long dbId : allOfGivenClass) {
+//        final int addInterval = 1000;
+        AtomicInteger numberOfDocuments = new AtomicInteger(0);
+        AtomicInteger count = new AtomicInteger(0);
+        LinkedBlockingQueue<IndexDocument> allDocuments = new LinkedBlockingQueue<>(500);
+        List<Long> missingDocuments = Collections.synchronizedList(new ArrayList<>());
+        LinkedBlockingQueue<IndexDocument> docsToMarshall = new LinkedBlockingQueue<>(500);
+        Runnable marshallerJob = new Runnable() {
 
-            IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
-            if (document != null) {
-                if (xml) marshaller.writeEntry(document);
-                allDocuments.add(document);
-            } else {
-                missingDocuments.add(dbId);
-            }
-
-            numberOfDocuments++;
-            if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
-                addDocumentsToSolrServer(allDocuments);
-                allDocuments.clear();
-
-                if (xml) {
-                    try {
-                        marshaller.flush();
-                    } catch (IOException e) {
-                        logger.error("An error occurred when trying to flush to XML", e);
+            @Override
+            public void run() {
+                boolean done = false;
+                boolean interrupted = false;
+                try {
+                    while (!done)
+                    {
+                        IndexDocument doc = docsToMarshall.take();
+                        if (doc != null) {
+                            if (!doc.getDbId().equals(TERMINATE_TOKEN)) {
+                                marshaller.writeEntry(doc);
+                            } else {
+                                done = true;
+                            }
+                        }
+                    }
+                } catch (IndexerException e) {
+                    logger.error("An error occurred when trying to write to XML", e);
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
                     }
                 }
-                logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
             }
+        };
 
-            count = previousCount + numberOfDocuments;
-            if (count % 100 == 0) updateProgressBar(count);
-            if (numberOfDocuments % 10000 == 0) cleanNeo4jCache();
+        Runnable addToSolrJob = new Runnable() {
+
+            @Override
+            public void run() {
+                boolean done = false;
+                boolean interrupted = false;
+                try {
+                    while (!done) {
+                        IndexDocument doc = allDocuments.take();
+                        if (doc != null) {
+                            if (!doc.getDbId().equals(TERMINATE_TOKEN)) {
+                                addDocumentsToSolrServer(Arrays.asList(doc));
+                            }
+                            else {
+                                done = true;
+                            }
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    interrupted = true;
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        };
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.submit(marshallerJob);
+        executor.submit(addToSolrJob);
+        allOfGivenClass.parallelStream().forEach( dbId -> {
+            try {
+
+                IndexDocument document;
+                document = this.documentBuilder.createSolrDocument(dbId); // transactional
+
+                if (document != null) {
+                    if (xml) {
+                        docsToMarshall.put(document);
+                    }
+                    allDocuments.put(document);
+                } else {
+                    missingDocuments.add(dbId);
+                }
+
+                int num = numberOfDocuments.incrementAndGet();
+
+                count.set(previousCount + num);
+                int c = count.get();
+                if (c % 100 == 0) updateProgressBar(c);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+                // Really, I'm not expecting any interruptions... so if they are caught, interrupts *this*
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        IndexDocument terminateToken = new IndexDocument();
+        terminateToken.setDbId(TERMINATE_TOKEN);
+        try {
+            allDocuments.put(terminateToken);
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
         }
 
-        // Add to Solr the remaining documents
-        if (!allDocuments.isEmpty()) addDocumentsToSolrServer(allDocuments);
+        IndexDocument terminateToken2 = new IndexDocument();
+        terminateToken2.setDbId(TERMINATE_TOKEN);
+        try {
+            docsToMarshall.put(terminateToken2);
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
 
         long end = System.currentTimeMillis() - start;
         logger.info("Elapsed time for " + clazz.getSimpleName() + " is " + end + "ms.");
 
         if (!missingDocuments.isEmpty()) logger.info("\nMissing documents for:\n\t" + StringUtils.join(missingDocuments, "\n\t"));
 
-        updateProgressBar(count); // done
-
-        return numberOfDocuments;
+        updateProgressBar(count.get()); // done
+        if (!allDocuments.isEmpty() && !docsToMarshall.isEmpty())
+        {
+            System.out.println("There is still work in the queue...");
+            while (!allDocuments.isEmpty() && !docsToMarshall.isEmpty())
+            {
+                try {
+                    // wait for the queues to be empty.
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            // Once the queues are empty, shut down the executor service.
+            executor.shutdown();
+        }
+        return numberOfDocuments.get();
     }
 
     /**
@@ -296,7 +394,7 @@ public class Indexer {
      * Safely adding Document Bean to Solr Server
      *
      * @param documents List of Documents that will be added to Solr
-     *                  <p>
+     *                  <br/><br/>
      *                  REMOTE_SOLR_EXCEPTION is a Runtime Exception
      */
     private void addDocumentsToSolrServer(List<IndexDocument> documents) {
@@ -345,7 +443,7 @@ public class Indexer {
     private void updateProgressBar(int done) {
         final int width = 55;
 
-        String format = "\r%3d%% %s %c";
+        String format = "\r%3d%% %s %c %s";
         char[] rotators = {'|', '/', '—', '\\'};
         double percent = (double) done / total;
         StringBuilder progress = new StringBuilder(width);
@@ -356,7 +454,7 @@ public class Indexer {
         for (; i < width; i++)
             progress.append(" ");
         progress.append('|');
-        System.out.printf(format, (int) (percent * 100), progress, rotators[((done - 1) % (rotators.length * 100)) / 100]);
+        System.out.printf(format, (int) (percent * 100), progress, rotators[((done - 1) % (rotators.length * 100)) / 100], done + " have been added.");
     }
 
     private void cleanNeo4jCache() {

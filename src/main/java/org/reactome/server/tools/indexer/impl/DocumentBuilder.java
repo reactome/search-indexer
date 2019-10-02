@@ -41,7 +41,7 @@ class DocumentBuilder {
     private DiagramService diagramService;
     private PathwaysService pathwaysService;
 
-    private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
+    private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = new HashMap<>();
 
     private List<String> keywords;
 
@@ -54,8 +54,7 @@ class DocumentBuilder {
 
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
-
-        if (simpleEntitiesAndDrugSpecies == null) {
+        if (simpleEntitiesAndDrugSpecies == null || simpleEntitiesAndDrugSpecies.isEmpty()) {
             cacheSimpleEntityAndDrugSpecies();
         }
 
