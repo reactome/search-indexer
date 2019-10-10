@@ -54,8 +54,10 @@ class DocumentBuilder {
 
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
-        if (simpleEntitiesAndDrugSpecies == null || simpleEntitiesAndDrugSpecies.isEmpty()) {
-            cacheSimpleEntityAndDrugSpecies();
+        synchronized(simpleEntitiesAndDrugSpecies) {
+            if (simpleEntitiesAndDrugSpecies == null || simpleEntitiesAndDrugSpecies.isEmpty()) {
+                cacheSimpleEntityAndDrugSpecies();
+            }
         }
 
         IndexDocument document = new IndexDocument();
