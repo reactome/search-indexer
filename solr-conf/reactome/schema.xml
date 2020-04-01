@@ -121,13 +121,19 @@
 
     <types>
         <fieldType name="version"           class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
-        <fieldType name="id"                class="solr.StrField" />
+        <fieldType name="id"                class="solr.StrField">
+            <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
+        </fieldType>
         <fieldType name="facet_field"       class="solr.StrField" />
         <fieldType name="stored_value"      class="solr.StrField" />
         <fieldType name="boolean_field"     class="solr.BoolField"/>
 
         <fieldType name="keyword_field" class="solr.TextField">
-            <analyzer>
+            <analyzer type="index">
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+            <analyzer type="query">
                 <tokenizer class="solr.KeywordTokenizerFactory"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
             </analyzer>
