@@ -1,6 +1,19 @@
 package org.reactome.server.tools.indexer.icon.parser;
 
-import jodd.util.collection.SortedArrayList;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.InvalidObjectException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -11,22 +24,13 @@ import org.reactome.server.tools.indexer.icon.model.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
-
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 public class MetadataParser {
     private static final Logger parserLogger = LoggerFactory.getLogger("parserLogger");
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
-    private static List<String> parserMessages = new SortedArrayList<>();
+    private static List<String> parserMessages = new ArrayList<>();
 
     private static MetadataParser instance;
     private String iconsDir;
@@ -82,7 +86,7 @@ public class MetadataParser {
         // Get EHLDs that the icon is in.
         icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon)));
         logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
-        parserMessages.forEach(parserLogger::info);
+        parserMessages.stream().sequential().sorted().forEach(parserLogger::info);
     }
 
     /**
@@ -125,6 +129,7 @@ public class MetadataParser {
         String escapedFileName = StringEscapeUtils.escapeXml11(icon.getStId());
         String quotedFilename = Pattern.quote(escapedFileName);
         // Grep command works differently in Linux and Mac, so we need to detect OS and apply the proper grep command
+        // TODO: Maybe look into using grep4j or unix4j. In general, it would be nice if we could avoid system calls.
         String os = System.getProperty("os.name").toLowerCase();
         String command = "grep -i -l -###OS### 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
         String grepPattern = "P"; // works on linux
@@ -145,9 +150,7 @@ public class MetadataParser {
         }
 
         if (ehlds.isEmpty()) {
-            if (icon.isSkip() == null) {
-                parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
-            } else if(!icon.isSkip()) {
+            if (icon.isSkip() == null || !icon.isSkip()) {
                 parserMessages.add(icon.getStId() + " (" + icon.getName() + ")");
             }
         } else if (icon.isSkip() != null && icon.isSkip()) {
