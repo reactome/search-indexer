@@ -142,6 +142,8 @@ public class IndexDocument {
     @Field
     private Long reviewedReactions;
 
+    private boolean covidRelated;
+
     // Auto Generated Getters Setters
 
     public List<String> getTaxId() {
@@ -569,5 +571,13 @@ public class IndexDocument {
 
     public void setReviewedReactions(Long reviewedReactions) {
         this.reviewedReactions = reviewedReactions;
+    }
+
+    public boolean isCovidRelated() {
+        return covidRelated;
+    }
+
+    public void setCovidRelated(boolean covidRelated) {
+        this.covidRelated = covidRelated;
     }
 }

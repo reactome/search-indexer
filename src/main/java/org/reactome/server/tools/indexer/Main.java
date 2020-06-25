@@ -53,6 +53,7 @@ public class Main {
                         new FlaggedOption("mailPort", JSAP.INTEGER_PARSER, "25", JSAP.NOT_REQUIRED, 'j', "mailPort", "SMTP Mail port"),
                         new FlaggedOption("mailDest", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'k', "mailDest", "Mail Destination"),
                         new FlaggedOption("ebeyexml", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'l', "ebeyexml", "XML output file for the EBeye."),
+                        new FlaggedOption("ebeyecovidxml", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'm', "ebeyecovidxml", "XML output file for the EBeye COVID19 Portal."),
                         new FlaggedOption("sitemap", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'n', "sitemap", "Generates sitemap."),
                         new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core."),
                         new FlaggedOption("iconsDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "iconsDir", "The directory where all ICONS (R-ICO-*) reside"),
@@ -74,6 +75,7 @@ public class Main {
         boolean sendmail = !StringUtils.isEmpty(mailDest);
         boolean siteMap = config.getBoolean("sitemap");
         boolean ebeyexml = config.getBoolean("ebeyexml");
+        boolean ebeyecovidxml = config.getBoolean("ebeyecovidxml");
         boolean target = config.getBoolean("target");
         String iconsDir = config.getString("iconsDir");
         String ehldDir = config.getString("ehldDir");
@@ -83,6 +85,7 @@ public class Main {
             indexer.setSolrClient(solrClient);
             indexer.setSolrCore(solrCore);
             indexer.setEbeyeXml(ebeyexml);
+            indexer.setEbeyeCovidXml(ebeyecovidxml);
 
             int entriesCount = indexer.index();
 

@@ -228,6 +228,9 @@ class Marshaller {
                 String noHTMLString = document.getInferredSummation().replaceAll("<.*?>", "");
                 writeField("inferred_summation", noHTMLString, iii);
             }
+            if (document.isCovidRelated()) {
+                writeField("covid19", "true", iii);
+            }
 
             writer.write(ii + "</additional_fields>" + NEW_LINE);
 

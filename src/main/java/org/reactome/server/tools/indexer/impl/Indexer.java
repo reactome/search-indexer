@@ -62,27 +62,23 @@ public class Indexer {
     private SolrClient solrClient;
     private String solrCore;
     private Marshaller marshaller;
+    private Marshaller covidMarshaller;
 
-    private Boolean xml = false;
+    private Boolean ebeyeXml = false;
+    private Boolean ebeyeCovidXml = false;
+    private int releaseNumber;
     private long total;
+    private int covidEntriesCount;
 
     public int index() throws IndexerException {
         long start = System.currentTimeMillis();
         int entriesCount = 0;
 
         totalCount();
+        queryReleaseNumber();
 
         try {
-            if (xml) {
-                marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
-                int releaseNumber = 0;
-                try {
-                    releaseNumber = generalService.getDBInfo().getVersion();
-                } catch (Exception e) {
-                    logger.error("An error occurred when trying to retrieve the release number from the database.");
-                }
-                marshaller.writeHeader(releaseNumber);
-            }
+            initialiseXmlOutputFiles();
 
             cleanSolrIndex(solrCore, solrClient);
 
@@ -94,9 +90,7 @@ public class Indexer {
             commitSolrServer(solrCore, solrClient);
             cleanNeo4jCache();
 
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
+            finaliseXmlOutputFiles(entriesCount, covidEntriesCount);
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
@@ -123,6 +117,36 @@ public class Indexer {
         }
     }
 
+    private void initialiseXmlOutputFiles() throws IndexerException {
+        if (ebeyeXml) {
+            marshaller = new Marshaller(new File("ebeye.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+            marshaller.writeHeader(releaseNumber);
+        }
+
+        if (ebeyeCovidXml) {
+            covidMarshaller = new Marshaller(new File("ebeyecovid.xml"), EBEYE_NAME, EBEYE_DESCRIPTION);
+            covidMarshaller.writeHeader(releaseNumber);
+        }
+    }
+
+    private void finaliseXmlOutputFiles(int entriesCount, int covidEntriesCount) {
+        if (ebeyeXml) {
+            try {
+                marshaller.writeFooter(entriesCount);
+            } catch (IndexerException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (ebeyeCovidXml) {
+            try {
+                covidMarshaller.writeFooter(covidEntriesCount);
+            } catch (IndexerException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * @param clazz class to be Indexed
      * @return total of indexed items
@@ -143,7 +167,12 @@ public class Indexer {
 
             IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
             if (document != null) {
-                if (xml) marshaller.writeEntry(document);
+                if (ebeyeXml) marshaller.writeEntry(document);
+                if (ebeyeCovidXml && document.isCovidRelated()) {
+                    covidMarshaller.writeEntry(document);
+                    covidEntriesCount++;
+                }
+
                 allDocuments.add(document);
             } else {
                 missingDocuments.add(dbId);
@@ -154,13 +183,7 @@ public class Indexer {
                 addDocumentsToSolrServer(allDocuments);
                 allDocuments.clear();
 
-                if (xml) {
-                    try {
-                        marshaller.flush();
-                    } catch (IOException e) {
-                        logger.error("An error occurred when trying to flush to XML", e);
-                    }
-                }
+                closeXmlFiles();
                 logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
             }
 
@@ -292,6 +315,32 @@ public class Indexer {
         total += schemaService.countEntries(PhysicalEntity.class);
     }
 
+    private void queryReleaseNumber(){
+        try {
+            releaseNumber = generalService.getDBInfo().getVersion();
+        } catch (Exception e) {
+            logger.error("An error occurred when trying to retrieve the release number from the database.");
+        }
+    }
+
+    private void closeXmlFiles(){
+        if (ebeyeXml) {
+            try {
+                marshaller.flush();
+            } catch (IOException e) {
+                logger.error("An error occurred when trying to flush to XML", e);
+            }
+        }
+
+        if (ebeyeCovidXml) {
+            try {
+                covidMarshaller.flush();
+            } catch (IOException e) {
+                logger.error("An error occurred when trying to flush to XML", e);
+            }
+        }
+
+    }
     /**
      * Safely adding Document Bean to Solr Server
      *
@@ -329,12 +378,16 @@ public class Indexer {
         this.solrCore = solrCore;
     }
 
-    public Boolean getXml() {
-        return xml;
+    public Boolean getEbeyeXml() {
+        return ebeyeXml;
     }
 
-    public void setEbeyeXml(Boolean xml) {
-        this.xml = xml;
+    public void setEbeyeXml(Boolean ebeyeXml) {
+        this.ebeyeXml = ebeyeXml;
+    }
+
+    public void setEbeyeCovidXml(boolean ebeyeCovidXml) {
+        this.ebeyeCovidXml = ebeyeCovidXml;
     }
 
     /**

@@ -35,6 +35,7 @@ class DocumentBuilder {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
+    private static final String SARS_DOID_MAPPING = "sars_doid_mapping.csv";
 
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
@@ -42,13 +43,20 @@ class DocumentBuilder {
     private PathwaysService pathwaysService;
 
     private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
+    private Collection<String> covid19enties = null;
 
     private List<String> keywords;
+    private List<String> SARSDoid;
 
     public DocumentBuilder() {
-        keywords = loadFile();
+        keywords = loadFile(CONTROLLED_VOCABULARY);
         if (keywords == null) {
             logger.error("No keywords available");
+        }
+
+        SARSDoid = loadFile(SARS_DOID_MAPPING);
+        if (SARSDoid == null) {
+            logger.error("No SARS DOID mapping available");
         }
     }
 
@@ -57,6 +65,10 @@ class DocumentBuilder {
 
         if (simpleEntitiesAndDrugSpecies == null) {
             cacheSimpleEntityAndDrugSpecies();
+        }
+
+        if (covid19enties == null) {
+            cacheCovid19Entities();
         }
 
         IndexDocument document = new IndexDocument();
@@ -120,6 +132,9 @@ class DocumentBuilder {
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
+        // A second file is generated for covid19portal containing Reactome data related to COVID
+        document.setCovidRelated(covid19enties.contains(document.getStId()));
+
         return document;
     }
 
@@ -141,6 +156,31 @@ class DocumentBuilder {
         }
 
         logger.info("Caching SimpleEntity Species is done");
+    }
+
+    private void cacheCovid19Entities() {
+        logger.info("Caching COVID19 Entities");
+        String query = "" +
+                "MATCH (n:DatabaseObject)-[:disease]-(d:Disease) " +
+                "WHERE d.identifier = {viral} " + // viral
+                "MATCH (n)-[:relatedSpecies|species]-(s:Species) " +
+                "WHERE s.displayName = \"Human SARS coronavirus\" " +
+                "MATCH (o:DatabaseObject)-[:disease]-(do:Disease) " +
+                "WHERE do.identifier IN  {sarsDisease} " +
+                "MATCH (o)-[:relatedSpecies|species]-(:Species) " +
+                "WITH n + collect(o) as final " +
+                "UNWIND final as f " +
+                "RETURN distinct f.stId as ST_ID";
+        try {
+            Map<String, Object> params = new HashMap<>(SARSDoid.size());
+            params.put("viral", SARSDoid.get(0));
+            params.put("sarsDisease", SARSDoid.stream().skip(1).collect(Collectors.toList()));
+            covid19enties = advancedDatabaseObjectService.getCustomQueryResults(String.class, query, params);
+        } catch (CustomQueryException e) {
+            logger.error("Could not cache covid19 entities");
+        }
+
+        logger.info("Caching COVID19 Entities is done");
     }
 
     private void setFireworksSpecies(IndexDocument document, DatabaseObject databaseObject) {
@@ -579,10 +619,10 @@ class DocumentBuilder {
      *
      * @return the content file in a List of String
      */
-    private List<String> loadFile() {
+    private List<String> loadFile(String fileName) {
         try {
             List<String> list = new ArrayList<>();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + CONTROLLED_VOCABULARY)));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);
