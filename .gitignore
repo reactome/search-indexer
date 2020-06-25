@@ -4,6 +4,8 @@
 logs
 
 ebeye.xml
+ebeyecovid.xml
+
 *.log*
 
 /target
