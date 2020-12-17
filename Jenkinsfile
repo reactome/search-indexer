@@ -1,26 +1,20 @@
-import groovy.json.JsonSlurper
-// This Jenkinsfile is used by Jenkins to run the SearchIndexer step of Reactome's release.
-// It requires that the DiagramConverter step has been run successfully before it can be run.
-def currentRelease
+// This Jenkinsfile is used by Jenkins to run the 'SearchIndexer' step of Reactome's release.
+// It requires that the 'DiagramConverter' step has been run successfully before it can be run.
+
+import org.reactome.release.jenkins.utilities.Utilities
+
+// Shared library maintained at 'release-jenkins-utils' repository.
+def utils = new Utilities()
+
 pipeline{
 	agent any
 
 	stages{
-		// This stage checks that upstream project DiagramConverter was run successfully.
+		// This stage checks that upstream project 'DiagramConverter' was run successfully.
 		stage('Check DiagramConverter build succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
-					// This queries the Jenkins API to confirm that the most recent build of DiagramConverter was successful.
-					def diagramUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/${currentRelease}/job/File-Generation/job/DiagramConverter/lastBuild/api/json"
-					if (diagramUrl.getStatus() == 404) {
-						error("DiagramConverter has not yet been run. Please complete a successful build.")
-					} else {
-						def diagramJson = new JsonSlurper().parseText(diagramUrl.getContent())
-						if (diagramJson['result'] != "SUCCESS"){
-							error("Most recent DiagramConverter build status: " + diagramJson['result'] + ". Please complete a successful build.")
-						}
-					}
+                    			utils.checkUpstreamBuildsSucceeded("File-Generation/job/DiagramConverter/")
 				}
 			}
 		}
@@ -32,7 +26,8 @@ pipeline{
 				}
 			}
 		}
-		// Execute the jar file, producing data-export files.
+		// Execute the jar file, producing data-export files. This step uses a bash script, 'run-indexer.sh' that is found in the 'scripts' folder.
+		// This step requires both the neo4j and solr credentials.
 		stage('Main: Run Search-Indexer'){
 			steps{
 				script{
@@ -44,22 +39,45 @@ pipeline{
 				}
 			}
 		}
-		/*
-		// Archive everything on S3, and move the 'diagram' folder to the download/vXX folder.
+		// Gzips both ebeye.xml and ebeye-covid.xml files, and then moves them, along with Icons folder, to the downloads folder.
+		stage('Post: Move ebeye and Icons txt files to download'){
+		    steps{
+		        script{
+				def releaseVersion = utils.getReleaseVersion()
+				def iconsFolder = "icons/"
+				// Gzip ebeye.xml and ebeye-covid.xml files before moving them to download/XX.
+				sh "gzip ebeye*"
+				sh "cp ebeye*gz ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+				sh "gunzip ebeye*gz"
+				// Archives Icons folder before moving to download/XX folder.
+				sh "mkdir -p ${iconsFolder}"
+				sh "mv *txt ${iconsFolder}"
+				sh "tar -zcvf icons-v${releaseVersion}.tar ${iconsFolder}"
+				sh "mv ${iconsFolder} ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+		        }
+		    }
+		}
+		// Uses 'changeSiteMapFiles.sh' script to move site_map files to proper location and set appropriate permissions.
+		stage('Post: Update sitemap files and restart Solr') {
+		    steps{
+		        script{
+		           sh "sudo bash scripts/changeSiteMapFiles.sh"
+		           sh "sudo service solr stop"
+		           sh "sudo service solr start"
+		        }
+		    }
+		}
+		// Archive everything on S3.
 		stage('Post: Archive Outputs'){
 			steps{
 				script{
-					def s3Path = "${env.S3_RELEASE_DIRECTORY_URL}/${currentRelease}/data_export"
-					def archive = "export-v${currentRelease}.tgz"
-					sh "tar -zcvf ${archive} ${folder}"
-					sh "mv ${folder}/* ${env.ABS_DOWNLOAD_PATH}/${currentRelease}/" 
-					sh "gzip logs/*"
-					sh "aws s3 --no-progress --recursive cp logs/ $s3Path/logs/"
-					sh "aws s3 --no-progress cp ${archive} $s3Path/"
-					sh "rm -r logs/ ${folder} ${archive}"
+					def releaseVersion = utils.getReleaseVersion()
+					def dataFiles = ["ebeye.xml", "ebeyecovid.xml", "icons-v${releaseVersion}.tar"]
+					def logFiles = []
+					def foldersToDelete = []
+					utils.cleanUpAndArchiveBuildFiles("search_indexer", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}
-		*/
 	}
 }
