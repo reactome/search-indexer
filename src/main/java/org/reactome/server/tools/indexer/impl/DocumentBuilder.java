@@ -42,11 +42,11 @@ class DocumentBuilder {
     private DiagramService diagramService;
     private PathwaysService pathwaysService;
 
-    private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
-    private Collection<String> covid19enties = null;
+    private final Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = new HashMap<>();
+    private final Collection<String> covid19enties = new ArrayList<>();
 
-    private List<String> keywords;
-    private List<String> SARSDoid;
+    private final List<String> keywords;
+    private final List<String> SARSDoid;
 
     public DocumentBuilder() {
         keywords = loadFile(CONTROLLED_VOCABULARY);
@@ -63,13 +63,12 @@ class DocumentBuilder {
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
         synchronized(simpleEntitiesAndDrugSpecies) {
-            if (simpleEntitiesAndDrugSpecies == null || simpleEntitiesAndDrugSpecies.isEmpty()) {
-                cacheSimpleEntityAndDrugSpecies();
-            }
+            if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }
 
-        if (covid19enties == null) {
-            cacheCovid19Entities();
+        synchronized(covid19enties) {
+            if (covid19enties.isEmpty()) cacheCovid19Entities();
+
         }
 
         IndexDocument document = new IndexDocument();
@@ -148,7 +147,7 @@ class DocumentBuilder {
                 "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query, null);
-            simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
+            //simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
@@ -176,7 +175,7 @@ class DocumentBuilder {
             Map<String, Object> params = new HashMap<>(SARSDoid.size());
             params.put("viral", SARSDoid.get(0));
             params.put("sarsDisease", SARSDoid.stream().skip(1).collect(Collectors.toList()));
-            covid19enties = advancedDatabaseObjectService.getCustomQueryResults(String.class, query, params);
+            covid19enties.addAll(advancedDatabaseObjectService.getCustomQueryResults(String.class, query, params));
         } catch (CustomQueryException e) {
             logger.error("Could not cache covid19 entities");
         }
@@ -221,7 +220,6 @@ class DocumentBuilder {
 
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
-            // some regulations do not have name
             document.setName(databaseObject.getDisplayName());
             return;
         }
@@ -579,7 +577,7 @@ class DocumentBuilder {
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram());
+            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + diagramOccurrence.isInDiagram();
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
                 occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
             } else {
