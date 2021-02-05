@@ -42,11 +42,11 @@ class DocumentBuilder {
     private DiagramService diagramService;
     private PathwaysService pathwaysService;
 
-    private Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = null;
-    private Collection<String> covid19enties = null;
+    private final Map<Long, Set<String>> simpleEntitiesAndDrugSpecies = new HashMap<>();
+    private final Collection<String> covid19enties = new ArrayList<>();
 
-    private List<String> keywords;
-    private List<String> SARSDoid;
+    private final List<String> keywords;
+    private final List<String> SARSDoid;
 
     public DocumentBuilder() {
         keywords = loadFile(CONTROLLED_VOCABULARY);
@@ -62,13 +62,13 @@ class DocumentBuilder {
 
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
-
-        if (simpleEntitiesAndDrugSpecies == null) {
-            cacheSimpleEntityAndDrugSpecies();
+        synchronized (simpleEntitiesAndDrugSpecies) {
+            if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }
 
-        if (covid19enties == null) {
-            cacheCovid19Entities();
+        synchronized (covid19enties) {
+            if (covid19enties.isEmpty()) cacheCovid19Entities();
+
         }
 
         IndexDocument document = new IndexDocument();
@@ -147,7 +147,7 @@ class DocumentBuilder {
                 "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query, null);
-            simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
+            //simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
@@ -175,7 +175,7 @@ class DocumentBuilder {
             Map<String, Object> params = new HashMap<>(SARSDoid.size());
             params.put("viral", SARSDoid.get(0));
             params.put("sarsDisease", SARSDoid.stream().skip(1).collect(Collectors.toList()));
-            covid19enties = advancedDatabaseObjectService.getCustomQueryResults(String.class, query, params);
+            covid19enties.addAll(advancedDatabaseObjectService.getCustomQueryResults(String.class, query, params));
         } catch (CustomQueryException e) {
             logger.error("Could not cache covid19 entities");
         }
@@ -220,7 +220,6 @@ class DocumentBuilder {
 
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
-            // some regulations do not have name
             document.setName(databaseObject.getDisplayName());
             return;
         }
@@ -427,7 +426,6 @@ class DocumentBuilder {
         if (databaseObject == null) return;
 
         ReferenceEntity referenceEntity = null;
-        String identifier;
 
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
@@ -439,7 +437,7 @@ class DocumentBuilder {
         }
 
         if (referenceEntity != null) {
-            identifier = referenceEntity.getIdentifier();
+            String identifier = referenceEntity.getIdentifier();
 
             if (referenceEntity instanceof ReferenceSequence) {
                 ReferenceSequence referenceSequence = (ReferenceSequence) referenceEntity;
@@ -452,6 +450,15 @@ class DocumentBuilder {
                     if (StringUtils.isNotEmpty(referenceIsoform.getVariantIdentifier())) {
                         identifier = referenceIsoform.getVariantIdentifier();
                     }
+                }
+                if (referenceSequence instanceof ReferenceGeneProduct) {
+                    ReferenceGeneProduct referenceGeneProduct = (ReferenceGeneProduct) referenceSequence;
+                    document.setReferenceDNAIdentifiers(getReferenceIdentifiers(referenceGeneProduct.getReferenceGene()));
+                    document.setReferenceRNAIdentifiers(getReferenceIdentifiers(referenceGeneProduct.getReferenceTranscript()));
+                }
+                if (referenceSequence instanceof ReferenceRNASequence) {
+                    ReferenceRNASequence referenceRNASequence = (ReferenceRNASequence) referenceSequence;
+                    document.setReferenceDNAIdentifiers(getReferenceIdentifiers(referenceRNASequence.getReferenceGene()));
                 }
             }
 
@@ -470,7 +477,7 @@ class DocumentBuilder {
             if (identifier != null) {
                 List<String> referenceIdentifiers = new LinkedList<>();
                 referenceIdentifiers.add(identifier);
-                referenceIdentifiers.add(referenceEntity.getReferenceDatabase().getDisplayName() + ":" + identifier);
+                referenceIdentifiers.add(referenceEntity.getDatabaseName() + ':' + referenceEntity.getIdentifier());
                 document.setReferenceIdentifiers(referenceIdentifiers);
                 document.setDatabaseName(referenceEntity.getReferenceDatabase().getDisplayName());
 
@@ -488,14 +495,19 @@ class DocumentBuilder {
             final ReferenceSequence referenceSequence = amr.getReferenceSequence();
             if (referenceSequence != null) {
                 if (referenceSequence.getIdentifier() != null) fragments.add(referenceSequence.getIdentifier());
-                if (referenceSequence.getGeneName() != null && !referenceSequence.getGeneName().isEmpty()) fragments.addAll(referenceSequence.getGeneName());
-                if (referenceSequence.getOtherIdentifier() != null && !referenceSequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceSequence.getOtherIdentifier());
+                if (referenceSequence.getGeneName() != null && !referenceSequence.getGeneName().isEmpty())
+                    fragments.addAll(referenceSequence.getGeneName());
+                if (referenceSequence.getOtherIdentifier() != null && !referenceSequence.getOtherIdentifier().isEmpty())
+                    fragments.addAll(referenceSequence.getOtherIdentifier());
                 if (referenceSequence instanceof ReferenceGeneProduct) {
                     ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
                     for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
-                        if (referenceDNASequence.getIdentifier() != null) fragments.add(referenceDNASequence.getIdentifier());
-                        if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty()) fragments.addAll(referenceDNASequence.getGeneName());
-                        if (referenceDNASequence.getOtherIdentifier() != null && !referenceDNASequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceDNASequence.getOtherIdentifier());
+                        if (referenceDNASequence.getIdentifier() != null)
+                            fragments.add(referenceDNASequence.getIdentifier());
+                        if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty())
+                            fragments.addAll(referenceDNASequence.getGeneName());
+                        if (referenceDNASequence.getOtherIdentifier() != null && !referenceDNASequence.getOtherIdentifier().isEmpty())
+                            fragments.addAll(referenceDNASequence.getOtherIdentifier());
                     }
                 }
             }
@@ -515,6 +527,10 @@ class DocumentBuilder {
         } else {
             return referenceEntity.getSchemaClass();
         }
+    }
+
+    private List<String> getReferenceIdentifiers(List<? extends ReferenceEntity> referenceEntities) {
+        return referenceEntities.stream().map(referenceEntity -> referenceEntity.getDatabaseName() + ':' + referenceEntity.getIdentifier()).collect(Collectors.toList());
     }
 
     private void setReferenceCrossReference(IndexDocument document, List<DatabaseIdentifier> referenceCrossReferences) {
@@ -578,7 +594,7 @@ class DocumentBuilder {
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram());
+            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + diagramOccurrence.isInDiagram();
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
                 occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
             } else {
