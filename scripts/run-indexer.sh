@@ -193,7 +193,7 @@ runIndexer () {
         _CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         if [[ "$_GITBRANCH" != "$_CURRENT_BRANCH" ]]; then
             echo "Your git branch [${_GITBRANCH}] parameter does not match the selected git branch in the project [${_CURRENT_BRANCH}]"
-        #    exit 1
+            exit 1
         fi
     fi
 
