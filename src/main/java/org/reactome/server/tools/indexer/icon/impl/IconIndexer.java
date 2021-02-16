@@ -47,7 +47,8 @@ public class IconIndexer {
         MetadataParser parser = MetadataParser.getInstance(iconDir, ehldsDir);
         List<Icon> icons = parser.getIcons();
         logger.info("["+ solrCore +"] Preparing SolR documents for icons [" + icons.size() + "]");
-        icons.forEach(icon -> collection.add(new IconDocumentBuilder(solrCore, solrClient).createIconSolrDocument(icon)));
+        IconDocumentBuilder iconDocumentBuilder = new IconDocumentBuilder(solrCore, solrClient);
+        icons.forEach(icon -> collection.add(iconDocumentBuilder.createIconSolrDocument(icon)));
         addDocumentsToSolrServer(collection);
         commitSolrServer(solrCore, solrClient);
         return collection.size();
