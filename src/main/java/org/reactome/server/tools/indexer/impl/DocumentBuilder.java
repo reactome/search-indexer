@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,8 @@ class DocumentBuilder {
 
     private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
     private static final String SARS_DOID_MAPPING = "sars_doid_mapping.csv";
+    public static final Pattern DB_ID_PATTERN = Pattern.compile("(?<db>\\w+).*:(?<id>.+)");
+    public static final Pattern SPACE_PATTERN = Pattern.compile("\\s");
 
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
@@ -472,6 +476,7 @@ class DocumentBuilder {
 
             document.setReferenceOtherIdentifier(referenceEntity.getOtherIdentifier());
 
+            setReferenceOtherIdentifiers(document, referenceEntity.getOtherIdentifier());
             setReferenceCrossReference(document, referenceEntity.getCrossReference());
 
             if (identifier != null) {
@@ -530,7 +535,26 @@ class DocumentBuilder {
     }
 
     private List<String> getReferenceIdentifiers(List<? extends ReferenceEntity> referenceEntities) {
-        return referenceEntities.stream().map(referenceEntity -> referenceEntity.getDatabaseName() + ':' + referenceEntity.getIdentifier()).collect(Collectors.toList());
+        Set<String> identifiers = new TreeSet<>();
+        if (referenceEntities == null) return new LinkedList<>();
+        for (ReferenceEntity referenceEntity : referenceEntities) {
+            identifiers.add(SPACE_PATTERN.split(referenceEntity.getDatabaseName())[0] + ':' + referenceEntity.getIdentifier());
+            identifiers.add(referenceEntity.getDatabaseName().replace(" ", "-") + ':' + referenceEntity.getIdentifier());
+            identifiers.add(referenceEntity.getIdentifier());
+        }
+        return new LinkedList<>(identifiers);
+    }
+
+    private void setReferenceOtherIdentifiers(IndexDocument document, List<String> otherIdentifiers) {
+        if (otherIdentifiers == null) return;
+        Set<String> fullOtherIdentifiers = new TreeSet<>(otherIdentifiers);
+        // If other identifier of shape "<db>:<id>", index as well <id>
+        for (String otherIdentifier : otherIdentifiers) {
+            Matcher matcher = DB_ID_PATTERN.matcher(otherIdentifier);
+            if (matcher.find()) fullOtherIdentifiers.add(matcher.group("id"));
+        }
+
+        document.setReferenceOtherIdentifier(new LinkedList<>(fullOtherIdentifiers));
     }
 
     private void setReferenceCrossReference(IndexDocument document, List<DatabaseIdentifier> referenceCrossReferences) {
