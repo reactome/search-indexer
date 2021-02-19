@@ -148,6 +148,11 @@ class InteractorDocumentBuilder {
         List<String> names = interactor.getName();
         if (names != null && !names.isEmpty()) return names.get(0);
 
+        if (interactor instanceof ReferenceSequence) {
+            List<String> geneName = ((ReferenceSequence) interactor).getGeneName();
+            if (geneName != null && !geneName.isEmpty()) return geneName.get(0);
+        }
+
         if (interactor instanceof ReferenceIsoform) return ((ReferenceIsoform) interactor).getVariantIdentifier();
 
         return interactor.getIdentifier();
