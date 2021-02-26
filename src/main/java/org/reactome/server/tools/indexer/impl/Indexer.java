@@ -164,7 +164,6 @@ public class Indexer {
         List<IndexDocument> allDocuments = new ArrayList<>();
         List<Long> missingDocuments = new ArrayList<>();
         for (Long dbId : allOfGivenClass) {
-
             IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
             if (document != null) {
                 if (ebeyeXml) marshaller.writeEntry(document);
@@ -198,7 +197,8 @@ public class Indexer {
         long end = System.currentTimeMillis() - start;
         logger.info("Elapsed time for " + clazz.getSimpleName() + " is " + end + "ms.");
 
-        if (!missingDocuments.isEmpty()) logger.info("\nMissing documents for:\n\t" + StringUtils.join(missingDocuments, "\n\t"));
+        if (!missingDocuments.isEmpty())
+            logger.info("\nMissing documents for:\n\t" + StringUtils.join(missingDocuments, "\n\t"));
 
         updateProgressBar(count); // done
 
@@ -286,7 +286,7 @@ public class Indexer {
      *
      * @return interactor
      */
-    private Collection<ReferenceEntity> getInteractors(){
+    private Collection<ReferenceEntity> getInteractors() {
         Collection<ReferenceEntity> rtn;
 
         String query = "" +
@@ -315,7 +315,7 @@ public class Indexer {
         total += schemaService.countEntries(PhysicalEntity.class);
     }
 
-    private void queryReleaseNumber(){
+    private void queryReleaseNumber() {
         try {
             releaseNumber = generalService.getDBInfo().getVersion();
         } catch (Exception e) {
@@ -323,7 +323,7 @@ public class Indexer {
         }
     }
 
-    private void closeXmlFiles(){
+    private void closeXmlFiles() {
         if (ebeyeXml) {
             try {
                 marshaller.flush();
@@ -341,6 +341,7 @@ public class Indexer {
         }
 
     }
+
     /**
      * Safely adding Document Bean to Solr Server
      *
