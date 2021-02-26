@@ -139,7 +139,7 @@
             <!-- tiebreaker if fields have the same exact score-->
             <str name="bq">species:"Homo sapiens"^0.8</str>
             <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -243,7 +243,7 @@
             <str name="fq">-type:Icon</str>
             <str name="fl">stId, name, exactType, compartmentName</str>
 
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 name^30.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
@@ -275,7 +275,7 @@
             <!--no search results returned because we are only interested in faceting information-->
             <int name="rows">0</int>
             <!--no search results returned because we are only interested in faceting information-->
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -348,7 +348,14 @@
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
 
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="fl">
+                dbId,stId,species,isDisease,orcidId,name,exactType,compartmentName,
+                referenceURL,summation,regulator,regulatorId,regulatedEntity,regulatedEntityId,
+                authoredPathways,authoredReactions,reviewedPathways,reviewedReactions,
+                iconName,iconCuratorName,iconCuratorUrl,iconCuratorOrcidId,iconDesignerName,iconDesignerUrl,iconDesignerOrcidId
+            </str>
+
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -442,8 +449,14 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
+            <str name="fl">
+                dbId,stId,species,isDisease,orcidId,name,exactType,compartmentName,
+                referenceURL,summation,regulator,regulatorId,regulatedEntity,regulatedEntityId,
+                authoredPathways,authoredReactions,reviewedPathways,reviewedReactions,
+                iconName,iconCuratorName,iconCuratorUrl,iconCuratorOrcidId,iconDesignerName,iconDesignerUrl,iconDesignerOrcidId
+            </str>
 
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -523,7 +536,7 @@
     </requestHandler>
 
     <!--this request handler is used to generate spellcheck suggestions if a the query did not provide any results-->
-    <requestHandler name="/spellcheck" class="org.apache.solr.handler.component.SearchHandler" >
+    <requestHandler name="/spellcheck" class="org.apache.solr.handler.component.SearchHandler">
         <lst name="defaults">
             <str name="defType">dismax</str>
             <str name="q.op">AND</str>
@@ -550,13 +563,13 @@
     </requestHandler>
 
     <!--this request handler is used for generating autosuggest suggestions for a small snippet of the query-->
-    <requestHandler name="/suggest" class="org.apache.solr.handler.component.SearchHandler" >
+    <requestHandler name="/suggest" class="org.apache.solr.handler.component.SearchHandler">
         <lst name="defaults">
             <str name="q.op">AND</str>
             <str name="spellcheck.collateParam.q.op">AND</str>
             <str name="spellcheck">true</str>
             <!--Activates spellcheck component-->
-            <str name="spellcheck.dictionary">suggest</str>  <!--The name of the spellchecker to use-->
+            <str name="spellcheck.dictionary">suggest</str>            <!--The name of the spellchecker to use-->
 
             <str name="spellcheck.onlyMorePopular">false</str>
             <!--disable showing only more popular results-->
@@ -674,7 +687,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
                 referenceName^100.0
@@ -770,7 +783,7 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="fq">-type:Person</str>
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
                 referenceName^100.0
@@ -793,14 +806,10 @@
     <requestHandler name="/update" class="solr.UpdateRequestHandler"/>
 
     <!-- Field Analysis Request Handler analyses the filed given in the query-->
-    <requestHandler name="/analysis/field"
-                    startup="lazy"
-                    class="solr.FieldAnalysisRequestHandler"/>
+    <requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler"/>
 
     <!-- Document Analysis Handler analyses a single document -->
-    <requestHandler name="/analysis/document"
-                    class="solr.DocumentAnalysisRequestHandler"
-                    startup="lazy"/>
+    <requestHandler name="/analysis/document" class="solr.DocumentAnalysisRequestHandler" startup="lazy"/>
 
     <!-- ping/healthcheck -->
     <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
