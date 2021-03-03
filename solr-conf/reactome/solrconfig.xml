@@ -348,13 +348,6 @@
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
 
-            <str name="fl">
-                dbId,stId,species,isDisease,orcidId,name,exactType,compartmentName,
-                referenceURL,summation,regulator,regulatorId,regulatedEntity,regulatedEntityId,
-                authoredPathways,authoredReactions,reviewedPathways,reviewedReactions,
-                iconName,iconCuratorName,iconCuratorUrl,iconCuratorOrcidId,iconDesignerName,iconDesignerUrl,iconDesignerOrcidId
-            </str>
-
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
@@ -449,12 +442,6 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
-            <str name="fl">
-                dbId,stId,species,isDisease,orcidId,name,exactType,compartmentName,
-                referenceURL,summation,regulator,regulatorId,regulatedEntity,regulatedEntityId,
-                authoredPathways,authoredReactions,reviewedPathways,reviewedReactions,
-                iconName,iconCuratorName,iconCuratorUrl,iconCuratorOrcidId,iconDesignerName,iconDesignerUrl,iconDesignerOrcidId
-            </str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0

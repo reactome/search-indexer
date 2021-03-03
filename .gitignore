@@ -3,9 +3,9 @@
 .idea
 logs
 
-ebeye.xml
+ebeye*.xml
 ebeyecovid.xml
-
+*2Icon.txt
 *.log*
 
 /target
