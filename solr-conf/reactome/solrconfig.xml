@@ -44,7 +44,8 @@
         <filterCache class="solr.FastLRUCache" size="512" initialSize="512" autowarmCount="0"/>
         <queryResultCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
         <documentCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
-        <cache name="perSegFilter" class="solr.search.LRUCache" size="10" initialSize="0" autowarmCount="10" regenerator="solr.NoOpRegenerator"/>
+        <cache name="perSegFilter" class="solr.search.LRUCache" size="10" initialSize="0" autowarmCount="10"
+               regenerator="solr.NoOpRegenerator"/>
         <enableLazyFieldLoading>true</enableLazyFieldLoading>
         <queryResultWindowSize>100</queryResultWindowSize>
         <queryResultMaxDocsCached>200</queryResultMaxDocsCached>
@@ -78,7 +79,8 @@
     </query>
 
     <requestDispatcher handleSelect="false">
-        <requestParsers enableRemoteStreaming="true" multipartUploadLimitInKB="2048000" formdataUploadLimitInKB="2048" addHttpRequestToContext="false"/>
+        <requestParsers enableRemoteStreaming="true" multipartUploadLimitInKB="2048000" formdataUploadLimitInKB="2048"
+                        addHttpRequestToContext="false"/>
         <httpCaching never304="true"/>
     </requestDispatcher>
 
@@ -116,25 +118,6 @@
         </lst>
     </requestHandler>
 
-    <!--This request handler will provide general faceting information, it is supposed to be used with a *:* query -->
-    <!--and will return the absolute numbers of entries within the different facets-->
-    <requestHandler name="/iconFacet" class="solr.SearchHandler">
-        <lst name="defaults">
-            <str name="q.op">OR</str>
-            <str name="echoParams">explicit</str>
-            <int name="start">0</int>
-            <!--no search results returned because we are only interested in faceting information-->
-            <int name="rows">0</int>
-            <!--no search results returned because we are only interested in faceting information-->
-            <str name="facet">on</str>
-            <!-- activates Faceting-->
-            <str name="facet.mincount">1</str>
-            <!--minimum count of a facet field to be returned (eliminates null values)-->
-            <str name="facet.field">iconCategories_facet</str>
-            <!--fields selected for faceting-->
-        </lst>
-    </requestHandler>
-
     <!--This request handler will provide faceting information on a specific query. It has the same parameters as the standard-->
     <!--request handler used to query with addition to faceting and exception of spellchecking information and result grouping-->
     <requestHandler name="/facet" class="solr.SearchHandler">
@@ -156,7 +139,7 @@
             <!-- tiebreaker if fields have the same exact score-->
             <str name="bq">species:"Homo sapiens"^0.8</str>
             <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -184,9 +167,11 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^1.0
+                fragmentModification^-1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -222,6 +207,58 @@
         </lst>
     </requestHandler>
 
+    <!--This request handler will provide general faceting information, it is supposed to be used with a *:* query -->
+    <!--and will return the absolute numbers of entries within the different facets-->
+    <requestHandler name="/icon/facet" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <int name="start">0</int>
+            <!--no search results returned because we are only interested in faceting information-->
+            <int name="rows">0</int>
+            <!--no search results returned because we are only interested in faceting information-->
+            <str name="facet">on</str>
+            <!-- activates Faceting-->
+            <str name="facet.mincount">1</str>
+            <!--minimum count of a facet field to be returned (eliminates null values)-->
+            <str name="facet.field">iconCategories_facet</str>
+            <!--fields selected for faceting-->
+        </lst>
+    </requestHandler>
+
+    <!-- this request handler is used to search PEs and map with the icon -->
+    <requestHandler name="/icon/from/PE/stId" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+
+            <!-- general Parameters -->
+            <str name="q.alt">*:*</str>
+            <str name="df">name</str>
+
+            <!-- scoring parameters-->
+            <str name="fq">species_facet:"Homo sapiens" OR species_facet:"Entries without species"</str>
+            <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
+            <str name="fl">stId, name, exactType, compartmentName</str>
+
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
+                name^30.0
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
+                referenceSynonyms^20.0
+                referenceOtherIdentifier^1.0
+                fragmentModification^-1.0
+                referenceSecondaryIdentifier^20.0
+                referenceGeneNames^2.0
+                referenceCrossReferences^1.0
+            </str>
+        </lst>
+    </requestHandler>
+
     <!--This request handler will check whether there are results for a specific query. It has the same parameters as the standard-->
     <!--request handler used to query before adding a "suggestion" in the "did you mean..." field -->
     <requestHandler name="/exists" class="solr.SearchHandler">
@@ -238,7 +275,7 @@
             <!--no search results returned because we are only interested in faceting information-->
             <int name="rows">0</int>
             <!--no search results returned because we are only interested in faceting information-->
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -266,11 +303,13 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
-                fragmentModification^1.0
+                fragmentModification^-1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
                 diseaseId^1.0
@@ -309,7 +348,7 @@
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
 
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -337,9 +376,11 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^1.0
+                fragmentModification^-1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -365,7 +406,8 @@
             <str name="hl">true</str>
             <!-- activates highlighting-->
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
+                referenceRNAIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
 
             <!-- fields that should be highlighted-->
@@ -383,7 +425,7 @@
     </requestHandler>
 
     <!--this is the default search handler with highlighting and grouped results -->
-    <requestHandler name="/browse" class="solr.SearchHandler">
+    <requestHandler name="/search/grouped" class="solr.SearchHandler">
 
         <lst name="defaults">
             <str name="q.op">OR</str>
@@ -401,7 +443,7 @@
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
 
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
                 stId^100.0
@@ -429,9 +471,11 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^1.0
+                fragmentModification^-1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -467,7 +511,8 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
+                name, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
+                referenceRNAIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
             <str name="hl.requireFieldMatch">true</str>
             <str name="hl.preserveMulti">true</str>
@@ -477,39 +522,8 @@
         </lst>
     </requestHandler>
 
-    <!-- this request handler is used to search PEs and map with the icon -->
-    <requestHandler name="/iconPEStId" class="solr.SearchHandler">
-        <lst name="defaults">
-            <str name="q.op">OR</str>
-            <str name="echoParams">explicit</str>
-            <str name="defType">edismax</str>
-
-            <!-- general Parameters -->
-            <str name="q.alt">*:*</str>
-            <str name="df">name</str>
-
-            <!-- scoring parameters-->
-            <str name="fq">species_facet:"Homo sapiens" OR species_facet:"Entries without species"</str>
-            <str name="fq">-type:Person</str>
-            <str name="fq">-type:Icon</str>
-            <str name="fl">stId, name, exactType, compartmentName</str>
-
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
-                name^30.0
-                referenceName^100.0
-                referenceIdentifiers^100.0
-                referenceSynonyms^20.0
-                referenceOtherIdentifier^1.0
-                fragmentModification^1.0
-                referenceSecondaryIdentifier^20.0
-                referenceGeneNames^2.0
-                referenceCrossReferences^1.0
-            </str>
-        </lst>
-    </requestHandler>
-
     <!--this request handler is used to generate spellcheck suggestions if a the query did not provide any results-->
-    <requestHandler class="org.apache.solr.handler.component.SearchHandler" name="/spellcheck">
+    <requestHandler name="/spellcheck" class="org.apache.solr.handler.component.SearchHandler">
         <lst name="defaults">
             <str name="defType">dismax</str>
             <str name="q.op">AND</str>
@@ -536,14 +550,14 @@
     </requestHandler>
 
     <!--this request handler is used for generating autosuggest suggestions for a small snippet of the query-->
-    <requestHandler class="org.apache.solr.handler.component.SearchHandler" name="/suggest">
+    <requestHandler name="/suggest" class="org.apache.solr.handler.component.SearchHandler">
         <lst name="defaults">
             <str name="q.op">AND</str>
             <str name="spellcheck.collateParam.q.op">AND</str>
             <str name="spellcheck">true</str>
             <!--Activates spellcheck component-->
-            <str name="spellcheck.dictionary">suggest</str>  <!--The name of the spellchecker to use-->
-            
+            <str name="spellcheck.dictionary">suggest</str>            <!--The name of the spellchecker to use-->
+
             <str name="spellcheck.onlyMorePopular">false</str>
             <!--disable showing only more popular results-->
             <str name="spellcheck.count">10</str>
@@ -560,21 +574,6 @@
         <arr name="components">
             <str>suggest</str>
         </arr>
-    </requestHandler>
-
-
-   <requestHandler name="/interactor" class="solr.SearchHandler">
-        <lst name="defaults">
-            <str name="q.op">OR</str>
-            <str name="echoParams">explicit</str>
-            <str name="defType">edismax</str>
-            <int name="start">0</int>
-            <int name="rows">1</int>
-            <str name="mm">100%</str>
-            <str name="df">dbId</str>
-            <str name="qf">dbId^1.0</str>
-            <str name="fq">exactType:Interactor</str>
-        </lst>
     </requestHandler>
 
     <!--this request handler is used for searching on FIRE -->
@@ -620,9 +619,11 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^1.0
                 referenceIdentifiers^1.0
+                referenceDNAIdentifiers^1.0
+                referenceRNAIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
-                fragmentModification^10.0
+                fragmentModification^-10.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -636,7 +637,9 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <!-- activates highlighting-->
-            <str name="hl.fl">name, referenceName, referenceIdentifiers</str>
+            <str name="hl.fl">name, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
+                referenceRNAIdentifiers
+            </str>
             <!-- fields that should be highlighted-->
             <str name="hl.requireFieldMatch">true</str>
             <!-- a field will only be highlighted if the query matched in this particular field-->
@@ -655,6 +658,35 @@
             <!--minimum count of a facet field to be returned (eliminates null values)-->
             <str name="facet.field">{!ex=tf}type_facet</str>
             <!--fields selected for faceting, {!ex=tf} excludes type filter when faceting for types-->
+        </lst>
+    </requestHandler>
+
+    <!--this request handler is used for searching without grouping the result-->
+    <requestHandler name="/fireworks/flagging" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="q.op">OR</str>
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <str name="q.alt">*:*</str>
+            <str name="df">stId</str>
+            <!-- scoring parameters-->
+            <str name="tie">0.1</str>
+            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="fq">-type:Person</str>
+            <str name="fq">-type:Icon</str>
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
+                dbId^150.0
+                stId^150.0
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+                fragmentModification^-1.0
+                referenceSecondaryIdentifier^20
+                referenceGeneNames^1.0
+            </str>
         </lst>
     </requestHandler>
 
@@ -698,9 +730,11 @@
                 goMolecularFunctionAccession^1.0
                 referenceName^1.0
                 referenceIdentifiers^1.0
+                referenceDNAIdentifiers^1.0
+                referenceRNAIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
-                fragmentModification^10.0
+                fragmentModification^-10.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -719,7 +753,7 @@
         </lst>
     </requestHandler>
 
-    <requestHandler name="/diagramOccurrences" class="solr.SearchHandler">
+    <requestHandler name="/diagrams/occurrences" class="solr.SearchHandler">
         <lst name="defaults">
             <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
@@ -728,7 +762,7 @@
         </lst>
     </requestHandler>
 
-    <requestHandler name="/diagramFlagging" class="solr.SearchHandler">
+    <requestHandler name="/diagrams/flagging" class="solr.SearchHandler">
         <lst name="defaults">
             <str name="q.op">OR</str>
             <str name="echoParams">explicit</str>
@@ -736,14 +770,16 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="fq">-type:Person</str>
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
+            <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0
                 referenceName^100.0
                 referenceIdentifiers^100.0
+                referenceDNAIdentifiers^100.0
+                referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^1.0
+                fragmentModification^-1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 name_exact^100.0
@@ -754,72 +790,13 @@
         </lst>
     </requestHandler>
 
-    <!--this request handler is used for searching without grouping the result-->
-    <requestHandler name="/fireworksFlagging" class="solr.SearchHandler">
-        <lst name="defaults">
-            <str name="q.op">OR</str>
-            <str name="echoParams">explicit</str>
-            <str name="defType">edismax</str>
-            <str name="q.alt">*:*</str>
-            <str name="df">stId</str>
-            <!-- scoring parameters-->
-            <str name="tie">0.1</str>
-            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
-            <str name="fq">-type:Person</str>
-            <str name="fq">-type:Icon</str>
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
-                dbId^150.0
-                stId^150.0
-                referenceName^100.0
-                referenceIdentifiers^100.0
-                referenceSynonyms^50
-                referenceOtherIdentifier^1.0
-                fragmentModification^1.0
-                referenceSecondaryIdentifier^20
-                referenceGeneNames^1.0
-            </str>
-        </lst>
-    </requestHandler>
-
-    <!-- search targets indexer consumes this handler -->
-    <requestHandler name="/target" class="solr.SearchHandler">
-        <lst name="defaults">
-            <str name="q.op">OR</str>
-            <str name="echoParams">explicit</str>
-            <str name="defType">edismax</str>
-            <str name="q.alt">*:*</str>
-            <str name="df">stId</str>
-            <!-- scoring parameters-->
-            <str name="tie">0.1</str>
-            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
-            <str name="fq">-type:Person</str>
-            <str name="fq">-type:Icon</str>
-            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
-                dbId^150.0
-                stId^150.0
-                referenceName^100.0
-                referenceIdentifiers^100.0
-                referenceSynonyms^50
-                referenceOtherIdentifier^1.0
-                fragmentModification^1.0
-                referenceSecondaryIdentifier^20
-                referenceGeneNames^1.0
-            </str>
-        </lst>
-    </requestHandler>
-
-    <requestHandler name="/update" class="solr.UpdateRequestHandler" />
+    <requestHandler name="/update" class="solr.UpdateRequestHandler"/>
 
     <!-- Field Analysis Request Handler analyses the filed given in the query-->
-    <requestHandler name="/analysis/field"
-                    startup="lazy"
-                    class="solr.FieldAnalysisRequestHandler"/>
-
+    <requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler"/>
 
     <!-- Document Analysis Handler analyses a single document -->
-    <requestHandler name="/analysis/document"
-                    class="solr.DocumentAnalysisRequestHandler"
-                    startup="lazy"/>
+    <requestHandler name="/analysis/document" class="solr.DocumentAnalysisRequestHandler" startup="lazy"/>
 
     <!-- ping/healthcheck -->
     <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
@@ -856,6 +833,10 @@
             <str>terms</str>
         </arr>
     </requestHandler>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                 Search components
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
     <!--search component for spellchecking-->
     <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
@@ -911,7 +892,7 @@
     <searchComponent name="terms" class="solr.TermsComponent"/>
 
     <!--spellcheck component for autosuggestions, this spellchecker creates a dictionary using the values in specific fields-->
-    <searchComponent class="solr.SpellCheckComponent" name="suggest">
+    <searchComponent name="suggest" class="solr.SpellCheckComponent">
         <lst name="spellchecker">
             <str name="q.op">OR</str>
             <str name="name">suggest</str>

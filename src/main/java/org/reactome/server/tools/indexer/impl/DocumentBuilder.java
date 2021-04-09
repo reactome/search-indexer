@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,8 @@ class DocumentBuilder {
 
     private static final String CONTROLLED_VOCABULARY = "controlledVocabulary.csv";
     private static final String SARS_DOID_MAPPING = "sars_doid_mapping.csv";
+    public static final Pattern DB_ID_PATTERN = Pattern.compile("(?<db>\\w+).*:(?<id>.+)");
+    public static final Pattern SPACE_PATTERN = Pattern.compile("\\s");
 
     private DatabaseObjectService databaseObjectService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
@@ -62,11 +66,11 @@ class DocumentBuilder {
 
     @Transactional
     IndexDocument createSolrDocument(Long dbId) {
-        synchronized(simpleEntitiesAndDrugSpecies) {
+        synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }
 
-        synchronized(covid19enties) {
+        synchronized (covid19enties) {
             if (covid19enties.isEmpty()) cacheCovid19Entities();
 
         }
@@ -426,7 +430,6 @@ class DocumentBuilder {
         if (databaseObject == null) return;
 
         ReferenceEntity referenceEntity = null;
-        String identifier;
 
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
@@ -438,7 +441,7 @@ class DocumentBuilder {
         }
 
         if (referenceEntity != null) {
-            identifier = referenceEntity.getIdentifier();
+            String identifier = referenceEntity.getIdentifier();
 
             if (referenceEntity instanceof ReferenceSequence) {
                 ReferenceSequence referenceSequence = (ReferenceSequence) referenceEntity;
@@ -452,6 +455,15 @@ class DocumentBuilder {
                         identifier = referenceIsoform.getVariantIdentifier();
                     }
                 }
+                if (referenceSequence instanceof ReferenceGeneProduct) {
+                    ReferenceGeneProduct referenceGeneProduct = (ReferenceGeneProduct) referenceSequence;
+                    document.setReferenceDNAIdentifiers(getReferenceIdentifiers(referenceGeneProduct.getReferenceGene()));
+                    document.setReferenceRNAIdentifiers(getReferenceIdentifiers(referenceGeneProduct.getReferenceTranscript()));
+                }
+                if (referenceSequence instanceof ReferenceRNASequence) {
+                    ReferenceRNASequence referenceRNASequence = (ReferenceRNASequence) referenceSequence;
+                    document.setReferenceDNAIdentifiers(getReferenceIdentifiers(referenceRNASequence.getReferenceGene()));
+                }
             }
 
             // Setting TYPE and EXACT TYPE for the given PhysicalEntity
@@ -464,12 +476,13 @@ class DocumentBuilder {
 
             document.setReferenceOtherIdentifier(referenceEntity.getOtherIdentifier());
 
+            setReferenceOtherIdentifiers(document, referenceEntity.getOtherIdentifier());
             setReferenceCrossReference(document, referenceEntity.getCrossReference());
 
             if (identifier != null) {
                 List<String> referenceIdentifiers = new LinkedList<>();
                 referenceIdentifiers.add(identifier);
-                referenceIdentifiers.add(referenceEntity.getReferenceDatabase().getDisplayName() + ":" + identifier);
+                referenceIdentifiers.add(referenceEntity.getDatabaseName() + ':' + referenceEntity.getIdentifier());
                 document.setReferenceIdentifiers(referenceIdentifiers);
                 document.setDatabaseName(referenceEntity.getReferenceDatabase().getDisplayName());
 
@@ -487,14 +500,19 @@ class DocumentBuilder {
             final ReferenceSequence referenceSequence = amr.getReferenceSequence();
             if (referenceSequence != null) {
                 if (referenceSequence.getIdentifier() != null) fragments.add(referenceSequence.getIdentifier());
-                if (referenceSequence.getGeneName() != null && !referenceSequence.getGeneName().isEmpty()) fragments.addAll(referenceSequence.getGeneName());
-                if (referenceSequence.getOtherIdentifier() != null && !referenceSequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceSequence.getOtherIdentifier());
+                if (referenceSequence.getGeneName() != null && !referenceSequence.getGeneName().isEmpty())
+                    fragments.addAll(referenceSequence.getGeneName());
+                if (referenceSequence.getOtherIdentifier() != null && !referenceSequence.getOtherIdentifier().isEmpty())
+                    fragments.addAll(referenceSequence.getOtherIdentifier());
                 if (referenceSequence instanceof ReferenceGeneProduct) {
                     ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
                     for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
-                        if (referenceDNASequence.getIdentifier() != null) fragments.add(referenceDNASequence.getIdentifier());
-                        if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty()) fragments.addAll(referenceDNASequence.getGeneName());
-                        if (referenceDNASequence.getOtherIdentifier() != null && !referenceDNASequence.getOtherIdentifier().isEmpty()) fragments.addAll(referenceDNASequence.getOtherIdentifier());
+                        if (referenceDNASequence.getIdentifier() != null)
+                            fragments.add(referenceDNASequence.getIdentifier());
+                        if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty())
+                            fragments.addAll(referenceDNASequence.getGeneName());
+                        if (referenceDNASequence.getOtherIdentifier() != null && !referenceDNASequence.getOtherIdentifier().isEmpty())
+                            fragments.addAll(referenceDNASequence.getOtherIdentifier());
                     }
                 }
             }
@@ -514,6 +532,29 @@ class DocumentBuilder {
         } else {
             return referenceEntity.getSchemaClass();
         }
+    }
+
+    private List<String> getReferenceIdentifiers(List<? extends ReferenceEntity> referenceEntities) {
+        Set<String> identifiers = new TreeSet<>();
+        if (referenceEntities == null) return new LinkedList<>();
+        for (ReferenceEntity referenceEntity : referenceEntities) {
+            identifiers.add(SPACE_PATTERN.split(referenceEntity.getDatabaseName())[0] + ':' + referenceEntity.getIdentifier());
+            identifiers.add(referenceEntity.getDatabaseName().replace(" ", "-") + ':' + referenceEntity.getIdentifier());
+            identifiers.add(referenceEntity.getIdentifier());
+        }
+        return new LinkedList<>(identifiers);
+    }
+
+    private void setReferenceOtherIdentifiers(IndexDocument document, List<String> otherIdentifiers) {
+        if (otherIdentifiers == null) return;
+        Set<String> fullOtherIdentifiers = new TreeSet<>(otherIdentifiers);
+        // If other identifier of shape "<db>:<id>", index as well <id>
+        for (String otherIdentifier : otherIdentifiers) {
+            Matcher matcher = DB_ID_PATTERN.matcher(otherIdentifier);
+            if (matcher.find()) fullOtherIdentifiers.add(matcher.group("id"));
+        }
+
+        document.setReferenceOtherIdentifier(new LinkedList<>(fullOtherIdentifiers));
     }
 
     private void setReferenceCrossReference(IndexDocument document, List<DatabaseIdentifier> referenceCrossReferences) {

@@ -99,6 +99,10 @@ public class IndexDocument {
     @Field
     private List<String> referenceIdentifiers;
     @Field
+    private List<String> referenceDNAIdentifiers;
+    @Field
+    private List<String> referenceRNAIdentifiers;
+    @Field
     private String referenceURL;
     @Field
     private String databaseName;
@@ -451,6 +455,22 @@ public class IndexDocument {
 
     public void setReferenceIdentifiers(List<String> referenceIdentifiers) {
         this.referenceIdentifiers = referenceIdentifiers;
+    }
+
+    public List<String> getReferenceDNAIdentifiers() {
+        return referenceDNAIdentifiers;
+    }
+
+    public void setReferenceDNAIdentifiers(List<String> referenceDNAIdentifiers) {
+        this.referenceDNAIdentifiers = referenceDNAIdentifiers;
+    }
+
+    public List<String> getReferenceRNAIdentifiers() {
+        return referenceRNAIdentifiers;
+    }
+
+    public void setReferenceRNAIdentifiers(List<String> referenceRNAIdentifiers) {
+        this.referenceRNAIdentifiers = referenceRNAIdentifiers;
     }
 
     public List<String> getReferenceOtherIdentifier() {

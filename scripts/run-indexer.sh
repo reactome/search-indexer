@@ -219,7 +219,7 @@ runIndexer () {
 
     echo "Checking if current directory is valid project"
     if ! ${_MVN} -q -U clean package -DskipTests ; then
-        if [[ ! -f ./target/Indexer-jar-with-dependencies.jar ]]; then
+        if [[ ! -f ./target/search-indexer-jar-with-dependencies.jar ]]; then
             echo "An error occurred when packaging the project."
             exit 1
         fi
@@ -228,7 +228,7 @@ runIndexer () {
     # Without core. Use -o <solr_core> in the java command
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/
 
-    if ! java -jar ./target/Indexer-jar-with-dependencies.jar --neo4jHost ${_NEO4J_HOST} \
+    if ! java -jar ./target/search-indexer-jar-with-dependencies.jar --neo4jHost ${_NEO4J_HOST} \
                                                               --neo4jPort ${_NEO4J_PORT} \
                                                               --neo4jUser ${_NEO4J_USER} \
                                                               --neo4jPw ${_NEO4J_PASSWORD} \

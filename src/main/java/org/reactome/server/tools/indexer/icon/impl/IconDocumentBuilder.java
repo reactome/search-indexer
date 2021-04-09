@@ -89,7 +89,7 @@ class IconDocumentBuilder {
     private Set<String> getIconPhysicalEntities(List<String> references) {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
-        query.setRequestHandler("/iconPEStId");
+        query.setRequestHandler("/icon/from/PE/stId");
         query.setQuery(StringUtils.join(references, " OR "));
         query.setRows(300);
         query.setFields("stId, name, exactType, compartmentName");

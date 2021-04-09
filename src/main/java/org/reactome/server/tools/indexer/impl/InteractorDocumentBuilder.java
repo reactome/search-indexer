@@ -35,7 +35,11 @@ class InteractorDocumentBuilder {
         document.setReferenceName(getReferenceName(interactor));
         document.setReferenceGeneNames(getGeneName(interactor));
         document.setReferenceSynonyms(getSecondaryIdentifier(interactor));
-        document.setReferenceIdentifiers(Collections.singletonList(interactor.getIdentifier()));
+
+        List<String> referenceIdentifiers = new ArrayList<>();
+        referenceIdentifiers.add(interactor.getIdentifier());
+        referenceIdentifiers.add(interactor.getDatabaseName() + ':' + interactor.getIdentifier());
+        document.setReferenceIdentifiers(referenceIdentifiers);
         document.setReferenceURL(interactor.getUrl());
 
         document.setDatabaseName(interactor.getDatabaseName());
@@ -59,7 +63,7 @@ class InteractorDocumentBuilder {
         return document;
     }
 
-    private void setDiagramOccurrences(IndexDocument document, ReferenceEntity re){
+    private void setDiagramOccurrences(IndexDocument document, ReferenceEntity re) {
         String identifier = getVariantIdentifier(re);
         if (identifier == null || identifier.isEmpty()) identifier = re.getIdentifier();
 
@@ -144,6 +148,11 @@ class InteractorDocumentBuilder {
         List<String> names = interactor.getName();
         if (names != null && !names.isEmpty()) return names.get(0);
 
+        if (interactor instanceof ReferenceSequence) {
+            List<String> geneName = ((ReferenceSequence) interactor).getGeneName();
+            if (geneName != null && !geneName.isEmpty()) return geneName.get(0);
+        }
+
         if (interactor instanceof ReferenceIsoform) return ((ReferenceIsoform) interactor).getVariantIdentifier();
 
         return interactor.getIdentifier();
@@ -180,7 +189,7 @@ class InteractorDocumentBuilder {
 
         // Regulation and Other Entities may not have (fireworks)species and solr won't be able to find them
         // in the Fireworks (filter query fireworksSpecies)
-        if(fireworksSpecies.isEmpty()) {
+        if (fireworksSpecies.isEmpty()) {
             fireworksSpecies.add("Entries without species");
         }
 
