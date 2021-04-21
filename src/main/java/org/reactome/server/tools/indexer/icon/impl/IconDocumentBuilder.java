@@ -1,6 +1,5 @@
 package org.reactome.server.tools.indexer.icon.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -19,14 +18,14 @@ import java.util.stream.Collectors;
 @Service
 class IconDocumentBuilder {
 
-    private String solrCore;
+    private String solrCollection;
     private SolrClient solrClient;
 
     public IconDocumentBuilder() {
     }
 
-    IconDocumentBuilder(String solrCore, SolrClient solrClient) {
-        this.solrCore = solrCore;
+    IconDocumentBuilder(String solrCollection, SolrClient solrClient) {
+        this.solrCollection = solrCollection;
         this.solrClient = solrClient;
     }
 
@@ -90,17 +89,17 @@ class IconDocumentBuilder {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
         query.setRequestHandler("/icon/from/PE/stId");
-        query.setQuery(StringUtils.join(references, " OR "));
+        query.setQuery(String.join(" OR ", references));
         query.setRows(300);
         query.setFields("stId, name, exactType, compartmentName");
         try {
-            QueryResponse response = solrClient.query(solrCore, query);
+            QueryResponse response = solrClient.query(solrCollection, query);
             SolrDocumentList solrDocument = response.getResults();
             if (solrDocument != null && !solrDocument.isEmpty()) {
                 /* if query returns more than 300 docs, query all of them */
                 if (solrDocument.getNumFound() > 300) {
                     query.setRows(((Long) solrDocument.getNumFound()).intValue());
-                    response = solrClient.query(solrCore, query);
+                    response = solrClient.query(solrCollection, query);
                     solrDocument = response.getResults();
                 }
                 solrDocument.forEach(doc -> {

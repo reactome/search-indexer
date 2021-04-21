@@ -7,11 +7,12 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>search-indexer</name>
 
     <description>
-        The Indexer Project is used to import Reactome and Interactor data into Solr and optionally create a reduced version of this data as xml.
+        The Indexer Project is used to import Reactome and Interactor data into Solr and optionally create a reduced
+        version of this data as xml.
     </description>
 
     <organization>
@@ -33,17 +34,15 @@
             <organization>http://www.ebi.ac.uk/</organization>
         </developer>
     </developers>
-
     <properties>
         <graph.core>1.1.24</graph.core>
-        <solr.version>6.6.2</solr.version>
+        <solr.version>8.5.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
         <activation.version>1.1.1</activation.version>
-        <json.version>20090211</json.version>
-        <logging.version>1.1.10</logging.version>
+        <logging.version>1.2.3</logging.version>
         <maven.compiler.version>3.5.1</maven.compiler.version>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>11</jdk.version>
         <maven.javadoc.version>2.10.3</maven.javadoc.version>
         <maven.site.version>3.5.1</maven.site.version>
         <maven.info.report.version>2.8.1</maven.info.report.version>
@@ -92,12 +91,6 @@
             <artifactId>activation</artifactId>
             <version>${activation.version}</version>
         </dependency>
-         <!--Org json importer-->
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${json.version}</version>
-        </dependency>
         <!--Logging: will transitively add logback core and slf4j-api-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -121,6 +114,19 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.16.1</version>
+        </dependency>
+
+        <!-- XML binding for java 11 -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>3.0.0</version>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>

@@ -76,7 +76,7 @@ class InteractorDocumentBuilder {
         for (DiagramOccurrences diagramOccurrence : dgoc) {
             diagrams.add(diagramOccurrence.getDiagram().getStId());
 
-            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + Boolean.toString(diagramOccurrence.isInDiagram());
+            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + diagramOccurrence.isInDiagram();
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
                 occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
             } else {
@@ -123,7 +123,6 @@ class InteractorDocumentBuilder {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private String getVariantIdentifier(DatabaseObject databaseObject) {
         try {
             // in cases where databaseObject is instanceof ReferenceIsoform, use variantIdentifier as the main identifier
@@ -134,7 +133,6 @@ class InteractorDocumentBuilder {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private String getSpeciesName(DatabaseObject databaseObject) {
         try {
             return ((Species) databaseObject.getClass().getMethod("getSpecies").invoke(databaseObject)).getDisplayName();

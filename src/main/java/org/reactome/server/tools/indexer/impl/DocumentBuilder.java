@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -495,6 +496,7 @@ class DocumentBuilder {
     }
 
     private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues) {
+        if (abstractModifiedResidues == null) return;
         Set<String> fragments = new HashSet<>();
         for (AbstractModifiedResidue amr : abstractModifiedResidues) {
             final ReferenceSequence referenceSequence = amr.getReferenceSequence();
@@ -506,7 +508,9 @@ class DocumentBuilder {
                     fragments.addAll(referenceSequence.getOtherIdentifier());
                 if (referenceSequence instanceof ReferenceGeneProduct) {
                     ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
-                    for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
+                    List<ReferenceDNASequence> referenceGene = rgp.getReferenceGene();
+                    if (referenceGene == null) continue;
+                    for (ReferenceDNASequence referenceDNASequence : referenceGene) {
                         if (referenceDNASequence.getIdentifier() != null)
                             fragments.add(referenceDNASequence.getIdentifier());
                         if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty())
@@ -662,7 +666,9 @@ class DocumentBuilder {
     private List<String> loadFile(String fileName) {
         try {
             List<String> list = new ArrayList<>();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
+            InputStream resourceAsStream = getClass().getResourceAsStream("/" + fileName);
+            if (resourceAsStream == null) return null;
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);

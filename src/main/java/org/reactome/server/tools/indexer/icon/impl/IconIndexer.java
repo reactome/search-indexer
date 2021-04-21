@@ -2,6 +2,7 @@ package org.reactome.server.tools.indexer.icon.impl;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.icon.model.Icon;
@@ -22,7 +23,7 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServe
  */
 public class IconIndexer {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
-    private String solrCore;
+    private String solrCollection;
     private SolrClient solrClient;
     private String iconDir;
     private String ehldsDir;
@@ -32,25 +33,25 @@ public class IconIndexer {
      *
      * @param solrClient holds solr connection for target core
      */
-    public IconIndexer(SolrClient solrClient, String solrCore, String iconDir, String ehldsDir) {
+    public IconIndexer(SolrClient solrClient, String solrCollection, String iconDir, String ehldsDir) {
         this.solrClient = solrClient;
-        this.solrCore = solrCore;
+        this.solrCollection = solrCollection;
         this.iconDir = iconDir;
         this.ehldsDir = ehldsDir;
     }
 
     public int indexIcons() throws IndexerException {
-        logger.info("["+ solrCore +"] Start indexing icons into Solr");
-        cleanSolrIndex(solrCore, solrClient, "{!term f=type}icon");
+        logger.info("["+ solrCollection +"] Start indexing icons into Solr");
+        cleanSolrIndex(solrCollection, solrClient, "{!term f=type}icon");
         List<IconDocument> collection = new ArrayList<>();
-        logger.info("["+ solrCore +"]  Started adding to SolR");
+        logger.info("["+ solrCollection +"]  Started adding to SolR");
         MetadataParser parser = MetadataParser.getInstance(iconDir, ehldsDir);
         List<Icon> icons = parser.getIcons();
-        logger.info("["+ solrCore +"] Preparing SolR documents for icons [" + icons.size() + "]");
-        IconDocumentBuilder iconDocumentBuilder = new IconDocumentBuilder(solrCore, solrClient);
+        logger.info("["+ solrCollection +"] Preparing SolR documents for icons [" + icons.size() + "]");
+        IconDocumentBuilder iconDocumentBuilder = new IconDocumentBuilder(solrCollection, solrClient);
         icons.forEach(icon -> collection.add(iconDocumentBuilder.createIconSolrDocument(icon)));
         addDocumentsToSolrServer(collection);
-        commitSolrServer(solrCore, solrClient);
+        commitSolrServer(solrCollection, solrClient);
         return collection.size();
     }
 
@@ -64,14 +65,14 @@ public class IconIndexer {
     private void addDocumentsToSolrServer(List<IconDocument> documents) {
         if (documents != null && !documents.isEmpty()) {
             try {
-                solrClient.addBeans(solrCore, documents);
+                solrClient.addBeans(solrCollection, documents);
                 logger.debug(documents.size() + " Documents successfully added to SolR");
-            } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
+            } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e) {
                 for (IconDocument document : documents) {
                     try {
-                        solrClient.addBean(solrCore, document);
+                        solrClient.addBean(solrCollection, document);
                         logger.debug("A single document was added to Solr");
-                    } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e1) {
+                    } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e1) {
                         logger.error("Could not add document", e);
                     }
                 }
