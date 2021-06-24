@@ -7,7 +7,7 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.2</version>
+    <version>1.0.2-SNAPSHOT</version>
     <name>search-indexer</name>
 
     <description>
@@ -35,7 +35,7 @@
         </developer>
     </developers>
     <properties>
-        <graph.core>1.1.24</graph.core>
+        <graph.core>2.0.0-SNAPSHOT</graph.core>
         <solr.version>8.5.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
@@ -48,6 +48,7 @@
         <maven.info.report.version>3.1.1</maven.info.report.version>
         <jackrabbit.version>2.10</jackrabbit.version>
         <pmd.version>3.14.0</pmd.version>
+        <jodd-core.version>5.3.0</jodd-core.version>
     </properties>
 
     <dependencies>
@@ -117,6 +118,14 @@
             <version>1.16.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
+        </dependency>
+
+
         <!-- XML binding for java 11 -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
@@ -129,6 +138,7 @@
             <version>3.0.0</version>
             <scope>runtime</scope>
         </dependency>
+
 
     </dependencies>
 
