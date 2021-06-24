@@ -42,42 +42,39 @@ public class SiteMapUtil {
 
     private Set<String> sitemapFiles = new TreeSet<>();
     private String outputPath;
-    private AnnotationConfigApplicationContext neo4jContext;
     private SchemaService schemaService;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public SiteMapUtil(String outputPath) {
         this.outputPath = outputPath;
+        this.schemaService = ReactomeGraphCore.getService(SchemaService.class);
         File dirs = new File(outputPath);
         dirs.mkdirs();
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public SiteMapUtil(AnnotationConfigApplicationContext neo4jContext, String outputPath) {
-        this.outputPath = outputPath;
-        this.schemaService = neo4jContext.getBean(SchemaService.class);
-        File dirs = new File(outputPath);
-        dirs.mkdirs();
-    }
 
     public static void main(String[] args) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP(SiteMapUtil.class.getName(), "A tool for generating a sitemap.",
-                new Parameter[]{
-                        new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'a', "host", "The neo4j host"),
-                        new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
-                        new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.NOT_REQUIRED, 'c', "user", "The neo4j user"),
-                        new FlaggedOption("password", JSAP.STRING_PARSER, "neo4jj", JSAP.NOT_REQUIRED, 'd', "password", "The neo4j password")
-                }
-        );
+        try {
+            SimpleJSAP jsap = new SimpleJSAP(SiteMapUtil.class.getName(), "A tool for generating a sitemap.",
+                    new Parameter[]{
+                            new FlaggedOption("host", JSAP.STRING_PARSER, "bolt://localhost", JSAP.NOT_REQUIRED, 'a', "host", "The neo4j host"),
+                            new FlaggedOption("port", JSAP.STRING_PARSER, "7687", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
+                            new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.NOT_REQUIRED, 'c', "user", "The neo4j user"),
+                            new FlaggedOption("password", JSAP.STRING_PARSER, "neo4jj", JSAP.NOT_REQUIRED, 'd', "password", "The neo4j password")
+                    }
+            );
 
-        JSAPResult config = jsap.parse(args);
-        if (jsap.messagePrinted()) System.exit(1);
+            JSAPResult config = jsap.parse(args);
+            if (jsap.messagePrinted()) System.exit(1);
 
-        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), IndexerNeo4jConfig.class);
+            ReactomeGraphCore.initialise(config.getString("host") + config.getString("port"), config.getString("user"), config.getString("password"), IndexerNeo4jConfig.class);
 
-        SiteMapUtil smu = new SiteMapUtil(".");
-        smu.setSchemaService(ReactomeGraphCore.getService(SchemaService.class));
-        smu.generate();
+            SiteMapUtil smu = new SiteMapUtil(".");
+            smu.setSchemaService(ReactomeGraphCore.getService(SchemaService.class));
+            smu.generate();
+        } finally {
+            System.exit(0);
+        }
     }
 
     /**
@@ -90,7 +87,7 @@ public class SiteMapUtil {
         Collection<String> allOfGivenClass = schemaService.getStIdsByClass(clazz);
         int count = 0;
         for (String stId : allOfGivenClass) {
-            if(stId.startsWith("R-HSA-")) {
+            if (stId.startsWith("R-HSA-")) {
                 count++;
                 bw.write(DETAIL_URL + stId);
                 bw.newLine();

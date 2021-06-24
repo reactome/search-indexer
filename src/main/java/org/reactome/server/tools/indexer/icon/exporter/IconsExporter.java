@@ -35,22 +35,26 @@ public class IconsExporter {
     }
 
     public static void main(String[] args) throws JSAPException, IndexerException {
-        SimpleJSAP jsap = new SimpleJSAP(IconsExporter.class.getName(), "Mapping resources and icons",
-                new Parameter[]{
-                        new FlaggedOption("solrUrl", JSAP.STRING_PARSER, DEF_SOLR_URL, JSAP.REQUIRED, 'a', "solrUrl", "Url of the running Solr server"),
-                        new FlaggedOption("solrCollection", JSAP.STRING_PARSER, DEF_SOLR_CORE, JSAP.REQUIRED, 'b', "solrCollection", "The Reactome solr collection"),
-                        new FlaggedOption("solrUser", JSAP.STRING_PARSER, "admin", JSAP.NOT_REQUIRED, 'c', "solrUser", "The Solr user"),
-                        new FlaggedOption("solrPw", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "solrPw", "The Solr password"),
-                        new FlaggedOption("outputDir", JSAP.STRING_PARSER, ".", JSAP.NOT_REQUIRED, 'e', "outputDir", "The output directory"),
-                }
-        );
+        try {
+            SimpleJSAP jsap = new SimpleJSAP(IconsExporter.class.getName(), "Mapping resources and icons",
+                    new Parameter[]{
+                            new FlaggedOption("solrUrl", JSAP.STRING_PARSER, DEF_SOLR_URL, JSAP.REQUIRED, 'a', "solrUrl", "Url of the running Solr server"),
+                            new FlaggedOption("solrCollection", JSAP.STRING_PARSER, DEF_SOLR_CORE, JSAP.REQUIRED, 'b', "solrCollection", "The Reactome solr collection"),
+                            new FlaggedOption("solrUser", JSAP.STRING_PARSER, "admin", JSAP.NOT_REQUIRED, 'c', "solrUser", "The Solr user"),
+                            new FlaggedOption("solrPw", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "solrPw", "The Solr password"),
+                            new FlaggedOption("outputDir", JSAP.STRING_PARSER, ".", JSAP.NOT_REQUIRED, 'e', "outputDir", "The output directory"),
+                    }
+            );
 
-        JSAPResult config = jsap.parse(args);
-        if (jsap.messagePrinted()) System.exit(1);
+            JSAPResult config = jsap.parse(args);
+            if (jsap.messagePrinted()) System.exit(1);
 
-        SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
-        IconsExporter tsvWriter = new IconsExporter(solrClient, config.getString("solrCollection"));
-        tsvWriter.write(config.getString("outputDir"));
+            SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
+            IconsExporter tsvWriter = new IconsExporter(solrClient, config.getString("solrCollection"));
+            tsvWriter.write(config.getString("outputDir"));
+        } finally {
+            System.exit(0);
+        }
     }
 
     public void write(String outputDir) throws IndexerException {

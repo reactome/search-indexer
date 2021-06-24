@@ -110,7 +110,7 @@ public class Indexer {
             System.out.println("\nData Import finished with " + entriesCount + " entries imported.");
 
             return entriesCount;
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             logger.error("An error occurred during the data import", e);
             e.printStackTrace();
             throw new IndexerException(e);

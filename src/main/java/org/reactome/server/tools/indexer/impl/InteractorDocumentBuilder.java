@@ -74,16 +74,16 @@ class InteractorDocumentBuilder {
         List<String> occurrences = new ArrayList<>();
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
-            diagrams.add(diagramOccurrence.getDiagram().getStId());
+            diagrams.add(diagramOccurrence.getDiagramStId());
 
-            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + diagramOccurrence.isInDiagram();
+            String occurr = diagramOccurrence.getDiagramStId() + ":" + diagramOccurrence.isInDiagram();
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences(), ",");
             } else {
                 occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
             }
             if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith(), ",");
             } else {
                 occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
             }
