@@ -11,7 +11,6 @@ import org.reactome.server.tools.indexer.impl.Indexer;
 import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.SiteMapUtil;
-import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,7 +24,6 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.getSolrClient;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 @SuppressWarnings("Duplicates")
-@Component
 public class Main {
 
     private static final String FROM = "reactome-indexer@reactome.org";
