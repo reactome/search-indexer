@@ -212,22 +212,22 @@ installSolr() {
   echo "Setting solr owner to security.json"
   sudo chown solr:solr ${_SOLR_DATA_DIR}/security.json
 
-  echo "Restarting..."
-  sudo service solr restart
+#  echo "Restarting..."
+#  sudo service solr restart
+#
+#  echo "Creating admin user..."
+#  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d "{\"set-user\": {\"${_SOLR_USER}\": \"${_SOLR_PASSWORD}\"}")
+#  if [[ 200 != "$_STATUS" ]]; then
+#    echo "Could not create user ${_SOLR_USER}:${_SOLR_PASSWORD}"
+#    exit 1
+#  fi
 
-  echo "Creating admin user..."
-  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d "{\"set-user\": {\"${_SOLR_USER}\": \"${_SOLR_PASSWORD}\"}")
-  if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not create user ${_SOLR_USER}:${_SOLR_PASSWORD}"
-    exit 1
-  fi
-
-  echo "Deleting default solr user"
-  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d '{"delete-user": ["solr"]}')
-  if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not delete standard and unsecure solr user"
-    exit 1
-  fi
+#  echo "Deleting default solr user"
+#  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d '{"delete-user": ["solr"]}')
+#  if [[ 200 != "$_STATUS" ]]; then
+#    echo "Could not delete standard and unsecure solr user"
+#    exit 1
+#  fi
 
   echo "Restart solr service..."
   if ! sudo service solr restart; then

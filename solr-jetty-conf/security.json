@@ -1,8 +1,9 @@
 {
   "authentication": {
+    "blockUnknown": true,
     "class": "solr.BasicAuthPlugin",
     "credentials": {
-      "solr": "IV0EHq1OnNrj6gvRCwvFwTrZ1+z1oBbnQdiVC3otuq0= Ndd7LKvVBAaZIF0QAVi1ekCfAJXr1GGfLtRUXhgrF8c="
+      "admin": "L5c5e+iJgWvbrOYJFYKk+LU1WqoAf/IcDV9ffAA2GZw= eTVjanV1OTNhbmkyMnRvZg=="
     }
   },
   "authorization": {
