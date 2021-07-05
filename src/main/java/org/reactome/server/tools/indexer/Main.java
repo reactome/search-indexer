@@ -11,6 +11,7 @@ import org.reactome.server.tools.indexer.impl.Indexer;
 import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.SiteMapUtil;
+import org.springframework.data.neo4j.core.Neo4jClient;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -65,6 +66,9 @@ public class Main {
         //  Reactome Solr properties for solr connection ** Collection (core) has to be passed
         SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
         ReactomeGraphCore.initialise(config.getString("neo4jHost") + ":" + config.getString("neo4jPort"), config.getString("neo4jUser"), config.getString("neo4jPw"), IndexerNeo4jConfig.class);
+
+        String version = Neo4jClient.class.getPackage().getImplementationVersion();
+        System.out.println("version = " + version);
 
 
         String solrCollection = config.getString("solrCollection"); // for reactome normal search
