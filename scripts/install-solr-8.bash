@@ -16,7 +16,7 @@ _SOLR_CORE="reactome"
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
 _SOLR_PORT=8983
-_SOLR_VERSION="6.6.2"
+_SOLR_VERSION="8.9.0"
 
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
@@ -42,7 +42,7 @@ usage() {
   echo "       solrcore         DEFAULT: reactome"
   echo "       solruser         DEFAULT: admin"
   echo "       solrport         DEFAULT: 8983"
-  echo "       solrversion      DEFAULT: 6.6.2"
+  echo "       solrversion      DEFAULT: 8.9.0"
   echo "       gitbranch        DEFAULT: master (Download Solr configuration from git)"
   echo ""
   echo "e.g sudo ./$(basename "$0") solrpass=not2share"
@@ -53,8 +53,8 @@ usage() {
 
 # Check arguments
 for ARGUMENT in "$@"; do
-  KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
-  VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
+  KEY=$(echo "${ARGUMENT}" | cut -f1 -d=)
+  VALUE=$(echo "${ARGUMENT}" | cut -f2 -d=)
 
   case "$KEY" in
   solrcore) _SOLR_CORE=${VALUE} ;;
@@ -117,7 +117,7 @@ installSolr() {
 
   if [[ -f /tmp/solr-${_SOLR_VERSION}.tgz ]]; then
     echo "The specified version of Solr was found in /tmp"
-    if tar -tf /tmp/solr-${_SOLR_VERSION}.tgz >/dev/null 2>&1; then
+    if tar -tf "/tmp/solr-${_SOLR_VERSION}.tgz" >/dev/null 2>&1; then
       _VALID=true
     else
       echo "The file found was corrupted"
@@ -126,34 +126,22 @@ installSolr() {
   fi
 
   if ! [[ ${_VALID} ]]; then
-    sudo rm /tmp/solr-${_SOLR_VERSION}.tgz >/dev/null 2>&1
-    echo "Attempting to download Solr with version: "${_SOLR_VERSION}
+    sudo rm "/tmp/solr-${_SOLR_VERSION}.tgz" >/dev/null 2>&1
+    echo "Attempting to download Solr with version: ${_SOLR_VERSION}"
 
     # Download solr tgz file
-    wget -q --show-progress http://archive.apache.org/dist/lucene/solr/${_SOLR_VERSION}/solr-${_SOLR_VERSION}.tgz -P /tmp
+    wget -q --show-progress "http://archive.apache.org/dist/lucene/solr/${_SOLR_VERSION}/solr-${_SOLR_VERSION}.tgz" -P /tmp
 
-    # Download MD5 - Used to check the integrity of solr downloaded file
-    wget -q --show-progress http://archive.apache.org/dist/lucene/solr/${_SOLR_VERSION}/solr-${_SOLR_VERSION}.tgz.md5 -P /tmp
-
-    _MD5_SOLR=$(md5sum /tmp/solr-${_SOLR_VERSION}.tgz | cut -d ' ' -f 1) >/dev/null 2>&1
-    _MD5_MD5=$(cat /tmp/solr-${_SOLR_VERSION}.tgz.md5 | cut -d ' ' -f 1) >/dev/null 2>&1
-
-    rm /tmp/solr-${_SOLR_VERSION}.tgz.md5
-
-    if [[ ${_MD5_SOLR} != ${_MD5_MD5} ]]; then
-      echo "Could not download Solr version $_SOLR_VERSION. Please check the specified version and try again"
-      exit 1
-    fi
   fi
 
   echo "Extracting Solr installation script"
-  if ! tar xzf /tmp/solr-${_SOLR_VERSION}.tgz solr-${_SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2; then
+  if ! tar xzf "/tmp/solr-${_SOLR_VERSION}.tgz" "solr-${_SOLR_VERSION}/bin/install_solr_service.sh" --strip-components=2; then
     echo "Could not extract Solr successfully"
     exit 1
   fi
 
   echo "Installing Solr"
-  sudo bash ./install_solr_service.sh /tmp/solr-${_SOLR_VERSION}.tgz -p ${_SOLR_PORT} >/dev/null 2>&1
+  sudo bash ./install_solr_service.sh "/tmp/solr-${_SOLR_VERSION}.tgz" -p "${_SOLR_PORT}" >/dev/null 2>&1
   OUT=$?
   if [[ "$OUT" -ne 0 ]]; then
     echo "Could not install Solr successfully. Check the error and run the script again."
@@ -167,19 +155,19 @@ installSolr() {
   _SOLR_DATA_DIR=${_SOLR_HOME}/data
   _SOLR_CORE_CONF_DIR=${_SOLR_DATA_DIR}/${_SOLR_CORE}/conf
 
-  sudo mkdir -p ${_SOLR_CORE_CONF_DIR}
+  sudo mkdir -p "${_SOLR_CORE_CONF_DIR}"
 
   echo "Updating SolR Configuration files based on GitHub"
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/schema.xml -O ${_SOLR_CORE_CONF_DIR}/schema.xml >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/solrconfig.xml -O ${_SOLR_CORE_CONF_DIR}/solrconfig.xml >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/stopwords.txt -O ${_SOLR_CORE_CONF_DIR}/stopwords.txt >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/prefixstopwords.txt -O ${_SOLR_CORE_CONF_DIR}/prefixstopwords.txt >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/schema.xml" -O "${_SOLR_CORE_CONF_DIR}/schema.xml" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/solrconfig.xml" -O "${_SOLR_CORE_CONF_DIR}/solrconfig.xml" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/stopwords.txt" -O "${_SOLR_CORE_CONF_DIR}/stopwords.txt" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_SOLR_CORE}/prefixstopwords.txt" -O "${_SOLR_CORE_CONF_DIR}/prefixstopwords.txt" >/dev/null 2>&1
 
-  sudo chown -R solr:solr ${_SOLR_DATA_DIR}/${_SOLR_CORE}
+  sudo chown -R solr:solr "${_SOLR_DATA_DIR}/${_SOLR_CORE}"
 
   _STATUS=$(curl --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/cores?action=CREATE&name=$_SOLR_CORE")
   if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not create new Solr core "${_SOLR_CORE}" status is: "${_STATUS}
+    echo "Could not create new Solr core ${_SOLR_CORE} status is: ${_STATUS}"
     exit 1
   fi
   echo "Reactome core has been created."
@@ -192,35 +180,35 @@ installSolr() {
 
   sudo mkdir -p ${_TARGET_CORE_CONF_DIR}
 
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/schema.xml -O ${_TARGET_CORE_CONF_DIR}/schema.xml >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/solrconfig.xml -O ${_TARGET_CORE_CONF_DIR}/solrconfig.xml >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/stopwords.txt -O ${_TARGET_CORE_CONF_DIR}/stopwords.txt >/dev/null 2>&1
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/prefixstopwords.txt -O ${_TARGET_CORE_CONF_DIR}/prefixstopwords.txt >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/schema.xml" -O "${_TARGET_CORE_CONF_DIR}/schema.xml" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/solrconfig.xml" -O "${_TARGET_CORE_CONF_DIR}/solrconfig.xml" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/stopwords.txt" -O "${_TARGET_CORE_CONF_DIR}/stopwords.txt" >/dev/null 2>&1
+  sudo wget -q --no-check-certificate "${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-conf/${_TARGET_CORE}/prefixstopwords.txt" -O "${_TARGET_CORE_CONF_DIR}/prefixstopwords.txt" >/dev/null 2>&1
 
   sudo chown -R solr:solr ${_TARGET_DATA_DIR}/${_TARGET_CORE}
 
   _STATUS=$(curl --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/cores?action=CREATE&name=$_TARGET_CORE")
   if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not create new Solr core [$_TARGET_CORE] status is: "${_STATUS}
+    echo "Could not create new Solr core [$_TARGET_CORE] status is: ${_STATUS}"
     exit 1
   fi
   echo "Target core has been created."
 
   echo "Enabling Solr admin authentication"
-  sudo wget -q --no-check-certificate ${_GITRAWURL}/${_GITREPO}/${_GITPROJECT}/${_GITBRANCH}/solr-jetty-conf/security.json -O ${_SOLR_DATA_DIR}/security.json
-  sudo service solr restart
-
-  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d "{\"set-user\": {\"${_SOLR_USER}\": \"${_SOLR_PASSWORD}\"}")
-  if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not create user ${_SOLR_USER}:${_SOLR_PASSWORD}"
-    exit 1
+  _MVN=$(command -v mvn)
+  _INDEXER_PROJECT="/home/${SUDO_USER}/${_GITPROJECT}"
+  echo "Packaging the project in preparation for real-time password encryption"
+  if ! ${_MVN} -q -U clean package -f "${_INDEXER_PROJECT}/pom.xml" -DskipTests  >/dev/null 2>&1 ; then
+      if [[ ! -f ./target/search-indexer-jar-with-dependencies.jar ]]; then
+          echo "An error occurred when packaging the project."
+          exit 1
+      fi
   fi
+  sudo java -cp "${_INDEXER_PROJECT}/target/search-indexer-jar-with-dependencies.jar" org.reactome.server.tools.indexer.util.SHA256SolrPassword "${_SOLR_PASSWORD}" "${_SOLR_DATA_DIR}"
+  sudo "${_MVN}" -q clean -f "${_INDEXER_PROJECT}/pom.xml" >/dev/null 2>&1
 
-  _STATUS=$(curl --user solr:SolrRocks --write-out "%{http_code}\n" --silent --output /dev/null "http://localhost:$_SOLR_PORT/solr/admin/authentication" -H "Content-type:application/json" -d '{"delete-user": ["solr"]}')
-  if [[ 200 != "$_STATUS" ]]; then
-    echo "Could not delete standard and unsecure solr user"
-    exit 1
-  fi
+  echo "Setting solr owner to security.json"
+  sudo chown solr:solr ${_SOLR_DATA_DIR}/security.json
 
   echo "Restart solr service..."
   if ! sudo service solr restart; then
@@ -235,12 +223,12 @@ generalSummary() {
   echo "======================================"
   echo "=========== INSTALL SOLR ============="
   echo "======================================"
-  echo "SolR Default Home:  " ${_SOLR_HOME}
-  echo "SolR Core:          " ${_SOLR_CORE}
-  echo "SolR Port:          " ${_SOLR_PORT}
-  echo "SolR User:          " ${_SOLR_USER}
-  echo "SolR Version:       " ${_SOLR_VERSION}
-  echo "Git Branch:         " ${_GITBRANCH}
+  echo "SolR Default Home:   ${_SOLR_HOME} "
+  echo "SolR Core:           ${_SOLR_CORE} "
+  echo "SolR Port:           ${_SOLR_PORT} "
+  echo "SolR User:           ${_SOLR_USER} "
+  echo "SolR Version:        ${_SOLR_VERSION} "
+  echo "Git Branch:          ${_GITBRANCH} "
   echo "======================================"
 }
 
