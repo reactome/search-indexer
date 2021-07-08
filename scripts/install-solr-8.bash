@@ -204,7 +204,7 @@ installSolr() {
           exit 1
       fi
   fi
-  sudo java -cp "${_INDEXER_PROJECT}/target/search-indexer.jar" org.reactome.server.tools.indexer.util.SHA256SolrPassword "${_SOLR_PASSWORD}" "${_SOLR_DATA_DIR}"
+  sudo java -cp "${_INDEXER_PROJECT}/target/search-indexer-jar-with-dependencies.jar" org.reactome.server.tools.indexer.util.SHA256SolrPassword "${_SOLR_PASSWORD}" "${_SOLR_DATA_DIR}"
   sudo "${_MVN}" -q clean -f "${_INDEXER_PROJECT}/pom.xml" >/dev/null 2>&1
 
   echo "Setting solr owner to security.json"
