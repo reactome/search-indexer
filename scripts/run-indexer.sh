@@ -219,7 +219,7 @@ runIndexer () {
 
     echo "Checking if current directory is valid project"
     if ! ${_MVN} -q -U clean package -DskipTests ; then
-        if [[ ! -f ./target/search-indexer-jar-with-dependencies.jar ]]; then
+        if [[ ! -f ./target/search-indexer-exec.jar ]]; then
             echo "An error occurred when packaging the project."
             exit 1
         fi
