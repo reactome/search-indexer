@@ -67,10 +67,6 @@ public class Main {
         SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
         ReactomeGraphCore.initialise(config.getString("neo4jHost") + ":" + config.getString("neo4jPort"), config.getString("neo4jUser"), config.getString("neo4jPw"), IndexerNeo4jConfig.class);
 
-        String version = Neo4jClient.class.getPackage().getImplementationVersion();
-        System.out.println("version = " + version);
-
-
         String solrCollection = config.getString("solrCollection"); // for reactome normal search
         Optional<String> mailDest = Optional.ofNullable(config.getString("mailDest"));
         String smtpServer = config.getString("mailSmtp");

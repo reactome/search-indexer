@@ -229,21 +229,21 @@ runIndexer () {
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/
 
     if ! java -jar ./target/search-indexer-exec.jar --neo4jHost ${_NEO4J_HOST} \
-                                                              --neo4jPort ${_NEO4J_PORT} \
-                                                              --neo4jUser ${_NEO4J_USER} \
-                                                              --neo4jPw ${_NEO4J_PASSWORD} \
-                                                              --solrUrl ${_SOLR_URL} \
-                                                              --solrCore ${_SOLR_CORE} \
-                                                              --solrUser ${_SOLR_USER} \
-                                                              --solrPw ${_SOLR_PASSWORD} \
-                                                              --iconsDir ${_ICONS} \
-                                                              --ehldDir ${_EHLDS} \
-                                                              --mailDest ${_MAIL_DEST} \
-                                                              --mailSmtp ${_MAIL_SMTP} \
-                                                              --mailPort ${_MAIL_PORT} \
-                                                              --ebeyexml ${_EBEYEXML} \
-                                                              --sitemap ${_SITEMAP} \
-                                                              --target ${_TARGET}; then
+                                                    --neo4jPort ${_NEO4J_PORT} \
+                                                    --neo4jUser ${_NEO4J_USER} \
+                                                    --neo4jPw ${_NEO4J_PASSWORD} \
+                                                    --solrUrl ${_SOLR_URL} \
+                                                    --solrCore ${_SOLR_CORE} \
+                                                    --solrUser ${_SOLR_USER} \
+                                                    --solrPw ${_SOLR_PASSWORD} \
+                                                    --iconsDir ${_ICONS} \
+                                                    --ehldDir ${_EHLDS} \
+                                                    --mailDest ${_MAIL_DEST} \
+                                                    --mailSmtp ${_MAIL_SMTP} \
+                                                    --mailPort ${_MAIL_PORT} \
+                                                    --ebeyexml ${_EBEYEXML} \
+                                                    --sitemap ${_SITEMAP} \
+                                                    --target ${_TARGET}; then
         echo "An error occurred during the Solr-Indexer process. Please check logs."
         exit 1
     fi
