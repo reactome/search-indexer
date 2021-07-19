@@ -198,13 +198,13 @@ installSolr() {
   _MVN=$(command -v mvn)
   _INDEXER_PROJECT="/home/${SUDO_USER}/${_GITPROJECT}"
   echo "Packaging the project in preparation for real-time password encryption"
-  if ! ${_MVN} -q -U clean package -f "${_INDEXER_PROJECT}/pom.xml" -DskipTests -Dboot.repackage.skip=true  >/dev/null 2>&1 ; then
-      if [[ ! -f ./target/search-indexer-jar-with-dependencies.jar ]]; then
+  if ! ${_MVN} -q -U clean package -f "${_INDEXER_PROJECT}/pom.xml" -DskipTests >/dev/null 2>&1 ; then
+      if [[ ! -f ./target/search-indexer-exec.jar ]]; then
           echo "An error occurred when packaging the project."
           exit 1
       fi
   fi
-  sudo java -cp "${_INDEXER_PROJECT}/target/search-indexer-jar-with-dependencies.jar" org.reactome.server.tools.indexer.util.SHA256SolrPassword "${_SOLR_PASSWORD}" "${_SOLR_DATA_DIR}"
+  sudo java -cp "${_INDEXER_PROJECT}/target/search-indexer-exec.jar" org.reactome.server.tools.indexer.util.SHA256SolrPassword "${_SOLR_PASSWORD}" "${_SOLR_DATA_DIR}"
   sudo "${_MVN}" -q clean -f "${_INDEXER_PROJECT}/pom.xml" >/dev/null 2>&1
 
   echo "Setting solr owner to security.json"

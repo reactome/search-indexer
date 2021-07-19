@@ -54,6 +54,8 @@
         <jodd-core.version>5.3.0</jodd-core.version>
         <xml.bind.version>3.0.0</xml.bind.version>
         <boot.repackage.skip>false</boot.repackage.skip>
+        <commons-compress.version>1.16.1</commons-compress.version>
+        <commons-text.version>1.9</commons-text.version>
     </properties>
 
     <dependencies>
@@ -82,7 +84,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
+            <version>8.9.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -123,14 +125,14 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.16.1</version>
+            <version>${commons-compress.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>${commons-text.version}</version>
         </dependency>
 
 
@@ -212,37 +214,13 @@
                 <configuration>
                     <fork>true</fork>
                     <mainClass>${start-class}</mainClass>
-                    <skip>${boot.repackage.skip}</skip>
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.reactome.server.tools.indexer.Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>Indexer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
