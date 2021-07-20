@@ -26,7 +26,8 @@ _SOLR_USER="admin"
 _SOLR_PASSWORD=""
 
 _NEO4J_HOST="localhost"
-_NEO4J_PORT="7474"
+_NEO4J_HTTP_PORT="7474"
+_NEO4J_BOLT_PORT="7687"
 _NEO4J_USER="neo4j"
 _NEO4J_PASSWORD=""
 
@@ -48,7 +49,8 @@ usage () {
     echo "usage: sudo ./$(basename "$0") neo4jpass=<neo4j_passwd> solrpass=<solr_passwd> "
     echo "              OPTIONAL "
     echo "                       neo4jhost=<neo4j_host> without protocol"
-    echo "                       neo4jport=<neo4j_port>"
+    echo "                       neo4jhttp=<neo4j_http_port>"
+    echo "                       neo4jbolt=<neo4j_bolt_port>"
     echo "                       neo4juser=<neo4j_user>"
     echo "                       solruser=<solr_user>"
     echo "                       solrcore=<solr_core>"
@@ -63,8 +65,9 @@ usage () {
     echo "                       gitbranch=<git_branch>"
     echo ""
     echo "   where:"
-    echo "       neo4jhost        DEFAULT: bolt://localhost"
-    echo "       neo4jport        DEFAULT: 7687"
+    echo "       neo4jhost        DEFAULT: localhost"
+    echo "       neo4jhttp        DEFAULT: 7474"
+    echo "       neo4jbolt        DEFAULT: 7687"
     echo "       neo4juser        DEFAULT: neo4j"
     echo "       neo4jpass        REQUIRED"
     echo "       solrcore         DEFAULT: reactome"
@@ -89,7 +92,8 @@ do
             solruser)       _SOLR_USER=${VALUE} ;;
             solrpass)       _SOLR_PASSWORD=${VALUE} ;;
             neo4jhost)      _NEO4J_HOST=${VALUE} ;;
-            neo4jport)      _NEO4J_PORT=${VALUE} ;;
+            neo4jhttp)      _NEO4J_HTTP_PORT=${VALUE} ;;
+            neo4jbolt)      _NEO4J_BOLT_PORT=${VALUE} ;;
             neo4juser)      _NEO4J_USER=${VALUE} ;;
             neo4jpass)      _NEO4J_PASSWORD=${VALUE} ;;
             gitbranch)      _GITBRANCH=${VALUE} ;;
@@ -126,14 +130,14 @@ fi;
 checkNeo4j() {
     _MSG="OK"
     _JSONFILE="query_result.json"
-    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/"
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_HTTP_PORT/"
     _STATUS=$(curl -H "Content-Type: application/json" ${_NEO4J_URL} --write-out "%{http_code}\n" --silent --output ${_JSONFILE})
     # no content from the server
     if [[ 000 == "$_STATUS" ]]; then
         _MSG="Neo4j is not running. Please check 'service neo4j status'"
     # didn't succeed
     elif [[ 200 != "$_STATUS" ]]; then
-        _JSON_MSG=$(cat ${_JSONFILE} | python -c "import sys, json; print json.load(sys.stdin)['errors'][0]['message']")
+        _JSON_MSG=$(cat ${_JSONFILE} | python3 -c "import sys, json; print(json.load(sys.stdin)['errors'][0]['message'])")
         _MSG="Couldn't retrieve neo4j information. Reason [$_JSON_MSG]"
     fi
     if [[ -f "$_JSONFILE" ]]; then rm ${_JSONFILE}; fi
@@ -144,7 +148,7 @@ getReleaseInfo() {
     _RELEASE_INFO="Couldn't retrieve DBInfo."
     _JSONFILE="query_result.json"
     _CYPHER='{"statements":[{"statement":"MATCH (n:DBInfo) RETURN n.version LIMIT 1"}]}'
-    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/transaction/commit"
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_HTTP_PORT/db/data/transaction/commit"
     _STATUS=$(curl -H "Content-Type: application/json" -d "$_CYPHER" ${_NEO4J_URL} --write-out "%{http_code}\n" --silent --output ${_JSONFILE})
     if [[ 200 == "$_STATUS" ]]; then
         _RELEASE_INFO=v-$(cat ${_JSONFILE} | sed 's/,//g;s/^.*row...\([0-9]*\).*$/\1/' | tr -d '[:space:]')
@@ -160,10 +164,10 @@ getReleaseInfo() {
 getNeo4jVersion() {
     _RET=""
     _JSONFILE="query_result.json"
-    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_PORT/db/data/"
+    _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_HTTP_PORT/"
     _STATUS=$(curl -H "Content-Type: application/json" ${_NEO4J_URL} --write-out "%{http_code}\n" --silent --output ${_JSONFILE})
     if [[ 200 == "$_STATUS" ]]; then
-        _RET=$(cat ${_JSONFILE} | python -c "import sys, json; print json.load(sys.stdin)['neo4j_version']")
+        _RET=$(cat ${_JSONFILE} | python3 -c "import sys, json; print(json.load(sys.stdin)['neo4j_version'])")
     fi
     if [[ -f "$_JSONFILE" ]]; then
         rm ${_JSONFILE}
@@ -183,7 +187,7 @@ runIndexer () {
     fi
 
     echo "================ Neo4j ==============="
-    echo "Neo4j host:         " "http://"${_NEO4J_HOST}":"${_NEO4J_PORT}
+    echo "Neo4j host:         " "bolt://""${_NEO4J_HOST}"":""${_NEO4J_BOLT_PORT}"
     echo "Neo4j user:         " ${_NEO4J_USER}
     echo "Neo4j Version:      " $(getNeo4jVersion)
     echo "DB Content:         " $(getReleaseInfo)
@@ -228,8 +232,8 @@ runIndexer () {
     # Without core. Use -o <solr_core> in the java command
     _SOLR_URL=http://localhost:${_SOLR_PORT}/solr/
 
-    if ! java -jar ./target/search-indexer-exec.jar --neo4jHost ${_NEO4J_HOST} \
-                                                    --neo4jPort ${_NEO4J_PORT} \
+    if ! java -jar ./target/search-indexer-exec.jar --neo4jHost "bolt://${_NEO4J_HOST}" \
+                                                    --neo4jPort ${_NEO4J_BOLT_PORT} \
                                                     --neo4jUser ${_NEO4J_USER} \
                                                     --neo4jPw ${_NEO4J_PASSWORD} \
                                                     --solrUrl ${_SOLR_URL} \
