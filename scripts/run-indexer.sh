@@ -20,7 +20,7 @@ cd ${DIR}
 # Default value
 _SOLR_HOME="/var/solr"
 
-_SOLR_CORE="reactome"
+_SOLR_CORE="reactome-test"
 _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
@@ -240,11 +240,11 @@ runIndexer () {
                                                     --solrCollection ${_SOLR_CORE} \
                                                     --solrUser ${_SOLR_USER} \
                                                     --solrPw ${_SOLR_PASSWORD} \
-                                                    --iconsDir ${_ICONS} \
-                                                    --ehldDir ${_EHLDS} \
-                                                    --mailDest ${_MAIL_DEST} \
-                                                    --mailSmtp ${_MAIL_SMTP} \
-                                                    --mailPort ${_MAIL_PORT} \
+                                                    $( [[ ${_ICONS} ]] && echo --iconsDir ${_ICONS} )\
+                                                    $( [[ ${_EHLDS} ]] && echo --ehldDir ${_EHLDS} )\
+                                                    $( [[ ${_MAIL_DEST} ]] && echo --mailDest ${_MAIL_DEST} )\
+                                                    $( [[ ${_MAIL_SMTP} ]] && echo --mailSmtp ${_MAIL_SMTP} )\
+                                                    $( [[ ${_MAIL_PORT} ]] && echo --mailPort ${_MAIL_PORT} )\
                                                     --ebeyexml ${_EBEYEXML} \
                                                     --sitemap ${_SITEMAP} \
                                                     --target ${_TARGET}; then
