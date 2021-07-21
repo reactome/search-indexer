@@ -20,7 +20,7 @@ cd ${DIR}
 # Default value
 _SOLR_HOME="/var/solr"
 
-_SOLR_CORE="reactome-test"
+_SOLR_CORE="reactome"
 _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
