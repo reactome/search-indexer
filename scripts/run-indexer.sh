@@ -237,7 +237,7 @@ runIndexer () {
                                                     --neo4jUser ${_NEO4J_USER} \
                                                     --neo4jPw ${_NEO4J_PASSWORD} \
                                                     --solrUrl ${_SOLR_URL} \
-                                                    --solrCore ${_SOLR_CORE} \
+                                                    --solrCollection ${_SOLR_CORE} \
                                                     --solrUser ${_SOLR_USER} \
                                                     --solrPw ${_SOLR_PASSWORD} \
                                                     --iconsDir ${_ICONS} \
