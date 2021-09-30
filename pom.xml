@@ -7,7 +7,7 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>search-indexer</name>
 
     <description>
@@ -35,7 +35,7 @@
     </developers>
 
     <properties>
-        <graph.core>1.1.24</graph.core>
+        <graph.core>1.1.27</graph.core>
         <solr.version>6.6.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
