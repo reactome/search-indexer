@@ -1,7 +1,7 @@
 package org.reactome.server.tools.indexer.icon.model;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>

@@ -49,6 +49,8 @@ public class IconsMain {
 
             IconsExporter tsvWriter = new IconsExporter(solrClient, config.getString("solrCollection"));
             tsvWriter.write(config.getString("outputDir"));
+        } catch (Error | Exception e) {
+            e.printStackTrace();
         } finally {
             System.exit(0);
         }

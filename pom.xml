@@ -102,11 +102,7 @@
             <artifactId>javax.mail</artifactId>
             <version>${mail.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>${activation.version}</version>
-        </dependency>
+
         <!--Logging: will transitively add logback core and slf4j-api-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -129,18 +125,25 @@
 
         <!-- XML binding for java 11 -->
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>${xml.bind.version}</version>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${activation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>${xml.bind.version}</version>
-            <scope>runtime</scope>
+            <version>2.3.0</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -214,14 +217,27 @@
                 <version>${project.parent.version}</version>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>${main.class}</mainClass>
-                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
+                        <id>Global</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>${main.class}</mainClass>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Icons</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.reactome.server.tools.indexer.IconsMain</mainClass>
+                            <classifier>icon-exec</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
