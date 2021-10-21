@@ -11,7 +11,6 @@ import org.reactome.server.tools.indexer.impl.Indexer;
 import org.reactome.server.tools.indexer.target.impl.TargetIndexer;
 import org.reactome.server.tools.indexer.util.MailUtil;
 import org.reactome.server.tools.indexer.util.SiteMapUtil;
-import org.springframework.data.neo4j.core.Neo4jClient;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
