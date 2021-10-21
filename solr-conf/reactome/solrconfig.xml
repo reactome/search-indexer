@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <config>
-    <luceneMatchVersion>6.0.1</luceneMatchVersion>
+    <luceneMatchVersion>8.8.2</luceneMatchVersion>
     <dataDir>${solr.data.dir:}</dataDir>
     <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/>
     <codecFactory class="solr.SchemaCodecFactory"/>
@@ -138,6 +138,7 @@
             <str name="tie">0.1</str>
             <!-- tiebreaker if fields have the same exact score-->
             <str name="bq">species:"Homo sapiens"^0.8</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
             <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -171,7 +172,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -242,6 +243,7 @@
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
             <str name="fl">stId, name, exactType, compartmentName</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 name^30.0
@@ -251,7 +253,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20.0
                 referenceGeneNames^2.0
                 referenceCrossReferences^1.0
@@ -270,6 +272,7 @@
             <!--<str name="mm">50%</str>-->
             <str name="q.alt">*:*</str>
             <str name="df">name</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <int name="start">0</int>
             <!--no search results returned because we are only interested in faceting information-->
@@ -309,7 +312,7 @@
                 referenceOtherIdentifier^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
                 diseaseId^1.0
@@ -347,6 +350,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -380,7 +384,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -442,6 +446,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -475,7 +480,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -590,7 +595,7 @@
             <str name="df">name</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
-
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="qf">
                 dbId^100.0
                 oldStId^90.0
@@ -623,7 +628,7 @@
                 referenceRNAIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
-                fragmentModification^-10.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -672,6 +677,7 @@
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
@@ -683,7 +689,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
             </str>
@@ -700,6 +706,7 @@
             <str name="df">name</str>
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
             <str name="qf">
@@ -734,7 +741,7 @@
                 referenceRNAIdentifiers^1.0
                 referenceSynonyms^20.0
                 referenceOtherIdentifier^10.0
-                fragmentModification^-10.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
@@ -769,6 +776,7 @@
             <str name="defType">edismax</str>
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
+            <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
@@ -779,7 +787,7 @@
                 referenceRNAIdentifiers^100.0
                 referenceSynonyms^50
                 referenceOtherIdentifier^1.0
-                fragmentModification^-1.0
+                fragmentModification^1.0
                 referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 name_exact^100.0

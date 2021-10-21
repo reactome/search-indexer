@@ -3,7 +3,7 @@ package org.reactome.server.tools.indexer.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.reactome.server.graph.domain.model.DatabaseObject;
 import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.domain.model.PhysicalEntity;
@@ -60,7 +60,7 @@ public class Indexer {
     private PersonDocumentBuilder personDocumentBuilder;
 
     private SolrClient solrClient;
-    private String solrCore;
+    private String solrCollection;
     private Marshaller marshaller;
     private Marshaller covidMarshaller;
 
@@ -80,27 +80,27 @@ public class Indexer {
         try {
             initialiseXmlOutputFiles();
 
-            cleanSolrIndex(solrCore, solrClient);
+            cleanSolrIndex(solrCollection, solrClient);
 
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
-            commitSolrServer(solrCore, solrClient);
+            commitSolrServer(solrCollection, solrClient);
             cleanNeo4jCache();
 
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
-            commitSolrServer(solrCore, solrClient);
+            commitSolrServer(solrCollection, solrClient);
             cleanNeo4jCache();
 
             finaliseXmlOutputFiles(entriesCount, covidEntriesCount);
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
-            commitSolrServer(solrCore, solrClient);
+            commitSolrServer(solrCollection, solrClient);
             logger.info("Entries total: " + entriesCount);
             cleanNeo4jCache();
 
             logger.info("Started importing Person records to SolR");
             entriesCount += indexPeople();
-            commitSolrServer(solrCore, solrClient);
+            commitSolrServer(solrCollection, solrClient);
             logger.info("Entries total: " + entriesCount);
             cleanNeo4jCache();
 
@@ -110,7 +110,7 @@ public class Indexer {
             System.out.println("\nData Import finished with " + entriesCount + " entries imported.");
 
             return entriesCount;
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             logger.error("An error occurred during the data import", e);
             e.printStackTrace();
             throw new IndexerException(e);
@@ -352,14 +352,14 @@ public class Indexer {
     private void addDocumentsToSolrServer(List<IndexDocument> documents) {
         if (documents != null && !documents.isEmpty()) {
             try {
-                solrClient.addBeans(solrCore, documents);
+                solrClient.addBeans(solrCollection, documents);
                 logger.debug(documents.size() + " Documents successfully added to SolR");
-            } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
+            } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e) {
                 for (IndexDocument document : documents) {
                     try {
-                        solrClient.addBean(solrCore, document);
+                        solrClient.addBean(solrCollection, document);
                         logger.debug("A single document was added to Solr");
-                    } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e1) {
+                    } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e1) {
                         logger.error("Could not add document", e);
                         logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());
                     }
@@ -375,8 +375,8 @@ public class Indexer {
         this.solrClient = solrClient;
     }
 
-    public void setSolrCore(String solrCore) {
-        this.solrCore = solrCore;
+    public void setSolrCollection(String solrCollection) {
+        this.solrCollection = solrCollection;
     }
 
     public Boolean getEbeyeXml() {

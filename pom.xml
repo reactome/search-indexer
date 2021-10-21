@@ -7,11 +7,18 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <name>search-indexer</name>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-parent</artifactId>
+        <version>2.5.3</version>
+    </parent>
+
     <description>
-        The Indexer Project is used to import Reactome and Interactor data into Solr and optionally create a reduced version of this data as xml.
+        The Indexer Project is used to import Reactome and Interactor data into Solr and optionally create a reduced
+        version of this data as xml.
     </description>
 
     <organization>
@@ -33,22 +40,28 @@
             <organization>http://www.ebi.ac.uk/</organization>
         </developer>
     </developers>
-
     <properties>
-        <graph.core>1.1.24</graph.core>
-        <solr.version>6.6.2</solr.version>
+        <jdk.version>11</jdk.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <main.class>org.reactome.server.tools.indexer.Main</main.class>
+
+        <graph.core>2.0.0-SNAPSHOT</graph.core>
+        <solr.version>8.5.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
         <activation.version>1.1.1</activation.version>
-        <json.version>20090211</json.version>
-        <logging.version>1.1.10</logging.version>
+        <logging.version>1.2.3</logging.version>
+        <jackrabbit.version>2.10</jackrabbit.version>
+        <jodd-core.version>5.3.0</jodd-core.version>
+        <xml.bind.version>3.0.0</xml.bind.version>
+        <commons-compress.version>1.16.1</commons-compress.version>
+        <commons-text.version>1.9</commons-text.version>
+
         <maven.compiler.version>3.5.1</maven.compiler.version>
-        <jdk.version>1.8</jdk.version>
         <maven.javadoc.version>2.10.3</maven.javadoc.version>
         <maven.site.version>3.5.1</maven.site.version>
-        <maven.info.report.version>2.8.1</maven.info.report.version>
-        <jackrabbit.version>2.10</jackrabbit.version>
-        <pmd.version>3.6</pmd.version>
+        <maven.info.report.version>3.1.1</maven.info.report.version>
+        <maven.pmd.version>3.14.0</maven.pmd.version>
     </properties>
 
     <dependencies>
@@ -59,16 +72,18 @@
             <artifactId>graph-core</artifactId>
             <version>${graph.core}</version>
         </dependency>
+
         <!-- Solr-->
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
-            <!--
-                SolR is using jackson:2.5.4 and com.fasterxml.jackson.databind.JavaType.isReferenceType
-                has been introduced in version 2.6. In the graph-core we are using the 2.7.1
-                So excluding here will force maven to use the jackson-core provided by graph-core
-            -->
+            <version>8.9.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- JSAP command line parameters parser -->
         <dependency>
@@ -87,42 +102,48 @@
             <artifactId>javax.mail</artifactId>
             <version>${mail.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>${activation.version}</version>
-        </dependency>
-         <!--Org json importer-->
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${json.version}</version>
-        </dependency>
+
         <!--Logging: will transitively add logback core and slf4j-api-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logging.version}</version>
-        </dependency>
-        <!--
-            SolR Core is using httpclient:4.4.1 which is conflicting to http-ogm-driver
-            and causing org.apache.http.impl.client.HttpClientBuilder.setSSLContext - this
-            method has been deprecated and fixed in the version 4.5.2. Once SolR updates its
-            dependency we can remove the following.
-         -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
         </dependency>
 
         <!-- COMPRESS -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.16.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons-text.version}</version>
+        </dependency>
+
+
+        <!-- XML binding for java 11 -->
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${activation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -170,6 +191,15 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>spring-snapshot</id>
+            <name>Spring Snapshot Repository</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <build>
@@ -182,25 +212,32 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.reactome.server.tools.indexer.Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <fork>true</fork>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>Indexer</id>
-                        <phase>package</phase>
+                        <id>Global</id>
                         <goals>
-                            <goal>single</goal>
+                            <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>${main.class}</mainClass>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Icons</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.reactome.server.tools.indexer.IconsMain</mainClass>
+                            <classifier>icon-exec</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -275,7 +312,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>${pmd.version}</version>
+                <version>${maven.pmd.version}</version>
                 <configuration>
                     <skipEmptyReport>false</skipEmptyReport>
                     <linkXRef>false</linkXRef>
