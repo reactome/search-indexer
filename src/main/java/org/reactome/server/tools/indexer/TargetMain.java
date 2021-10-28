@@ -15,9 +15,13 @@ public class TargetMain {
     private static final String DEF_SOLR_URL = "http://localhost:8983/solr";
 
     public static void main(String[] args) throws IndexerException {
-        SolrClient solrClient = getSolrClient("admin", "admin", DEF_SOLR_URL);
-        TargetIndexer indexer = new TargetIndexer(solrClient,"reactome");
-        indexer.index();
-        closeSolrServer(solrClient);
+        try {
+            SolrClient solrClient = getSolrClient("admin", "admin", DEF_SOLR_URL);
+            TargetIndexer indexer = new TargetIndexer(solrClient,"reactome");
+            indexer.index();
+            closeSolrServer(solrClient);
+        } finally {
+            System.exit(0);
+        }
     }
 }

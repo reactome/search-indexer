@@ -1,22 +1,20 @@
 package org.reactome.server.tools.indexer.icon.parser;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.reactome.server.tools.indexer.icon.model.Category;
 import org.reactome.server.tools.indexer.icon.model.Icon;
 import org.reactome.server.tools.indexer.icon.model.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -25,12 +23,12 @@ import java.util.regex.Pattern;
 public class MetadataParser {
     private static final Logger parserLogger = LoggerFactory.getLogger("parserLogger");
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
-    private static List<String> parserMessages = new ArrayList<>();
+    private static final SortedSet<String> parserMessages = new TreeSet<>();
 
     private static MetadataParser instance;
-    private String iconsDir;
-    private String ehldsDir;
-    private List<Icon> icons = new ArrayList<>();
+    private final String iconsDir;
+    private final String ehldsDir;
+    private final List<Icon> icons = new ArrayList<>();
 
     private MetadataParser(String iconsDir, String ehldsDir) {
         if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir))
@@ -81,7 +79,7 @@ public class MetadataParser {
         // Get EHLDs that the icon is in.
         icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon)));
         logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
-        parserMessages.stream().sequential().sorted().forEach(parserLogger::info);
+        parserMessages.forEach(parserLogger::info);
     }
 
     /**

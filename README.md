@@ -122,5 +122,5 @@ sudo service solr [stop|start|restart|status]
 ```console
 $> mvn clean package
 
-$> java -cp target/Indexer-jar-with-dependencies.jar org.reactome.server.tools.indexer.IconsMain --solrPw xxx --iconsDir /path1 --ehldDir /path2
+$> java -cp target/search-indexer-exec.jar -Dloader.main=org.reactome.server.tools.indexer.IconsMain org.springframework.boot.loader.PropertiesLauncher --solrPw xxx --iconsDir /path1 --ehldDir /path2
 ```

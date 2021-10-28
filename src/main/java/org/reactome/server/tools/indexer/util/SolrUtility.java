@@ -47,8 +47,8 @@ public class SolrUtility {
      *
      * @throws IndexerException not cleaning the indexer means the indexer will failed.
      */
-    public static void cleanSolrIndex(String solrCore, SolrClient solrClient) throws IndexerException {
-        cleanSolrIndex(solrCore, solrClient, "*:*");
+    public static void cleanSolrIndex(String solrCollection, SolrClient solrClient) throws IndexerException {
+        cleanSolrIndex(solrCollection, solrClient, "*:*");
     }
 
     /**
@@ -56,15 +56,15 @@ public class SolrUtility {
      *
      * @throws IndexerException not cleaning the indexer means the indexer will failed.
      */
-    public static void cleanSolrIndex(String solrCore, SolrClient solrClient, String query) throws IndexerException {
+    public static void cleanSolrIndex(String solrCollection, SolrClient solrClient, String query) throws IndexerException {
         try {
-            logger.info("["+ solrCore +"] - Cleaning solr index");
-            solrClient.deleteByQuery(solrCore,query);
-            commitSolrServer(solrCore, solrClient);
-            logger.info("["+ solrCore +"] - Solr index has been cleaned");
+            logger.info("["+ solrCollection +"] - Cleaning solr index");
+            solrClient.deleteByQuery(solrCollection,query);
+            commitSolrServer(solrCollection, solrClient);
+            logger.info("["+ solrCollection +"] - Solr index has been cleaned");
         } catch (SolrServerException | IOException e) {
-            logger.error("["+ solrCore +"] Error occurred while cleaning the SolrServer", e);
-            throw new IndexerException("["+ solrCore +"] Error occurred while cleaning the SolrServer", e);
+            logger.error("["+ solrCollection +"] Error occurred while cleaning the SolrServer", e);
+            throw new IndexerException("["+ solrCollection +"] Error occurred while cleaning the SolrServer", e);
         }
     }
 
@@ -85,13 +85,13 @@ public class SolrUtility {
      *
      * @throws IndexerException not committing could mean that this Data will not be added to Solr
      */
-    public static void commitSolrServer(String solrCore, SolrClient solrClient) throws IndexerException {
+    public static void commitSolrServer(String solrCollection, SolrClient solrClient) throws IndexerException {
         try {
-            solrClient.commit(solrCore);
-            logger.info("["+ solrCore +"] Solr index has been committed and flushed to disk");
+            solrClient.commit(solrCollection);
+            logger.info("["+ solrCollection +"] Solr index has been committed and flushed to disk");
         } catch (Exception e) {
-            logger.error("["+ solrCore +"] Error occurred while committing", e);
-            throw new IndexerException("["+ solrCore +"] Could not commit", e);
+            logger.error("["+ solrCollection +"] Error occurred while committing", e);
+            throw new IndexerException("["+ solrCollection +"] Could not commit", e);
         }
     }
 }

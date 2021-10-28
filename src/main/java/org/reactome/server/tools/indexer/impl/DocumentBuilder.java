@@ -1,7 +1,6 @@
 package org.reactome.server.tools.indexer.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.ogm.exception.MappingException;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.DiagramOccurrences;
 import org.reactome.server.graph.exception.CustomQueryException;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -80,13 +80,7 @@ class DocumentBuilder {
          * Query the Graph and load only Primitives and no Relations attributes.
          * Lazy-loading will load them on demand.
          */
-        DatabaseObject databaseObject;
-        try {
-            databaseObject = databaseObjectService.findById(dbId);
-        } catch (MappingException e) {
-            logger.error("There has been an error mapping the object with dbId: " + dbId, e);
-            return null;
-        }
+        DatabaseObject databaseObject = databaseObjectService.findById(dbId);
 
         // Setting common attributes
         document.setDbId(databaseObject.getDbId().toString());
@@ -150,8 +144,7 @@ class DocumentBuilder {
                 "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
         try {
-            Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query, null);
-            //simpleEntitiesAndDrugSpecies = new HashMap<>(speciesResultList.size());
+            Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query);
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
@@ -166,11 +159,11 @@ class DocumentBuilder {
         logger.info("Caching COVID19 Entities");
         String query = "" +
                 "MATCH (n:DatabaseObject)-[:disease]-(d:Disease) " +
-                "WHERE d.identifier = {viral} " + // viral
+                "WHERE d.identifier = $viral " + // viral
                 "MATCH (n)-[:relatedSpecies|species]-(s:Species) " +
                 "WHERE s.displayName = \"Human SARS coronavirus\" " +
                 "MATCH (o:DatabaseObject)-[:disease]-(do:Disease) " +
-                "WHERE do.identifier IN  {sarsDisease} " +
+                "WHERE do.identifier IN  $sarsDisease " +
                 "MATCH (o)-[:relatedSpecies|species]-(:Species) " +
                 "WITH n + collect(o) as final " +
                 "UNWIND final as f " +
@@ -495,6 +488,7 @@ class DocumentBuilder {
     }
 
     private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues) {
+        if (abstractModifiedResidues == null) return;
         Set<String> fragments = new HashSet<>();
         for (AbstractModifiedResidue amr : abstractModifiedResidues) {
             final ReferenceSequence referenceSequence = amr.getReferenceSequence();
@@ -506,7 +500,9 @@ class DocumentBuilder {
                     fragments.addAll(referenceSequence.getOtherIdentifier());
                 if (referenceSequence instanceof ReferenceGeneProduct) {
                     ReferenceGeneProduct rgp = (ReferenceGeneProduct) referenceSequence;
-                    for (ReferenceDNASequence referenceDNASequence : rgp.getReferenceGene()) {
+                    List<ReferenceDNASequence> referenceGene = rgp.getReferenceGene();
+                    if (referenceGene == null) continue;
+                    for (ReferenceDNASequence referenceDNASequence : referenceGene) {
                         if (referenceDNASequence.getIdentifier() != null)
                             fragments.add(referenceDNASequence.getIdentifier());
                         if (referenceDNASequence.getGeneName() != null && !referenceDNASequence.getGeneName().isEmpty())
@@ -617,15 +613,17 @@ class DocumentBuilder {
         List<String> occurrences = new ArrayList<>();
         //noinspection Duplicates
         for (DiagramOccurrences diagramOccurrence : dgoc) {
-            diagrams.add(diagramOccurrence.getDiagram().getStId());
-            String occurr = diagramOccurrence.getDiagram().getStId() + ":" + diagramOccurrence.isInDiagram();
+
+            diagrams.add(diagramOccurrence.getDiagramStId());
+
+            String occurr = diagramOccurrence.getDiagramStId() + ":" + diagramOccurrence.isInDiagram();
             if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences(), ",");
             } else {
                 occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
             }
             if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith().stream().map(DatabaseObject::getStId).collect(Collectors.toList()), ",");
+                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith(), ",");
             } else {
                 occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
             }
@@ -662,7 +660,9 @@ class DocumentBuilder {
     private List<String> loadFile(String fileName) {
         try {
             List<String> list = new ArrayList<>();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
+            InputStream resourceAsStream = getClass().getResourceAsStream("/" + fileName);
+            if (resourceAsStream == null) return null;
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);

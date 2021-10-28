@@ -46,12 +46,16 @@ public class SwissProtParser {
     }
 
     public static void main(String[] args) throws Exception {
-        SwissProtParser s = new SwissProtParser();
-        s.downloadFile();
-        s.decompressGZIP();
-        s.grep();
-        s.parse();
-        s.deleteFiles();
+        try {
+            SwissProtParser s = new SwissProtParser();
+            s.downloadFile();
+            s.decompressGZIP();
+            s.grep();
+            s.parse();
+            s.deleteFiles();
+        } finally {
+            System.exit(0);
+        }
     }
 
     public List<Target> getTargets() {

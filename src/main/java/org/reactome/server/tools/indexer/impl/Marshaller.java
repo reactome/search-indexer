@@ -1,6 +1,6 @@
 package org.reactome.server.tools.indexer.impl;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.model.CrossReference;
 import org.reactome.server.tools.indexer.model.IndexDocument;
@@ -78,11 +78,11 @@ class Marshaller {
         try {
             writer.write(i + "<entry id=\"" + document.getDbId() + "\">" + NEW_LINE);
 
-            String escaped = StringEscapeUtils.escapeXml(document.getName());
+            String escaped = StringEscapeUtils.escapeXml11(document.getName());
             writer.write(ii + "<name>" + escaped + "</name>" + NEW_LINE);
             if (document.getSummation() != null) {
                 String noHTMLString = document.getSummation().replaceAll("<.*?>", "");
-                String noHtmlAndEscaped = StringEscapeUtils.escapeXml(noHTMLString);
+                String noHtmlAndEscaped = StringEscapeUtils.escapeXml11(noHTMLString);
                 writer.write(ii + "<description>" + noHtmlAndEscaped + "</description>" + NEW_LINE);
             }
 
@@ -263,12 +263,12 @@ class Marshaller {
     private void writeRef(String db, String id, String indent) throws IOException {
         db = db.trim().replaceAll("\\s*\\(.+\\)\\s*", "");
         db = db.replaceAll("(/|\\s)", "_");
-        writer.write(indent + "<ref dbname=\"" + db + "\" dbkey=\"" + StringEscapeUtils.escapeXml(id) + "\" />" + NEW_LINE);
+        writer.write(indent + "<ref dbname=\"" + db + "\" dbkey=\"" + StringEscapeUtils.escapeXml11(id) + "\" />" + NEW_LINE);
     }
 
     private void writeField(String name, String text, String indent) throws IOException {
         if (text != null) {
-            String escapedXml = StringEscapeUtils.escapeXml(text);
+            String escapedXml = StringEscapeUtils.escapeXml11(text);
             writer.write(indent + "<field name=\"" + name + "\">" + escapedXml + "</field>" + NEW_LINE);
         }
     }
