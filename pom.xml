@@ -7,7 +7,7 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <name>search-indexer</name>
 
     <parent>
@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>org.reactome.server.tools.indexer.Main</main.class>
 
-        <graph.core>2.0.0-SNAPSHOT</graph.core>
+        <graph.core>2.0.0</graph.core>
         <solr.version>8.5.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>

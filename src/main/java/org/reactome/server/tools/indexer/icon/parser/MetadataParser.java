@@ -122,8 +122,10 @@ public class MetadataParser {
         String escapedFileName = StringEscapeUtils.escapeXml11(icon.getStId());
         String quotedFilename = Pattern.quote(escapedFileName);
         // Grep command works differently in Linux and Mac, so we need to detect OS and apply the proper grep command
+        // TODO: Maybe look into using grep4j or unix4j. In general, it would be nice if we could avoid system calls.
         String os = System.getProperty("os.name").toLowerCase();
-        String command = "grep -i -l -###OS### 'id=\"" + quotedFilename + "\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
+        // Sometime Adobe Illustrator randomly adds (_) underline after the icon id, this regex covers that.
+        String command = "grep -i -l -###OS### 'id=\"" + quotedFilename + "_*\"|data-name=\"" + quotedFilename + "\"' " + ehldsDir + "/*.svg | awk -F/ '{print $NF}'";
         String grepPattern = "P"; // works on linux
         if (os.contains("mac")) grepPattern = "E"; // works on MacOS
         command = command.replace("###OS###", grepPattern);
