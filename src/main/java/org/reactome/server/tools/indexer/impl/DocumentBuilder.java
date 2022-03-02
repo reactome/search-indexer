@@ -138,10 +138,11 @@ class DocumentBuilder {
 
     private void cacheSimpleEntityAndDrugSpecies() {
         logger.info("Caching SimpleEntity and Drug Species");
+        //language=cypher
         String query = "" +
                 "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
                 "WHERE (n:SimpleEntity) OR (n:Drug) " +
-                "WITH n, COLLECT(DISTINCT s.displayName) AS species " +
+                "WITH n, collect(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
         try {
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query);
@@ -157,17 +158,18 @@ class DocumentBuilder {
 
     private void cacheCovid19Entities() {
         logger.info("Caching COVID19 Entities");
+        //language=cypher
         String query = "" +
                 "MATCH (n:DatabaseObject)-[:disease]-(d:Disease) " +
                 "WHERE d.identifier = $viral " + // viral
                 "MATCH (n)-[:relatedSpecies|species]-(s:Species) " +
-                "WHERE s.displayName = \"Human SARS coronavirus\" " +
+                "WHERE s.displayName = 'Human SARS coronavirus' " +
                 "MATCH (o:DatabaseObject)-[:disease]-(do:Disease) " +
                 "WHERE do.identifier IN  $sarsDisease " +
                 "MATCH (o)-[:relatedSpecies|species]-(:Species) " +
-                "WITH n + collect(o) as final " +
-                "UNWIND final as f " +
-                "RETURN distinct f.stId as ST_ID";
+                "WITH n + collect(o) AS final " +
+                "UNWIND final AS f " +
+                "RETURN DISTINCT f.stId AS ST_ID";
         try {
             Map<String, Object> params = new HashMap<>(SARSDoid.size());
             params.put("viral", SARSDoid.get(0));
@@ -210,6 +212,21 @@ class DocumentBuilder {
         // in the Fireworks (filter query fireworksSpecies)
         if (fireworksSpecies.isEmpty()) {
             fireworksSpecies.add("Entries without species");
+        }
+
+        if (databaseObject instanceof PhysicalEntity) {
+            //language=cypher
+            String query = "" +
+                    "MATCH (s:Species)<-[:species]-(rle:ReactionLikeEvent), " +
+                    "     (rle)-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]->(pe:PhysicalEntity) " +
+                    "WHERE pe.dbId = $dbId " +
+                    "RETURN DISTINCT s.displayName AS identifier";
+
+            try {
+                fireworksSpecies.addAll(advancedDatabaseObjectService.getCustomQueryResults(String.class, query, Map.of("dbId", databaseObject.getDbId())));
+            } catch (CustomQueryException e) {
+                logger.error("Failed to index first pathway species to fill fireworkSpecies of {}", databaseObject.getDbId());
+            }
         }
 
         document.setFireworksSpecies(fireworksSpecies);
