@@ -446,8 +446,9 @@ class DocumentBuilder {
             referenceEntity = ewas.getReferenceEntity();
             setModifiedResidue(document, ewas.getHasModifiedResidue());
         } else if (databaseObject instanceof SimpleEntity) {
-            SimpleEntity simpleEntity = (SimpleEntity) databaseObject;
-            referenceEntity = simpleEntity.getReferenceEntity();
+            referenceEntity = ((SimpleEntity) databaseObject).getReferenceEntity();
+        } else if (databaseObject instanceof Drug) {
+            referenceEntity = ((Drug) databaseObject).getReferenceEntity();
         }
 
         if (referenceEntity != null) {
