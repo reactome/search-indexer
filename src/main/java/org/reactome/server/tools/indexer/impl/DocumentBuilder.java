@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -72,7 +73,6 @@ class DocumentBuilder {
 
         synchronized (covid19enties) {
             if (covid19enties.isEmpty()) cacheCovid19Entities();
-
         }
 
         IndexDocument document = new IndexDocument();
@@ -490,10 +490,7 @@ class DocumentBuilder {
             setReferenceCrossReference(document, referenceEntity.getCrossReference());
 
             if (identifier != null) {
-                List<String> referenceIdentifiers = new LinkedList<>();
-                referenceIdentifiers.add(identifier);
-                referenceIdentifiers.add(referenceEntity.getDatabaseName() + ':' + referenceEntity.getIdentifier());
-                document.setReferenceIdentifiers(referenceIdentifiers);
+                document.setReferenceIdentifiers(getReferenceIdentifiers(List.of(referenceEntity)));
                 document.setDatabaseName(referenceEntity.getReferenceDatabase().getDisplayName());
 
                 String url = referenceEntity.getReferenceDatabase().getAccessUrl();
@@ -551,8 +548,11 @@ class DocumentBuilder {
         Set<String> identifiers = new TreeSet<>();
         if (referenceEntities == null) return new LinkedList<>();
         for (ReferenceEntity referenceEntity : referenceEntities) {
-            identifiers.add(SPACE_PATTERN.split(referenceEntity.getDatabaseName())[0] + ':' + referenceEntity.getIdentifier());
-            identifiers.add(referenceEntity.getDatabaseName().replace(" ", "-") + ':' + referenceEntity.getIdentifier());
+            Stream.concat(
+                    referenceEntity.getReferenceDatabase().getName().stream().filter(s -> !s.contains(" ")),
+                    Stream.of(referenceEntity.getSimplifiedDatabaseName())
+            ).forEach(dbName -> identifiers.add(dbName + ':' + referenceEntity.getIdentifier()));
+
             identifiers.add(referenceEntity.getIdentifier());
         }
         return new LinkedList<>(identifiers);

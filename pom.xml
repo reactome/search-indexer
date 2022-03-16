@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>org.reactome.server.tools.indexer.Main</main.class>
 
-        <graph.core>2.0.0</graph.core>
+        <graph.core>2.0.1-SNAPSHOT</graph.core>
         <solr.version>8.5.2</solr.version>
         <jasp.version>2.1</jasp.version>
         <mail.version>1.5.6</mail.version>
@@ -62,6 +62,7 @@
         <maven.site.version>3.5.1</maven.site.version>
         <maven.info.report.version>3.1.1</maven.info.report.version>
         <maven.pmd.version>3.14.0</maven.pmd.version>
+        <jaxb.version>2.3.0</jaxb.version>
     </properties>
 
     <dependencies>
@@ -132,17 +133,27 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>2.3.0</version>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>2.3.0</version>
+            <version>${jaxb.version}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.junit.jupiter</groupId>-->
+<!--            <artifactId>junit-jupiter</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -210,6 +221,12 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
