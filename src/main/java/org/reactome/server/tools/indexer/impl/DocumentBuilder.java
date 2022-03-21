@@ -540,6 +540,8 @@ class DocumentBuilder {
             return "RNA Sequence";
         } else if (referenceEntity instanceof ReferenceMolecule || referenceEntity instanceof ReferenceGroup) {
             return "Chemical Compound";
+        } else if (referenceEntity instanceof ReferenceTherapeutic) {
+            return "Drug";
         } else {
             return referenceEntity.getSchemaClass();
         }
