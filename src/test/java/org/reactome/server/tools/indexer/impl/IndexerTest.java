@@ -26,9 +26,12 @@ class IndexerTest extends BaseTest {
 
     @Test
     void indexDrug() throws JsonProcessingException {
+        try {
+            IndexDocument document = documentBuilder.createSolrDocument(9649889L);
+            logger.info(objectMapper.writeValueAsString(document));
+        } catch (Error e) {
+            e.printStackTrace();
+        }
 
-        IndexDocument document = documentBuilder.createSolrDocument(9649889L);
-
-        logger.info(objectMapper.writeValueAsString(document));
     }
 }
