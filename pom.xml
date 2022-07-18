@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-parent</artifactId>
-        <version>2.6.6</version>
+        <version>2.7.1</version>
     </parent>
 
     <description>
@@ -45,10 +45,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>org.reactome.server.tools.indexer.Main</main.class>
 
-        <graph.core>2.0.3</graph.core>
-        <solr.version>8.9.0</solr.version>
+        <graph.core>2.0.4</graph.core>
+        <solr.version>9.0.0</solr.version>
         <jasp.version>2.1</jasp.version>
-        <mail.version>1.5.6</mail.version>
+        <mail.version>1.6.2</mail.version>
         <activation.version>1.1.1</activation.version>
         <logging.version>1.2.3</logging.version>
         <jackrabbit.version>2.10</jackrabbit.version>
@@ -63,6 +63,8 @@
         <maven.info.report.version>3.1.1</maven.info.report.version>
         <maven.pmd.version>3.14.0</maven.pmd.version>
         <jaxb.version>2.3.0</jaxb.version>
+        <jaxb.impl.version>4.0.0</jaxb.impl.version>
+        <jaxb.core.version>4.0.0</jaxb.core.version>
     </properties>
 
     <dependencies>
@@ -96,7 +98,6 @@
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>javax.mail-api</artifactId>
-            <version>${mail.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -133,17 +134,16 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb.version}</version>
+            <version>${jaxb.impl.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>${jaxb.version}</version>
+            <version>${jaxb.core.version}</version>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.junit.jupiter</groupId>-->
