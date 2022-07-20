@@ -63,8 +63,6 @@
         <maven.info.report.version>3.1.1</maven.info.report.version>
         <maven.pmd.version>3.14.0</maven.pmd.version>
         <jaxb.version>2.3.0</jaxb.version>
-        <jaxb.impl.version>4.0.0</jaxb.impl.version>
-        <jaxb.core.version>4.0.0</jaxb.core.version>
     </properties>
 
     <dependencies>
@@ -134,16 +132,17 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb.impl.version}</version>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>${jaxb.core.version}</version>
+            <version>${jaxb.version}</version>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.junit.jupiter</groupId>-->
