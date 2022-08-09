@@ -122,5 +122,5 @@ sudo service solr [stop|start|restart|status]
 ```console
 $> mvn clean package
 
-$> java -cp target/search-indexer-icon-exec.jar --solrPw xxx --iconsDir /path1 --ehldDir /path2
+$> java -jar target/search-indexer-icon-exec.jar --solrPw xxx --iconsDir /path1 --ehldDir /path2
 ```
