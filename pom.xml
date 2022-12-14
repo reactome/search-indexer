@@ -7,13 +7,13 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <name>search-indexer</name>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-parent</artifactId>
-        <version>2.7.1</version>
+        <groupId>org.reactome.server</groupId>
+        <artifactId>reactome-parent</artifactId>
+        <version>1.0.0</version>
     </parent>
 
     <description>
@@ -23,7 +23,7 @@
 
     <organization>
         <name>The European Bioinformatics Institute</name>
-        <url>http://www.ebi.ac.uk/</url>
+        <url>https://www.ebi.ac.uk/</url>
     </organization>
 
     <developers>
@@ -31,38 +31,21 @@
             <id>gviteri</id>
             <name>Guilherme S. Viteri</name>
             <email>gviteri@ebi.ac.uk</email>
-            <organization>http://www.ebi.ac.uk/</organization>
+            <organization>https://www.ebi.ac.uk/</organization>
         </developer>
         <developer>
             <id>fkorn</id>
             <name>Florian Korninger</name>
             <email>fkorn@ebi.ac.uk</email>
-            <organization>http://www.ebi.ac.uk/</organization>
+            <organization>https://www.ebi.ac.uk/</organization>
         </developer>
     </developers>
     <properties>
-        <jdk.version>11</jdk.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <main.class>org.reactome.server.tools.indexer.Main</main.class>
 
-        <graph.core>2.0.4</graph.core>
-        <solr.version>9.0.0</solr.version>
-        <jasp.version>2.1</jasp.version>
-        <mail.version>1.6.2</mail.version>
-        <activation.version>1.1.1</activation.version>
-        <logging.version>1.2.3</logging.version>
         <jackrabbit.version>2.10</jackrabbit.version>
-        <jodd-core.version>5.3.0</jodd-core.version>
-        <xml.bind.version>3.0.0</xml.bind.version>
-        <commons-compress.version>1.16.1</commons-compress.version>
-        <commons-text.version>1.9</commons-text.version>
 
-        <maven.compiler.version>3.5.1</maven.compiler.version>
-        <maven.javadoc.version>2.10.3</maven.javadoc.version>
-        <maven.site.version>3.5.1</maven.site.version>
-        <maven.info.report.version>3.1.1</maven.info.report.version>
-        <maven.pmd.version>3.14.0</maven.pmd.version>
-        <jaxb.version>2.3.0</jaxb.version>
     </properties>
 
     <dependencies>
@@ -71,14 +54,12 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${graph.core}</version>
         </dependency>
 
         <!-- Solr-->
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -90,7 +71,6 @@
         <dependency>
             <groupId>com.martiansoftware</groupId>
             <artifactId>jsap</artifactId>
-            <version>${jasp.version}</version>
         </dependency>
         <!-- Mail Service -->
         <dependency>
@@ -100,7 +80,6 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>${mail.version}</version>
         </dependency>
 
         <!--Logging: will transitively add logback core and slf4j-api-->
@@ -119,36 +98,31 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>${commons-text.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
 
         <!-- XML binding for java 11 -->
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
-            <version>${activation.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>${jaxb.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.junit.jupiter</groupId>-->
-<!--            <artifactId>junit-jupiter</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -173,32 +147,6 @@
             <layout>default</layout>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <!-- EBI repo -->
-        <repository>
-            <id>nexus-ebi-repo</id>
-            <name>The EBI internal repository</name>
-            <url>https://www.ebi.ac.uk/Tools/maven/repos/content/groups/ebi-repo/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <!-- EBI SNAPSHOT repo -->
-        <repository>
-            <id>nexus-ebi-snapshot-repo</id>
-            <name>The EBI internal snapshot repository</name>
-            <url>https://www.ebi.ac.uk/Tools/maven/repos/content/groups/ebi-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
             </snapshots>
         </repository>
 
@@ -230,19 +178,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
             </plugin>
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <fork>true</fork>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>Global</id>
+                        <id>repackage</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
@@ -268,8 +215,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -289,13 +236,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.1</version>
-
+                <version>${maven-resources-plugin.version}</version>
                 <configuration>
                     <escapeString>\</escapeString>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
@@ -314,7 +259,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven.javadoc.version}</version>
                 <configuration>
                     <quiet>true</quiet>
                 </configuration>
@@ -329,17 +273,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven.info.report.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>${maven.pmd.version}</version>
                 <configuration>
                     <skipEmptyReport>false</skipEmptyReport>
                     <linkXRef>false</linkXRef>
                     <sourceEncoding>utf-8</sourceEncoding>
-                    <targetJdk>${jdk.version}</targetJdk>
+                    <targetJdk>${java.version}</targetJdk>
                 </configuration>
             </plugin>
         </plugins>
