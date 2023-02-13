@@ -160,13 +160,11 @@ class DocumentBuilder {
         logger.info("Caching COVID19 Entities");
         //language=cypher
         String query = "" +
-                "MATCH (n:DatabaseObject)-[:disease]-(d:Disease) " +
-                "WHERE d.identifier = $viral " + // viral
-                "MATCH (n)-[:relatedSpecies|species]-(s:Species) " +
-                "WHERE s.displayName = 'Human SARS coronavirus' " +
+                "MATCH (n:DatabaseObject)-[:relatedSpecies|species]-(s:Species) " +
+                "WHERE n.stId IS NOT NULL AND " +
+                "(s.displayName = 'Human SARS coronavirus' OR s.displayName = 'SARS-CoV-2') " +
                 "MATCH (o:DatabaseObject)-[:disease]-(do:Disease) " +
                 "WHERE do.identifier IN  $sarsDisease " +
-                "MATCH (o)-[:relatedSpecies|species]-(:Species) " +
                 "WITH n + collect(o) AS final " +
                 "UNWIND final AS f " +
                 "RETURN DISTINCT f.stId AS ST_ID";
