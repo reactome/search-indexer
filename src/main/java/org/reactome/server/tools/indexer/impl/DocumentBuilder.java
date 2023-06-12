@@ -140,7 +140,7 @@ class DocumentBuilder {
         logger.info("Caching SimpleEntity and Drug Species");
         //language=cypher
         String query = "" +
-                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
                 "WHERE (n:SimpleEntity) OR (n:Drug) " +
                 "WITH n, collect(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
@@ -216,7 +216,7 @@ class DocumentBuilder {
             //language=cypher
             String query = "" +
                     "MATCH (s:Species)<-[:species]-(rle:ReactionLikeEvent), " +
-                    "     (rle)-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output*]->(pe:PhysicalEntity) " +
+                    "     (rle)-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker*]->(pe:PhysicalEntity) " +
                     "WHERE pe.dbId = $dbId " +
                     "RETURN DISTINCT s.displayName AS identifier";
 
