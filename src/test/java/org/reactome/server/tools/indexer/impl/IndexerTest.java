@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.reactome.server.BaseTest;
@@ -32,6 +33,11 @@ class IndexerTest extends BaseTest {
         } catch (Error e) {
             e.printStackTrace();
         }
+    }
 
+    @Test
+    void indexMarker() {
+        IndexDocument document = documentBuilder.createSolrDocument(6809649L);
+        Assertions.assertTrue(document.getDiagrams().contains("R-HSA-9725554"));
     }
 }
