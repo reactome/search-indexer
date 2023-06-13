@@ -415,6 +415,8 @@ class DocumentBuilder {
         } else if (databaseObject instanceof Polymer) {
             Polymer polymer = (Polymer) databaseObject;
             speciesCollection = polymer.getSpecies();
+        } else if (databaseObject instanceof Cell) {
+            speciesCollection = ((Cell) databaseObject).getSpecies();
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
             speciesCollection = event.getSpecies();
