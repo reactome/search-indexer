@@ -148,6 +148,7 @@
                 name^50.0
                 name_gram^1.0
                 name_stem^1.0
+                name_underscore^1.0
                 keywords^0.1
                 species^1.0
                 relatedSpecies^1.0
@@ -358,6 +359,7 @@
                 stId^100.0
                 name_exact^100.0
                 name^50.0
+                name_underscore^1.0
                 name_gram^1.0
                 name_stem^1.0
                 keywords^0.1
@@ -454,6 +456,7 @@
                 stId^100.0
                 name_exact^100.0
                 name^50.0
+                name_underscore^1.0
                 name_gram^1.0
                 name_stem^1.0
                 keywords^0.1
@@ -602,6 +605,7 @@
                 stId^80.0
                 name_exact^100.0
                 name^50.0
+                name_underscore^1.0
                 name_gram^1.0
                 name_stem^1.0
                 keywords^0.1
@@ -715,6 +719,7 @@
                 stId^80.0
                 name_exact^100.0
                 name^50.0
+                name_underscore^1.0
                 name_gram^1.0
                 name_stem^1.0
                 keywords^0.1

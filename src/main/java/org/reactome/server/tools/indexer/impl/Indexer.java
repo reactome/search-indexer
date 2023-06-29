@@ -288,7 +288,7 @@ public class Indexer {
      */
     private Collection<ReferenceEntity> getInteractors() {
         Collection<ReferenceEntity> rtn;
-
+        //language=Cypher
         String query = "" +
                 "MATCH (in:ReferenceEntity)<-[:interactor]-(:Interaction)-[:interactor]->(re:ReferenceEntity) " +
                 "WHERE (:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|entityFunctionalStatus|diseaseEntity|regulatedBy|regulator|referenceEntity*]->(re) AND " +
