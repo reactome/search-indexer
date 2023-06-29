@@ -412,7 +412,7 @@
             <str name="hl">true</str>
             <!-- activates highlighting-->
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
+                name, stId, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
                 referenceRNAIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
 
@@ -519,7 +519,7 @@
             <!-- Highlighting -->
             <str name="hl">true</str>
             <str name="hl.fl">
-                name, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
+                name, stId, summation, inferredSummation, referenceName, referenceIdentifiers, referenceDNAIdentifiers,
                 referenceRNAIdentifiers, orcidId, iconCategories, iconCuratorName, iconDesignerName
             </str>
             <str name="hl.requireFieldMatch">true</str>
