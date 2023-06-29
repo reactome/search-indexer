@@ -166,7 +166,7 @@
         <fieldType name="stId_field" class="solr.TextField">
             <analyzer type="query">
                 <tokenizer class="solr.KeywordTokenizerFactory"/>
-                <filter class="solr.PatternCaptureGroupFilterFactory" pattern="^R\-[A-Z]{3}\-[0-9]+(\-[0-9]+)?(\.[0-9]+)?$" preserve_original="false" />
+                <filter class="solr.PatternCaptureGroupFilterFactory" pattern="^(R\-[A-Z]{3}\-[0-9]+)(\-[0-9]+)?(\.[0-9]+)?$" preserve_original="false" />
                 <filter class="solr.PatternReplaceFilterFactory" pattern="\.[0-9]*" replacement=""/>
                 <filter class="solr.LowerCaseFilterFactory"/>
             </analyzer>
