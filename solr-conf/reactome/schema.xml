@@ -195,15 +195,16 @@
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/.:_ ]"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
                 <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/.:_ ]"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
                 <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="^reactome_" replacement=""/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
             </analyzer>
         </fieldType>
 
