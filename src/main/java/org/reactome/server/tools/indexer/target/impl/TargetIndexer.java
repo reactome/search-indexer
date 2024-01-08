@@ -100,7 +100,7 @@ public class TargetIndexer {
     private SolrQuery getSolrQuery(Target target) {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler("/search");
-        solrQuery.setQuery(String.join("\" OR \"", target.getAccessions()));
+        solrQuery.setQuery(String.join(" OR ", target.getAccessions()));
         return solrQuery;
     }
 }
