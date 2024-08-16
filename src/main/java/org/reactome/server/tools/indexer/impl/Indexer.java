@@ -1,19 +1,17 @@
 package org.reactome.server.tools.indexer.impl;
 
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
-import org.reactome.server.graph.domain.model.DatabaseObject;
-import org.reactome.server.graph.domain.model.Event;
-import org.reactome.server.graph.domain.model.PhysicalEntity;
-import org.reactome.server.graph.domain.model.ReferenceEntity;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.graph.exception.CustomQueryException;
-import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
-import org.reactome.server.graph.service.GeneralService;
-import org.reactome.server.graph.service.PersonService;
-import org.reactome.server.graph.service.SchemaService;
+import org.reactome.server.graph.service.*;
+import org.reactome.server.tools.indexer.deleted.impl.DeletedDocumentBuilder;
+import org.reactome.server.tools.indexer.deleted.model.DeletedDocument;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.slf4j.Logger;
@@ -40,7 +38,8 @@ import static org.reactome.server.tools.indexer.util.SolrUtility.commitSolrServe
  * @version 2.0
  */
 @Service
-public class Indexer {
+@NoArgsConstructor
+public class Indexer extends AbstractIndexer<IndexDocument> {
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private static final String EBEYE_NAME = "Reactome";
@@ -50,7 +49,6 @@ public class Indexer {
             "education.";
 
     private SchemaService schemaService;
-    private GeneralService generalService;
     private AdvancedDatabaseObjectService advancedDatabaseObjectService;
     private PersonService personService;
 
@@ -59,15 +57,12 @@ public class Indexer {
     private InteractorDocumentBuilder interactorDocumentBuilder;
     private PersonDocumentBuilder personDocumentBuilder;
 
-    private SolrClient solrClient;
-    private String solrCollection;
     private Marshaller marshaller;
     private Marshaller covidMarshaller;
 
     private Boolean ebeyeXml = false;
     private Boolean ebeyeCovidXml = false;
     private int releaseNumber;
-    private long total;
     private int covidEntriesCount;
 
     public int index() throws IndexerException {
@@ -192,7 +187,10 @@ public class Indexer {
         }
 
         // Add to Solr the remaining documents
-        if (!allDocuments.isEmpty()) addDocumentsToSolrServer(allDocuments);
+        if (!allDocuments.isEmpty()) {
+            updateProgressBar((int) total);
+            addDocumentsToSolrServer(allDocuments);
+        }
 
         long end = System.currentTimeMillis() - start;
         logger.info("Elapsed time for " + clazz.getSimpleName() + " is " + end + "ms.");
@@ -342,42 +340,6 @@ public class Indexer {
 
     }
 
-    /**
-     * Safely adding Document Bean to Solr Server
-     *
-     * @param documents List of Documents that will be added to Solr
-     *                  <p>
-     *                  REMOTE_SOLR_EXCEPTION is a Runtime Exception
-     */
-    private void addDocumentsToSolrServer(List<IndexDocument> documents) {
-        if (documents != null && !documents.isEmpty()) {
-            try {
-                solrClient.addBeans(solrCollection, documents);
-                logger.debug(documents.size() + " Documents successfully added to SolR");
-            } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e) {
-                for (IndexDocument document : documents) {
-                    try {
-                        solrClient.addBean(solrCollection, document);
-                        logger.debug("A single document was added to Solr");
-                    } catch (IOException | SolrServerException | BaseHttpSolrClient.RemoteSolrException e1) {
-                        logger.error("Could not add document", e);
-                        logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());
-                    }
-                }
-                logger.error("Could not add document", e);
-            }
-        } else {
-            logger.error("Solr Documents are null or empty");
-        }
-    }
-
-    public void setSolrClient(SolrClient solrClient) {
-        this.solrClient = solrClient;
-    }
-
-    public void setSolrCollection(String solrCollection) {
-        this.solrCollection = solrCollection;
-    }
 
     public Boolean getEbeyeXml() {
         return ebeyeXml;
@@ -391,40 +353,9 @@ public class Indexer {
         this.ebeyeCovidXml = ebeyeCovidXml;
     }
 
-    /**
-     * Simple method that prints a progress bar to command line
-     *
-     * @param done Number of entries added
-     */
-    private void updateProgressBar(int done) {
-        final int width = 55;
-
-        String format = "\r%3d%% %s %c";
-        char[] rotators = {'|', '/', '—', '\\'};
-        double percent = (double) done / total;
-        StringBuilder progress = new StringBuilder(width);
-        progress.append('|');
-        int i = 0;
-        for (; i < (int) (percent * width); i++)
-            progress.append("=");
-        for (; i < width; i++)
-            progress.append(" ");
-        progress.append('|');
-        System.out.printf(format, (int) (percent * 100), progress, rotators[((done - 1) % (rotators.length * 100)) / 100]);
-    }
-
-    private void cleanNeo4jCache() {
-        generalService.clearCache();
-    }
-
     @Autowired
     public void setSchemaService(SchemaService schemaService) {
         this.schemaService = schemaService;
-    }
-
-    @Autowired
-    public void setGeneralService(GeneralService generalService) {
-        this.generalService = generalService;
     }
 
     @Autowired

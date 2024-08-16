@@ -2,8 +2,12 @@ package org.reactome.server.tools.indexer;
 
 import com.martiansoftware.jsap.*;
 import org.apache.solr.client.solrj.SolrClient;
+import org.reactome.server.graph.service.DatabaseObjectService;
+import org.reactome.server.graph.service.GeneralService;
+import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.indexer.config.IndexerNeo4jConfig;
+import org.reactome.server.tools.indexer.deleted.impl.DeletedIndexer;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.icon.exporter.IconsExporter;
 import org.reactome.server.tools.indexer.icon.impl.IconIndexer;
@@ -55,7 +59,8 @@ public class Main {
                         new FlaggedOption("sitemap", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'n', "sitemap", "Generates sitemap."),
                         new FlaggedOption("target", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 'p', "target", "Generates Swissprot-based target Solr core."),
                         new FlaggedOption("iconsDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'q', "iconsDir", "The directory where all ICONS (R-ICO-*) reside"),
-                        new FlaggedOption("ehldDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'r', "ehldDir", "The directory where all EHLDs reside")
+                        new FlaggedOption("ehldDir", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'r', "ehldDir", "The directory where all EHLDs reside"),
+                        new FlaggedOption("deleted", JSAP.BOOLEAN_PARSER, "true", JSAP.NOT_REQUIRED, 's', "deleted", "Generates Deleted id replacement."),
                 }
         );
 
@@ -75,6 +80,7 @@ public class Main {
         boolean ebeyexml = config.getBoolean("ebeyexml");
         boolean ebeyecovidxml = config.getBoolean("ebeyecovidxml");
         boolean target = config.getBoolean("target");
+        boolean deleted = config.getBoolean("deleted");
         String iconsDir = config.getString("iconsDir");
         String ehldDir = config.getString("ehldDir");
 
@@ -94,6 +100,7 @@ public class Main {
             }
 
             if (target) doTargetIndexer(solrClient, solrCollection);
+            if (deleted) doDeletedIndexing(solrClient, solrCollection);
             if (siteMap) generateSitemap();
 
             if (sendmail) {
@@ -142,12 +149,23 @@ public class Main {
     }
 
     private static Integer doIconIndexer(SolrClient solrClient, String solrCollection, String iconsLib, String ehldDir) throws IndexerException {
-        IconIndexer iconIndexer = new IconIndexer(solrClient, solrCollection, iconsLib, ehldDir);
-        return iconIndexer.indexIcons();
+        IconIndexer iconIndexer = ReactomeGraphCore.getService(IconIndexer.class);
+        iconIndexer.setSolrClient(solrClient);
+        iconIndexer.setSolrCollection(solrCollection);
+        iconIndexer.setIconsDir(iconsLib);
+        iconIndexer.setEhldsDir(ehldDir);
+        return iconIndexer.index();
     }
 
     private static void doIconsMappingFiles(SolrClient solrClient, String solrCollection) throws IndexerException {
         IconsExporter tsvWriter = new IconsExporter(solrClient, solrCollection);
         tsvWriter.write(".");
+    }
+
+    private static Integer doDeletedIndexing(SolrClient solrClient, String solrCollection) throws IndexerException {
+        DeletedIndexer indexer = ReactomeGraphCore.getService(DeletedIndexer.class);
+        indexer.setSolrClient(solrClient);
+        indexer.setSolrCollection(solrCollection);
+        return indexer.index();
     }
 }

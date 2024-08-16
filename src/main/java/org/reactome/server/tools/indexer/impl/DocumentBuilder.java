@@ -66,7 +66,7 @@ class DocumentBuilder {
     }
 
     @Transactional
-    IndexDocument createSolrDocument(Long dbId) {
+    public IndexDocument createSolrDocument(Long dbId) {
         synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }

@@ -242,6 +242,7 @@
             <!-- scoring parameters-->
             <str name="fq">species_facet:"Homo sapiens" OR species_facet:"Entries without species"</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:deleted</str>
             <str name="fq">-type:Icon</str>
             <str name="fl">stId, name, exactType, compartmentName</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
@@ -351,6 +352,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
+            <str name="bq">(*:* -type:deleted)^2000</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
@@ -448,6 +450,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <!-- fake a "negative boost" is to give a high boost to everything that does *not* match -->
             <str name="bq">(*:* -exactType:Icon)^2000</str>
+            <str name="bq">(*:* -type:deleted)^2000</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
 
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
@@ -598,6 +601,7 @@
             <str name="df">name</str>
             <str name="fq">-type:Person</str>
             <str name="fq">-type:Icon</str>
+            <str name="fq">-type:deleted</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="qf">
                 dbId^100.0
@@ -683,6 +687,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:deleted</str>
             <str name="fq">-type:Icon</str>
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
@@ -712,6 +717,7 @@
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:deleted</str>
             <str name="fq">-type:Icon</str>
             <str name="qf">
                 dbId^100.0
@@ -783,6 +789,7 @@
             <str name="tie">0.1</str>
             <str name="bq">(*:* -fragmentModification:*)^10</str>
             <str name="fq">-type:Person</str>
+            <str name="fq">-type:deleted</str>
             <str name="qf">                <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^150.0
                 stId^150.0

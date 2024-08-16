@@ -80,6 +80,13 @@
         <!-- iconPhysicalEntity: stId#type#name#compartment-->
         <field name="iconPhysicalEntities"      type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
         <field name="iconEhlds"                 type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
+
+        <!-- Deleted-->
+        <field name="reason"                    type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
+        <field name="explanation"               type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
+        <field name="date"                      type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
+        <field name="replacementDbIds"          type="id"                   indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"   />
+        <field name="replacementStIds"          type="stId_field"           indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"   />
     </fields>
 
     <copyField source="name"                            dest="name_exact"/>
