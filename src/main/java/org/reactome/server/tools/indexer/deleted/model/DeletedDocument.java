@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 import org.apache.solr.client.solrj.beans.Field;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -18,8 +19,10 @@ public class DeletedDocument {
     @Field
     private String name;
     @Field
+    private String type;
+    @Field
     @Builder.Default
-    private String type = "deleted";
+    private Boolean deleted = true;
     @Field
     private String exactType;
     @Field

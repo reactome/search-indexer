@@ -1,15 +1,10 @@
 package org.reactome.server.tools.indexer.deleted.impl;
 
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrClient;
 import org.reactome.server.graph.domain.model.Deleted;
 import org.reactome.server.graph.service.DatabaseObjectService;
-import org.reactome.server.graph.service.GeneralService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.tools.indexer.deleted.model.DeletedDocument;
 import org.reactome.server.tools.indexer.exception.IndexerException;
@@ -36,7 +31,7 @@ public class DeletedIndexer extends AbstractIndexer<DeletedDocument> {
 
     public int index() throws IndexerException {
         log.info("[{}] Start indexing deleted into Solr", solrCollection);
-        cleanSolrIndex(solrCollection, solrClient, "{!term f=type}deleted");
+        cleanSolrIndex(solrCollection, solrClient, "{!term f=deleted}true");
 
         List<DeletedDocument> batch = new ArrayList<>();
         List<Long> missingDocuments = new ArrayList<>();

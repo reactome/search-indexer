@@ -82,9 +82,10 @@
         <field name="iconEhlds"                 type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"  />
 
         <!-- Deleted-->
+        <field name="deleted"                   type="boolean_field"        indexed="true"      stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
         <field name="reason"                    type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
         <field name="explanation"               type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
-        <field name="date"                      type="stored_value"         indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
+        <field name="date"                      type="date_field"           indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="false"  />
         <field name="replacementDbIds"          type="id"                   indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"   />
         <field name="replacementStIds"          type="stId_field"           indexed="false"     stored="true"   omitNorms="true"   required="false"    multiValued="true"   />
     </fields>
@@ -138,6 +139,7 @@
         <fieldType name="facet_field"       class="solr.StrField" />
         <fieldType name="stored_value"      class="solr.StrField" />
         <fieldType name="boolean_field"     class="solr.BoolField"/>
+        <fieldType name="date_field"        class="solr.DatePointField" />
 
         <fieldType name="keyword_field" class="solr.TextField">
             <analyzer type="index">
