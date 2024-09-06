@@ -7,13 +7,13 @@
     <artifactId>search-indexer</artifactId>
 
     <packaging>jar</packaging>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <name>search-indexer</name>
 
     <parent>
         <groupId>org.reactome.maven</groupId>
         <artifactId>reactome-parent</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.5</version>
     </parent>
 
     <description>
@@ -54,7 +54,6 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>2.0.9-SNAPSHOT</version>
         </dependency>
 
         <!-- Solr-->
