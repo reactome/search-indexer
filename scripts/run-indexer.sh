@@ -33,7 +33,7 @@ _NEO4J_PASSWORD=""
 
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
-_GITBRANCH="master"
+_GITBRANCH="get-release-number"
 
 _TARGET="yes"
 _EBEYEXML="yes"
@@ -147,7 +147,7 @@ checkNeo4j() {
 getReleaseInfo() {
     _RELEASE_INFO="Couldn't retrieve DBInfo."
     _JSONFILE="query_result.json"
-    _CYPHER='{"statements":[{"statement":"MATCH (n:DBInfo) RETURN n.version LIMIT 1"}]}'
+    _CYPHER='{"statements":[{"statement":"MATCH (n:DBInfo) RETURN n.releaseNumber LIMIT 1"}]}'
     _NEO4J_URL="http://$_NEO4J_USER:$_NEO4J_PASSWORD@$_NEO4J_HOST:$_NEO4J_HTTP_PORT/db/data/transaction/commit"
     _STATUS=$(curl -H "Content-Type: application/json" -d "$_CYPHER" ${_NEO4J_URL} --write-out "%{http_code}\n" --silent --output ${_JSONFILE})
     if [[ 200 == "$_STATUS" ]]; then
