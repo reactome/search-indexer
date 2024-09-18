@@ -315,7 +315,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
 
     private void queryReleaseNumber() {
         try {
-            releaseNumber = generalService.getDBInfo().getVersion();
+            releaseNumber = generalService.getDBInfo().getReleaseNumber();
         } catch (Exception e) {
             logger.error("An error occurred when trying to retrieve the release number from the database.");
         }
