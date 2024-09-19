@@ -80,8 +80,12 @@ class DocumentBuilder {
          * Query the Graph and load only Primitives and no Relations attributes.
          * Lazy-loading will load them on demand.
          */
+        logger.info("Db id is " + dbId);
+        
         DatabaseObject databaseObject = databaseObjectService.findById(dbId);
+        logger.info("DatabaseObject is " + databaseObject); 
 
+        
         // Setting common attributes
         document.setDbId(databaseObject.getDbId().toString());
         document.setStId(databaseObject.getStId());
