@@ -2,7 +2,6 @@ package org.reactome.server.tools.indexer;
 
 import com.martiansoftware.jsap.*;
 import org.apache.solr.client.solrj.SolrClient;
-import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.indexer.exception.IndexerException;
 import org.reactome.server.tools.indexer.icon.exporter.IconsExporter;
 import org.reactome.server.tools.indexer.icon.impl.IconIndexer;
@@ -40,7 +39,7 @@ public class IconsMain {
 
             SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
 
-            IconIndexer indexer = ReactomeGraphCore.getService(IconIndexer.class);
+            IconIndexer indexer = new IconIndexer();
             indexer.setSolrClient(solrClient);
             indexer.setIconsDir(config.getString("iconsDir"));
             indexer.setEhldsDir(config.getString("ehldDir"));
