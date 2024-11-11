@@ -39,14 +39,17 @@ public class IconsMain {
 
             SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
 
+            String solrCollection = config.getString("solrCollection");
+
             IconIndexer indexer = new IconIndexer();
             indexer.setSolrClient(solrClient);
+            indexer.setSolrCollection(solrCollection);
             indexer.setIconsDir(config.getString("iconsDir"));
             indexer.setEhldsDir(config.getString("ehldDir"));
             indexer.index();
             closeSolrServer(solrClient);
 
-            IconsExporter tsvWriter = new IconsExporter(solrClient, config.getString("solrCollection"));
+            IconsExporter tsvWriter = new IconsExporter(solrClient, solrCollection);
             tsvWriter.write(config.getString("outputDir"));
         } catch (Error | Exception e) {
             e.printStackTrace();
