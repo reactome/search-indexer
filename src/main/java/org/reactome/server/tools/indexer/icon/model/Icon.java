@@ -2,6 +2,7 @@ package org.reactome.server.tools.indexer.icon.model;
 
 import javax.xml.bind.annotation.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -141,5 +142,18 @@ public class Icon {
 
     public void setSkip(Boolean skip) {
         this.skip = skip;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Icon icon = (Icon) o;
+        return Objects.equals(getStId(), icon.getStId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getStId());
     }
 }
