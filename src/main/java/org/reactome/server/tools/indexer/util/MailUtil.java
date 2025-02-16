@@ -3,7 +3,7 @@ package org.reactome.server.tools.indexer.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.simplejavamail.api.mailer.Mailer;
-import org.simplejavamail.email.Email;
+import org.simplejavamail.api.email.Email;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.MailerBuilder;
 
@@ -37,11 +37,11 @@ public class MailUtil {
     public void send(String from, String to, String subject, String text) {
         try {
             Email email = EmailBuilder.startingBlank()
-                    .from(from)
-                    .to(to)
-                    .withSubject(subject)
-                    .withPlainText(text)
-                    .build();
+                .from(from)
+                .to(to)
+                .withSubject(subject)
+                .withPlainText(text)
+                .buildEmail();
 
             mailer.sendMail(email);
         } catch (Exception e) {
