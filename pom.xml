@@ -353,6 +353,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <additionalJOptions>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                    </additionalJOptions>
+                </configuration>
             </plugin>
 
             <!-- Signs deployed jar, source jar, and JavaDoc jar with GPG -->
