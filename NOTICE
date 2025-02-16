@@ -1,0 +1,42 @@
+NOTICE FILE
+
+This project includes the following third-party components:
+
+1. **JSAP (Java-based Simple Argument Parser)**
+   - *GroupId*: com.martiansoftware
+   - *ArtifactId*: jsap
+   - *License*: GNU Lesser General Public License (LGPL)
+   - *License URL*: http://www.martiansoftware.com/jsap/license.html
+
+2. **Jakarta Mail**
+   - *GroupId*: com.sun.mail
+   - *ArtifactId*: jakarta.mail
+   - *Version*: 2.0.1
+   - *License*: Eclipse Distribution License (EDL) 1.0, Eclipse Public License (EPL) 2.0, GNU General Public License (GPL)
+   - *License URL*: https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail/2.0.1
+
+3. **Logback Classic Module**
+   - *GroupId*: ch.qos.logback
+   - *ArtifactId*: logback-classic
+   - *License*: Dual-licensed under Eclipse Public License (EPL) 1.0 and GNU Lesser General Public License (LGPL) 2.1
+   - *License URL*: https://logback.qos.ch/license.html
+
+4. **JAXB API**
+   - *GroupId*: javax.xml.bind
+   - *ArtifactId*: jaxb-api
+   - *License*: Common Development and Distribution License (CDDL) 1.1 and GNU General Public License (GPL) 1.1
+   - *License URL*: https://central.sonatype.com/artifact/javax.xml.bind/jaxb-api/2.2.12
+
+5. **JAXB Implementation (jaxb-impl)**
+   - *GroupId*: com.sun.xml.bind
+   - *ArtifactId*: jaxb-impl
+   - *License*: Eclipse Distribution License (EDL) 1.0
+   - *License URL*: https://central.sonatype.com/artifact/com.sun.xml.bind/jaxb-impl
+
+6. **JAXB Core (jaxb-core)**
+   - *GroupId*: com.sun.xml.bind
+   - *ArtifactId*: jaxb-core
+   - *License*: Eclipse Distribution License (EDL) 1.0
+   - *License URL*: https://central.sonatype.com/artifact/com.sun.xml.bind/jaxb-core/2.3.0.1
+
+Please review each license to ensure compliance with its terms and conditions.
