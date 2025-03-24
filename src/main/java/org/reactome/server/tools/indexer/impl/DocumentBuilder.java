@@ -67,6 +67,7 @@ class DocumentBuilder {
 
     @Transactional
     public IndexDocument createSolrDocument(Long dbId) {
+        System.out.println("DocumentBuilder.createSolrDocument");
         synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }
@@ -76,11 +77,13 @@ class DocumentBuilder {
         }
 
         IndexDocument document = new IndexDocument();
+        System.out.println("IndexDocument created");
         /*
          * Query the Graph and load only Primitives and no Relations attributes.
          * Lazy-loading will load them on demand.
          */
         DatabaseObject databaseObject = databaseObjectService.findById(dbId);
+        System.out.println("FindById");
 
         // Setting common attributes
         document.setDbId(databaseObject.getDbId().toString());
@@ -89,6 +92,7 @@ class DocumentBuilder {
 
         document.setType(getType(databaseObject));
         document.setExactType(databaseObject.getSchemaClass());
+
 
         if (databaseObject instanceof PhysicalEntity) {
             PhysicalEntity physicalEntity = (PhysicalEntity) databaseObject;
@@ -130,8 +134,12 @@ class DocumentBuilder {
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
+        System.out.println("Many stuff");
+
+
         // A second file is generated for covid19portal containing Reactome data related to COVID
         document.setCovidRelated(covid19enties.contains(document.getStId()));
+        System.out.println("Covid stuff");
 
         return document;
     }
