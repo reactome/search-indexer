@@ -20,6 +20,7 @@ class IndexerTest extends BaseTest {
 
     @BeforeAll
     static void setUp() {
+        System.out.println("Setting up Indexer");
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
@@ -27,6 +28,7 @@ class IndexerTest extends BaseTest {
 
     @Test
     void indexDrug() throws JsonProcessingException {
+        System.out.println("IndexerTest.indexDrug");
         try {
             IndexDocument document = documentBuilder.createSolrDocument(9649889L);
             logger.info(objectMapper.writeValueAsString(document));
@@ -37,6 +39,7 @@ class IndexerTest extends BaseTest {
 
     @Test
     void indexMarker() {
+        System.out.println("IndexerTest.indexMarker");
         IndexDocument document = documentBuilder.createSolrDocument(6809649L);
         Assertions.assertTrue(document.getDiagrams().contains("R-HSA-9725554"));
     }
