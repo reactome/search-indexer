@@ -153,14 +153,19 @@ class DocumentBuilder {
                 "WITH n, collect(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
         try {
+            System.out.println(query);
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query);
+            System.out.println("Query result recceived");
+
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
         } catch (CustomQueryException e) {
+            System.out.println("Failed to cache molecules");
             logger.error("Could not cache fireworks species");
         }
 
+        System.out.println("Cached molecules");
         logger.info("Caching SimpleEntity Species is done");
     }
 
