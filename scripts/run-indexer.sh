@@ -33,7 +33,7 @@ _NEO4J_PASSWORD=""
 
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
-_GITBRANCH="get-release-number"
+_GITBRANCH="feature/neo4j-updates"
 
 _TARGET="yes"
 _EBEYEXML="yes"
