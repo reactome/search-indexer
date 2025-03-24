@@ -68,13 +68,13 @@ class DocumentBuilder {
     @Transactional
     public IndexDocument createSolrDocument(Long dbId) {
         System.out.println("DocumentBuilder.createSolrDocument");
-        synchronized (simpleEntitiesAndDrugSpecies) {
+//        synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
-        }
+//        }
 
-        synchronized (covid19enties) {
+//        synchronized (covid19enties) {
             if (covid19enties.isEmpty()) cacheCovid19Entities();
-        }
+//        }
 
         IndexDocument document = new IndexDocument();
         System.out.println("IndexDocument created");
