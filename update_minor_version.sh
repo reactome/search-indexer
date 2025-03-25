@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGE_NAME=sbml.exporter
+PACKAGE_NAME=search.indexer
 
 # Get the current version from Maven
 current_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
