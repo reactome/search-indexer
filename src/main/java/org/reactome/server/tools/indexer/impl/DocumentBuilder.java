@@ -67,23 +67,20 @@ class DocumentBuilder {
 
     @Transactional
     public IndexDocument createSolrDocument(Long dbId) {
-        System.out.println("DocumentBuilder.createSolrDocument");
-//        synchronized (simpleEntitiesAndDrugSpecies) {
+        synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
-//        }
+        }
 
-//        synchronized (covid19enties) {
+        synchronized (covid19enties) {
             if (covid19enties.isEmpty()) cacheCovid19Entities();
-//        }
+        }
 
         IndexDocument document = new IndexDocument();
-        System.out.println("IndexDocument created");
         /*
          * Query the Graph and load only Primitives and no Relations attributes.
          * Lazy-loading will load them on demand.
          */
         DatabaseObject databaseObject = databaseObjectService.findById(dbId);
-        System.out.println("FindById");
 
         // Setting common attributes
         document.setDbId(databaseObject.getDbId().toString());
@@ -145,27 +142,22 @@ class DocumentBuilder {
     }
 
     private void cacheSimpleEntityAndDrugSpecies() {
-        logger.info("Caching SimpleEntity and Drug Species");
         //language=cypher
         String query = "" +
                 "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
                 "WHERE (n:SimpleEntity) OR (n:Drug) " +
                 "WITH n, collect(DISTINCT s.displayName) AS species " +
-                "RETURN n.dbId AS dbId, species";
+                "RETURN n.dbId AS dbId, species;";
         try {
             System.out.println(query);
             Collection<SpeciesResult> speciesResultList = advancedDatabaseObjectService.getCustomQueryResults(SpeciesResult.class, query);
-            System.out.println("Query result recceived");
 
             for (SpeciesResult speciesResult : speciesResultList) {
                 simpleEntitiesAndDrugSpecies.put(speciesResult.getDbId(), new HashSet<>(speciesResult.getSpecies()));
             }
         } catch (CustomQueryException e) {
-            System.out.println("Failed to cache molecules");
             logger.error("Could not cache fireworks species");
         }
-
-        System.out.println("Cached molecules");
         logger.info("Caching SimpleEntity Species is done");
     }
 
@@ -221,8 +213,8 @@ class DocumentBuilder {
 
         // Regulation and Other Entities may not have (fireworks)species and solr won't be able to find them
         // in the Fireworks (filter query fireworksSpecies)
-        if (fireworksSpecies.isEmpty()) {
-            fireworksSpecies.add("Entries without species");
+        if (fireworksSpecies == null || fireworksSpecies.isEmpty()) {
+            fireworksSpecies = new HashSet<>(List.of("Entries without species"));
         }
 
         if (databaseObject instanceof PhysicalEntity) {

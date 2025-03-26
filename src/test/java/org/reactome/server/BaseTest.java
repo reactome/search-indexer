@@ -41,7 +41,6 @@ public abstract class BaseTest {
                                    @Value("${spring.neo4j.authentication.username}") String user,
                                    @Value("${spring.neo4j.authentication.password}") String pass,
                                    @Value("${spring.data.neo4j.database}") String db) {
-        System.out.println("BaseTest.setUpStatic");
         ReactomeGraphCore.initialise(uri, user, pass, db);
     }
 
