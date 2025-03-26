@@ -213,8 +213,8 @@ class DocumentBuilder {
 
         // Regulation and Other Entities may not have (fireworks)species and solr won't be able to find them
         // in the Fireworks (filter query fireworksSpecies)
-        if (fireworksSpecies.isEmpty()) {
-            fireworksSpecies.add("Entries without species");
+        if (fireworksSpecies == null || fireworksSpecies.isEmpty()) {
+            fireworksSpecies = new HashSet<>(List.of("Entries without species"));
         }
 
         if (databaseObject instanceof PhysicalEntity) {
