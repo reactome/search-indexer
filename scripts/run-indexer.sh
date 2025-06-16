@@ -33,7 +33,7 @@ _NEO4J_PASSWORD=""
 
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
-_GITBRANCH="get-release-number"
+_GITBRANCH="feature/reactome-parent-1.0.5"
 
 _TARGET="yes"
 _EBEYEXML="yes"
