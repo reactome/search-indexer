@@ -73,7 +73,7 @@ usage () {
     echo "       solrcore         DEFAULT: reactome"
     echo "       solruser         DEFAULT: admin"
     echo "       solrpass         REQUIRED"
-    echo "       gitbranch        DEFAULT: master (Check if local code matches given branch)"
+    echo "       gitbranch        DEFAULT: main (Check if local code matches given branch)"
     echo ""
     echo "e.g sudo ./$(basename "$0") neo4jpass=neopw solrpass=not2share"
     echo "e.g sudo ./$(basename "$0") neo4jpass=neopw solrpass=not2share solrcore=pathways gitbranch=dev"
