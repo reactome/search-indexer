@@ -46,17 +46,29 @@ pipeline{
 					withCredentials([usernamePassword(credentialsId: 'neo4jUsernamePassword', passwordVariable: 'neo4jPass', usernameVariable: 'neo4jUser')]){
 						withCredentials([usernamePassword(credentialsId: 'solrUsernamePassword', passwordVariable: 'solrPass', usernameVariable: 'solrUser')]){
 						sh "mkdir -p output && rm -rf output/*"
-						sh "mdkir -p output/icons"
+						sh "mkdir -p output/icons"
 						sh """
                                                       docker run \\
-						         -v scripts:/opt/search-indexer/scripts
+						         -v scripts:/opt/search-indexer/scripts \\
 						         -v ${env.ICONS_ABS_PATH}:/data/icons:ro \\
                                                          -v ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/ehld/:/data/ehld:ro \\
 							 -v output:/opt/search-indexer/output \\
 						         --net=host \\
 						         --name ${CONT_NAME} \\
 						         ${ECR_URL}:latest \\
-	                                                 /bin/bash -c "./scripts/run-indexer.sh solrpass=${solrPass} neo4jpass=${neo4jPass} iconsdir=/data/icons ehlddir=/data/ehld/ maildest=${env.RELEASE_DEVELOPER_EMAIL} && mv ebeye*gz ./output/ && mv *txt output/icons/ && mv sitemap* output/"
+	                                                 /bin/bash -c \"
+                                                             ./scripts/run-indexer.sh solrpass=${solrPass} neo4jpass=${neo4jPass} iconsdir=/data/icons ehlddir=/data/ehld/ maildest=${env.RELEASE_DEVELOPER_EMAIL}
+                                                             if [ \\$? -ne 0 ]; then echo '❌ run-indexer.sh failed'; exit 1; fi
+
+                                                                  mv ebeye*gz ./output/
+                                                             if [ \\$? -ne 0 ]; then echo '❌ Moving .gz failed'; exit 2; fi
+
+                                                                  mv *txt output/icons/
+                                                             if [ \\$? -ne 0 ]; then echo '❌ Moving .txt failed'; exit 3; fi
+
+                                                                 mv sitemap* output/
+                                                             if [ \\$? -ne 0 ]; then echo '❌ Moving sitemap failed'; exit 4; fi
+                                                         \"
 						   """
 						}
 					}
@@ -71,7 +83,7 @@ pipeline{
                     withCredentials([usernamePassword(credentialsId: 'solrUsernamePassword', passwordVariable: 'solrPass', usernameVariable: 'solrUser')]){
                         sh "curl --user ${solrUser}:${solrPass} 'http://localhost:8983/solr/reactome/update?optimize=true&maxSegments=1'"
                         sh "curl --user ${solrUser}:${solrPass} 'http://localhost:8983/solr/target/update?optimize=true&maxSegments=1'"
-                    }""
+                    }
                 }
             }
         }
@@ -83,13 +95,13 @@ pipeline{
 				def releaseVersion = utils.getReleaseVersion()
 				def iconsFolder = "icons/"
 				// Gzip ebeye.xml and ebeye-covid.xml files before moving them to download/XX.
-				dir(output) {
+				dir("output") {
 				    sh "gzip ebeye*"
 				    sh "cp ebeye*gz ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 				    sh "gunzip ebeye*gz"
 				}
 				// Archives Icons folder before moving to download/XX folder.
-				dir(output){
+				dir("output"){
 				    sh "tar -zcvf icons-v${releaseVersion}.tar ${iconsFolder}"
 				    sh "mv ${iconsFolder} ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 				}
@@ -100,11 +112,13 @@ pipeline{
 		stage('Post: Update sitemap files and restart Solr') {
 		    steps{
 		        script{
-				dir(output) {
-				   sh "sudo bash ../scripts/changeSiteMapFiles.sh"
-				   sh "sudo service solr stop"
-				   sh "sudo service solr start"
-				}
+			    dir("output") {
+				   try {
+                                       sh "sudo bash ../scripts/changeSiteMapFiles.sh"
+                                   } finally {
+                                       sh "sudo service solr restart"
+                                   }
+			    }
 		        }
 		    }
 		}
@@ -113,7 +127,7 @@ pipeline{
 			steps{
 				script{
 					def releaseVersion = utils.getReleaseVersion()
-					def dataFiles = ["output/ebeye.xml", "output/ebeyecovid.xml", "outuput/icons-v${releaseVersion}.tar"]
+					def dataFiles = ["output/ebeye.xml", "output/ebeyecovid.xml", "output/icons-v${releaseVersion}.tar"]
 					def logFiles = []
 					def foldersToDelete = []
 					utils.cleanUpAndArchiveBuildFiles("search_indexer", dataFiles, logFiles, foldersToDelete)
