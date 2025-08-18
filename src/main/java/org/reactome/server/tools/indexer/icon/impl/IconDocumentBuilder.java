@@ -9,6 +9,8 @@ import org.reactome.server.tools.indexer.icon.model.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,7 +91,7 @@ class IconDocumentBuilder {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
         query.setRequestHandler("/icon/from/PE/stId");
-        query.setQuery(String.join(" OR ", references));
+        query.setQuery(references.stream().map(ref -> URLDecoder.decode(ref, StandardCharsets.UTF_8)).collect(Collectors.joining(" OR ")));
         query.setRows(300);
         query.setFields("stId, name, exactType, compartmentName");
         try {
