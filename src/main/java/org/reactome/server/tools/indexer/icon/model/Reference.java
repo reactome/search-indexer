@@ -1,6 +1,8 @@
 package org.reactome.server.tools.indexer.icon.model;
 
 import javax.xml.bind.annotation.XmlElement;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -20,7 +22,7 @@ public class Reference {
     }
 
     public String getId() {
-        return id;
+        return URLEncoder.encode(id, StandardCharsets.UTF_8);
     }
 
     @XmlElement
@@ -33,7 +35,7 @@ public class Reference {
         if (id.contains(db)) {
             return id;
         } else {
-            return String.join(":", db, id);
+            return String.join(":", getDb(), getId());
         }
     }
 }
