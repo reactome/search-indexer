@@ -91,7 +91,7 @@ class IconDocumentBuilder {
         Set<String> ret = new HashSet<>();
         SolrQuery query = new SolrQuery();
         query.setRequestHandler("/icon/from/PE/stId");
-        query.setQuery(references.stream().map(ref -> URLDecoder.decode(ref, StandardCharsets.UTF_8)).collect(Collectors.joining(" OR ")));
+        query.setQuery(String.join(" OR ", references));
         query.setRows(300);
         query.setFields("stId, name, exactType, compartmentName");
         try {
