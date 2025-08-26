@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.reactome.server.BaseTest;
-import org.reactome.server.tools.indexer.model.IndexDocument;
+import org.reactome.server.tools.indexer.model.DocumentAndImport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -28,8 +28,8 @@ class IndexerTest extends BaseTest {
     @Test
     void indexDrug() throws JsonProcessingException {
         try {
-            IndexDocument document = documentBuilder.createSolrDocument(9649889L);
-            logger.info(objectMapper.writeValueAsString(document));
+            DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(9649889L);
+            logger.info(objectMapper.writeValueAsString(documentAndImport.getDocument()));
         } catch (Error e) {
             e.printStackTrace();
         }
@@ -37,7 +37,7 @@ class IndexerTest extends BaseTest {
 
     @Test
     void indexMarker() {
-        IndexDocument document = documentBuilder.createSolrDocument(6809649L);
-        Assertions.assertTrue(document.getDiagrams().contains("R-HSA-9725554"));
+        DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(6809649L);
+        Assertions.assertTrue(documentAndImport.document.getDiagrams().contains("R-HSA-9725554"));
     }
 }

@@ -110,15 +110,15 @@ class Marshaller {
                     }
                 }
             }
-            if (document.getGoCellularComponentAccession() != null) {
-                for (String accession : document.getGoCellularComponentAccession()) {
+            if (document.getGoCellularComponentAccessions() != null) {
+                for (String accession : document.getGoCellularComponentAccessions()) {
                     if (accession.contains("go:")) {
                         writeRef("GO", accession, iii);
                     }
                 }
             }
-            if (document.getGoBiologicalProcessAccession() != null) {
-                for (String accession : document.getGoBiologicalProcessAccession()) {
+            if (document.getGoBiologicalProcessAccessions() != null) {
+                for (String accession : document.getGoBiologicalProcessAccessions()) {
                     if (accession.contains("go:")) {
                         writeRef("GO", accession, iii);
                     }

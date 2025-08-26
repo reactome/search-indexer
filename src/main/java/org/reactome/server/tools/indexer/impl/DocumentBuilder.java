@@ -9,12 +9,14 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.DiagramService;
 import org.reactome.server.graph.service.PathwaysService;
 import org.reactome.server.tools.indexer.model.CrossReference;
+import org.reactome.server.tools.indexer.model.DocumentAndImport;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.reactome.server.tools.indexer.model.SpeciesResult;
 import org.reactome.server.tools.indexer.util.MapSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +68,7 @@ class DocumentBuilder {
     }
 
     @Transactional
-    public IndexDocument createSolrDocument(Long dbId) {
+    public DocumentAndImport createSolrDocument(Long dbId) {
         synchronized (simpleEntitiesAndDrugSpecies) {
             if (simpleEntitiesAndDrugSpecies.isEmpty()) cacheSimpleEntityAndDrugSpecies();
         }
@@ -104,7 +106,33 @@ class DocumentBuilder {
 
             // SPECIFIC FOR PHYSICAL ENTITIES
             setGoTerms(document, physicalEntity.getGoCellularComponent());
-            setReferenceEntity(document, physicalEntity);
+
+            ReferenceEntity referenceEntity = getReferenceEntityOfPhysicalEntity(physicalEntity);
+            setReferenceEntity(document, referenceEntity);
+            document.setHasReferenceEntity(referenceEntity != null);
+            if (databaseObject instanceof EntityWithAccessionedSequence) {
+                setModifiedResidue(document, ((EntityWithAccessionedSequence) databaseObject).getHasModifiedResidue());
+            }
+        } else if (databaseObject instanceof ReferenceEntity) {
+            ReferenceEntity referenceEntity = (ReferenceEntity) databaseObject;
+            List<PhysicalEntity> physicalEntities = referenceEntity.getPhysicalEntity();
+            if (physicalEntities == null || physicalEntities.isEmpty())
+                return new DocumentAndImport(null, false); // Do not import reference entities if they are not used as such
+
+            document.setPhysicalEntitiesDbId(physicalEntities.stream().map(pe -> pe.getDbId().toString()).collect(Collectors.toList()));
+            if (physicalEntities.size() == 1) {
+                PhysicalEntity pe = physicalEntities.get(0);
+                setNameAndSynonyms(document, pe, pe.getName());
+            } else {
+                setNameAndSynonyms(document, referenceEntity, referenceEntity.getName());
+            }
+
+            setCrossReference(document, referenceEntity.getCrossReference());
+            setSpecies(document, referenceEntity);
+
+            setReferenceEntity(document, referenceEntity);
+            document.setHasReferenceEntity(false); // Doesn't have a reference because it is a ReferenceEntity itself.
+
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
             // GENERAL ATTRIBUTES
@@ -117,15 +145,25 @@ class DocumentBuilder {
             setSpecies(document, event);
 
             // SPECIFIC FOR EVENT
+            document.setHasReferenceEntity(false);
             setGoTerms(document, event.getGoBiologicalProcess());
             if (event instanceof ReactionLikeEvent) {
                 ReactionLikeEvent reactionLikeEvent = (ReactionLikeEvent) event;
                 setCatalystActivities(document, reactionLikeEvent.getCatalystActivity());
+                document.setExactType(reactionLikeEvent.getCategory());
+            }
+
+            if (event instanceof Pathway) {
+                Pathway pathway = (Pathway) event;
+                document.setHasEHLD(pathway.getHasEHLD());
             }
         }
 
         setFireworksSpecies(document, databaseObject);
-        setDiagramOccurrences(document, databaseObject);
+        setDiagramOccurrences(document, databaseObject instanceof ReferenceEntity ?
+                diagramService.getDiagramOccurrencesOfReferenceEntity(databaseObject.getDbId()) :
+                diagramService.getDiagramOccurrences(databaseObject.getStId())
+        );
         setLowerLevelPathways(document, databaseObject);
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
@@ -133,14 +171,14 @@ class DocumentBuilder {
         // A second file is generated for covid19portal containing Reactome data related to COVID
         document.setCovidRelated(covid19enties.contains(document.getStId()));
 
-        return document;
+        return new DocumentAndImport(document, true);
     }
 
     private void cacheSimpleEntityAndDrugSpecies() {
         logger.info("Caching SimpleEntity and Drug Species");
         //language=cypher
         String query = "" +
-                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker|hasModifiedResidue|modificatio*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
                 "WHERE (n:SimpleEntity) OR (n:Drug) " +
                 "WITH n, collect(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";
@@ -183,7 +221,10 @@ class DocumentBuilder {
     private void setFireworksSpecies(IndexDocument document, DatabaseObject databaseObject) {
         Set<String> fireworksSpecies = new HashSet<>();
         if ((databaseObject instanceof SimpleEntity || databaseObject instanceof Drug)) {
-            fireworksSpecies = simpleEntitiesAndDrugSpecies.get(databaseObject.getDbId());
+            fireworksSpecies = simpleEntitiesAndDrugSpecies.getOrDefault(databaseObject.getDbId(), fireworksSpecies);
+            if (fireworksSpecies.isEmpty()) {
+                logger.warn("No species could be associated for drug or chemical {} (dbId:{}). Please revisit cacheSimpleEntityAndDrugSpecies() to cover the query", databaseObject.getDisplayName(), databaseObject.getDbId());
+            }
         } else {
             //noinspection Duplicates
             try {
@@ -225,6 +266,19 @@ class DocumentBuilder {
             } catch (CustomQueryException e) {
                 logger.error("Failed to index first pathway species to fill fireworkSpecies of {}", databaseObject.getDbId());
             }
+        } else if (databaseObject instanceof ReferenceEntity) {
+            //language=cypher
+            String query = "" +
+                    "MATCH (s:Species)<-[:species]-(rle:ReactionLikeEvent), " +
+                    "     (rle)-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker|referenceEntity*]->(re:ReferenceEntity) " +
+                    "WHERE re.dbId = $dbId " +
+                    "RETURN DISTINCT s.displayName AS identifier";
+
+            try {
+                fireworksSpecies.addAll(advancedDatabaseObjectService.getCustomQueryResults(String.class, query, Map.of("dbId", databaseObject.getDbId())));
+            } catch (CustomQueryException e) {
+                logger.error("Failed to index first pathway species to fill fireworkSpecies of {}", databaseObject.getDbId());
+            }
         }
 
         document.setFireworksSpecies(fireworksSpecies);
@@ -233,6 +287,12 @@ class DocumentBuilder {
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
             document.setName(databaseObject.getDisplayName());
+            return;
+        }
+
+        if (databaseObject instanceof ReferenceIsoform) {
+            document.setName(databaseObject.getDisplayName());
+            document.setSynonyms(name);
             return;
         }
 
@@ -417,6 +477,8 @@ class DocumentBuilder {
             speciesCollection = polymer.getSpecies();
         } else if (databaseObject instanceof Cell) {
             speciesCollection = ((Cell) databaseObject).getSpecies();
+        } else if (databaseObject instanceof ReferenceSequence) {
+            speciesCollection = Collections.singletonList(((ReferenceSequence) databaseObject).getSpecies());
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
             speciesCollection = event.getSpecies();
@@ -436,21 +498,7 @@ class DocumentBuilder {
         document.setTaxId(speciesCollection.stream().map(Taxon::getTaxId).collect(Collectors.toList()));
     }
 
-    private void setReferenceEntity(IndexDocument document, DatabaseObject databaseObject) {
-        if (databaseObject == null) return;
-
-        ReferenceEntity referenceEntity = null;
-
-        if (databaseObject instanceof EntityWithAccessionedSequence) {
-            EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
-            referenceEntity = ewas.getReferenceEntity();
-            setModifiedResidue(document, ewas.getHasModifiedResidue());
-        } else if (databaseObject instanceof SimpleEntity) {
-            referenceEntity = ((SimpleEntity) databaseObject).getReferenceEntity();
-        } else if (databaseObject instanceof Drug) {
-            referenceEntity = ((Drug) databaseObject).getReferenceEntity();
-        }
-
+    private void setReferenceEntity(IndexDocument document, ReferenceEntity referenceEntity) {
         if (referenceEntity != null) {
             String identifier = referenceEntity.getIdentifier();
 
@@ -500,6 +548,20 @@ class DocumentBuilder {
                 }
             }
         }
+    }
+
+    @Nullable
+    private ReferenceEntity getReferenceEntityOfPhysicalEntity(PhysicalEntity physicalEntity) {
+        ReferenceEntity referenceEntity = null;
+        if (physicalEntity instanceof EntityWithAccessionedSequence) {
+            EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) physicalEntity;
+            referenceEntity = ewas.getReferenceEntity();
+        } else if (physicalEntity instanceof SimpleEntity) {
+            referenceEntity = ((SimpleEntity) physicalEntity).getReferenceEntity();
+        } else if (physicalEntity instanceof Drug) {
+            referenceEntity = ((Drug) physicalEntity).getReferenceEntity();
+        }
+        return referenceEntity;
     }
 
     private void setModifiedResidue(IndexDocument document, List<AbstractModifiedResidue> abstractModifiedResidues) {
@@ -625,36 +687,55 @@ class DocumentBuilder {
         }
     }
 
-    private void setDiagramOccurrences(IndexDocument document, DatabaseObject databaseObject) {
-        Collection<DiagramOccurrences> dgoc = diagramService.getDiagramOccurrences(databaseObject.getStId());
+    private void setDiagramOccurrences(IndexDocument document, Collection<DiagramOccurrences> dgoc) {
         if (dgoc == null || dgoc.isEmpty()) return;
 
         List<String> diagrams = new ArrayList<>();
+        List<String> diagramsInteractor = new ArrayList<>();
         List<String> occurrences = new ArrayList<>();
-        //noinspection Duplicates
+        List<String> occurrencesInteractor = new ArrayList<>();
         for (DiagramOccurrences diagramOccurrence : dgoc) {
+            if (diagramOccurrence.isInDiagram() || !diagramOccurrence.getOccurrences().isEmpty()) {
+                diagrams.add(diagramOccurrence.getDiagramStId());
 
-            diagrams.add(diagramOccurrence.getDiagramStId());
+                String occurr = diagramOccurrence.getDiagramStId() + ":" + diagramOccurrence.isInDiagram();
+                if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
+                    occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences(), ",");
+                } else {
+                    occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
+                }
+                if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
+                    occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith(), ",");
+                } else {
+                    occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
+                }
+                occurrences.add(occurr);
+            }
+            if (diagramOccurrence.isInDiagramFromInteractor() || !diagramOccurrence.getOccurrencesInteractor().isEmpty()) {
+                diagramsInteractor.add(diagramOccurrence.getDiagramStId());
 
-            String occurr = diagramOccurrence.getDiagramStId() + ":" + diagramOccurrence.isInDiagram();
-            if (diagramOccurrence.getOccurrences() != null && !diagramOccurrence.getOccurrences().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrences(), ",");
-            } else {
-                occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
+                String occurr = diagramOccurrence.getDiagramStId() + ":" + diagramOccurrence.isInDiagramFromInteractor();
+                if (diagramOccurrence.getOccurrencesInteractor() != null && !diagramOccurrence.getOccurrencesInteractor().isEmpty()) {
+                    occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getOccurrencesInteractor(), ",");
+                } else {
+                    occurr = occurr + ":#"; // no occurrences, using one char so less bytes in the solr index
+                }
+                if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
+                    occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith(), ",");
+                } else {
+                    occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
+                }
+                occurrencesInteractor.add(occurr);
             }
-            if (diagramOccurrence.getInteractsWith() != null && !diagramOccurrence.getInteractsWith().isEmpty()) {
-                occurr = occurr + ":" + StringUtils.join(diagramOccurrence.getInteractsWith(), ",");
-            } else {
-                occurr = occurr + ":#"; // empty interactsWith, using one char so less bytes in the solr index
-            }
-            occurrences.add(occurr);
         }
         document.setDiagrams(diagrams);
+        document.setDiagramsWithInteractor(diagramsInteractor);
         document.setOccurrences(occurrences);
+        document.setOccurrencesWithInteractor(occurrencesInteractor);
     }
 
     private void setLowerLevelPathways(IndexDocument document, DatabaseObject databaseObject) {
-        Collection<Pathway> pathways = pathwaysService.getLowerLevelPathwaysIncludingEncapsulation(databaseObject.getStId());
+        Collection<Pathway> pathways = pathwaysService.getLowerLevelPathwaysIncludingEncapsulation(databaseObject.getDbId());
         if (pathways == null || pathways.isEmpty()) return;
 
         document.setLlps(pathways.stream().map(DatabaseObject::getStId).collect(Collectors.toList()));

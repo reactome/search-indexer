@@ -1,18 +1,13 @@
 package org.reactome.server.tools.indexer.impl;
 
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.*;
-import org.reactome.server.tools.indexer.deleted.impl.DeletedDocumentBuilder;
-import org.reactome.server.tools.indexer.deleted.model.DeletedDocument;
 import org.reactome.server.tools.indexer.exception.IndexerException;
+import org.reactome.server.tools.indexer.model.DocumentAndImport;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +71,13 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
             initialiseXmlOutputFiles();
 
             cleanSolrIndex(solrCollection, solrClient);
+//            cleanSolrIndex(solrCollection, solrClient, "-physicalEntitiesDbId:[\"\" TO *]");
 
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
+            commitSolrServer(solrCollection, solrClient);
+            cleanNeo4jCache();
+
+            entriesCount += indexBySchemaClass(ReferenceEntity.class, entriesCount);
             commitSolrServer(solrCollection, solrClient);
             cleanNeo4jCache();
 
@@ -159,8 +159,9 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         List<IndexDocument> allDocuments = new ArrayList<>();
         List<Long> missingDocuments = new ArrayList<>();
         for (Long dbId : allOfGivenClass) {
-            IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
-            if (document != null) {
+            DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(dbId); // transactional
+            if (documentAndImport != null && documentAndImport.needsImport && documentAndImport.document != null) {
+                IndexDocument document = documentAndImport.document;
                 if (ebeyeXml) marshaller.writeEntry(document);
                 if (ebeyeCovidXml && document.isCovidRelated()) {
                     covidMarshaller.writeEntry(document);
@@ -168,7 +169,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
                 }
 
                 allDocuments.add(document);
-            } else {
+            } else if (documentAndImport == null || documentAndImport.needsImport) {
                 missingDocuments.add(dbId);
             }
 
