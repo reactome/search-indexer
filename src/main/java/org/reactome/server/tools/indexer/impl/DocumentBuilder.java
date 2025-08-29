@@ -120,12 +120,9 @@ class DocumentBuilder {
                 return new DocumentAndImport(null, false); // Do not import reference entities if they are not used as such
 
             document.setPhysicalEntitiesDbId(physicalEntities.stream().map(pe -> pe.getDbId().toString()).collect(Collectors.toList()));
-            if (physicalEntities.size() == 1) {
-                PhysicalEntity pe = physicalEntities.get(0);
-                setNameAndSynonyms(document, pe, pe.getName());
-            } else {
-                setNameAndSynonyms(document, referenceEntity, referenceEntity.getName());
-            }
+
+            setReferenceEntityName(referenceEntity, document);
+            document.setSynonyms(referenceEntity.getName());
 
             setCrossReference(document, referenceEntity.getCrossReference());
             setSpecies(document, referenceEntity);
@@ -172,6 +169,34 @@ class DocumentBuilder {
         document.setCovidRelated(covid19enties.contains(document.getStId()));
 
         return new DocumentAndImport(document, true);
+    }
+
+    private static final Map<Class<? extends ReferenceEntity>, String> referenceTypeToNameSuffix = Map.of(
+            ReferenceMolecule.class, "",
+            ReferenceGeneProduct.class, "",
+            ReferenceDNASequence.class, " Gene",
+            ReferenceRNASequence.class, " mRNA",
+            ReferenceTherapeutic.class, " Drug"
+    );
+
+    private void setReferenceEntityName(ReferenceEntity referenceEntity, IndexDocument document) {
+        if (referenceEntity instanceof ReferenceSequence
+                && ((ReferenceSequence) referenceEntity).getGeneName() != null
+                && !((ReferenceSequence) referenceEntity).getGeneName().isEmpty()
+        ) {
+            if (referenceEntity instanceof ReferenceIsoform) {
+                ReferenceIsoform isoform = (ReferenceIsoform) referenceEntity;
+                document.setName(isoform.getGeneName().get(0) + " Isoform " + isoform.getVariantIdentifier());
+            } else {
+                document.setName(((ReferenceSequence) referenceEntity).getGeneName().get(0) + referenceTypeToNameSuffix.get(referenceEntity.getClass()));
+            }
+        } else if (referenceEntity instanceof ReferenceIsoform) {
+            document.setName(((ReferenceIsoform) referenceEntity).getVariantIdentifier() + "Isoform ");
+        } else if (referenceEntity.getName() != null && !referenceEntity.getName().isEmpty()) {
+            document.setName(referenceEntity.getName().get(0) + referenceTypeToNameSuffix.get(referenceEntity.getClass()));
+        } else {
+            document.setName(referenceEntity.getDisplayName());
+        }
     }
 
     private void cacheSimpleEntityAndDrugSpecies() {
@@ -287,12 +312,6 @@ class DocumentBuilder {
     private void setNameAndSynonyms(IndexDocument document, DatabaseObject databaseObject, List<String> name) {
         if (name == null || name.isEmpty()) {
             document.setName(databaseObject.getDisplayName());
-            return;
-        }
-
-        if (databaseObject instanceof ReferenceIsoform) {
-            document.setName(databaseObject.getDisplayName());
-            document.setSynonyms(name);
             return;
         }
 
