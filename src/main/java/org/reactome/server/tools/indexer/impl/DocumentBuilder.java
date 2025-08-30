@@ -191,10 +191,12 @@ class DocumentBuilder {
                 document.setName(((ReferenceSequence) referenceEntity).getGeneName().get(0) + referenceTypeToNameSuffix.get(referenceEntity.getClass()));
             }
         } else if (referenceEntity instanceof ReferenceIsoform) {
-            document.setName(((ReferenceIsoform) referenceEntity).getVariantIdentifier() + "Isoform ");
+            document.setName(((ReferenceIsoform) referenceEntity).getVariantIdentifier() + " Isoform");
         } else if (referenceEntity.getName() != null && !referenceEntity.getName().isEmpty()) {
             document.setName(referenceEntity.getName().get(0) + referenceTypeToNameSuffix.get(referenceEntity.getClass()));
-        } else {
+        }
+
+        if (document.getName() == null) {
             document.setName(referenceEntity.getDisplayName());
         }
     }
@@ -203,7 +205,7 @@ class DocumentBuilder {
         logger.info("Caching SimpleEntity and Drug Species");
         //language=cypher
         String query = "" +
-                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker|hasModifiedResidue|modificatio*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
+                "MATCH (n)<-[:regulatedBy|regulator|physicalEntity|entityFunctionalStatus|catalystActivity|hasMember|hasCandidate|hasComponent|repeatedUnit|input|output|proteinMarker|RNAMarker|hasModifiedResidue|modification*]-(:ReactionLikeEvent)-[:species]->(s:Species) " +
                 "WHERE (n:SimpleEntity) OR (n:Drug) " +
                 "WITH n, collect(DISTINCT s.displayName) AS species " +
                 "RETURN n.dbId AS dbId, species";

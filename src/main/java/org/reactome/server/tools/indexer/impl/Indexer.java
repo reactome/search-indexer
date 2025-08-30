@@ -159,32 +159,38 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         List<IndexDocument> allDocuments = new ArrayList<>();
         List<Long> missingDocuments = new ArrayList<>();
         for (Long dbId : allOfGivenClass) {
-            DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(dbId); // transactional
-            if (documentAndImport != null && documentAndImport.needsImport && documentAndImport.document != null) {
-                IndexDocument document = documentAndImport.document;
-                if (ebeyeXml) marshaller.writeEntry(document);
-                if (ebeyeCovidXml && document.isCovidRelated()) {
-                    covidMarshaller.writeEntry(document);
-                    covidEntriesCount++;
+            try {
+                DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(dbId); // transactional
+                if (documentAndImport != null && documentAndImport.needsImport && documentAndImport.document != null) {
+                    IndexDocument document = documentAndImport.document;
+                    if (ebeyeXml) marshaller.writeEntry(document);
+                    if (ebeyeCovidXml && document.isCovidRelated()) {
+                        covidMarshaller.writeEntry(document);
+                        covidEntriesCount++;
+                    }
+
+                    allDocuments.add(document);
+                } else if (documentAndImport == null || documentAndImport.needsImport) {
+                    missingDocuments.add(dbId);
                 }
 
-                allDocuments.add(document);
-            } else if (documentAndImport == null || documentAndImport.needsImport) {
+                numberOfDocuments++;
+                if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
+                    addDocumentsToSolrServer(allDocuments);
+                    allDocuments.clear();
+
+                    closeXmlFiles();
+                    logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
+                }
+
+                count = previousCount + numberOfDocuments;
+                if (count % 100 == 0) updateProgressBar(count);
+                if (numberOfDocuments % 10000 == 0) cleanNeo4jCache();
+            } catch (Exception e) {
+                logger.error("An error occurred when trying to index " + clazz.getSimpleName() + " with dbId " + dbId, e);
                 missingDocuments.add(dbId);
+                e.printStackTrace();
             }
-
-            numberOfDocuments++;
-            if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
-                addDocumentsToSolrServer(allDocuments);
-                allDocuments.clear();
-
-                closeXmlFiles();
-                logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
-            }
-
-            count = previousCount + numberOfDocuments;
-            if (count % 100 == 0) updateProgressBar(count);
-            if (numberOfDocuments % 10000 == 0) cleanNeo4jCache();
         }
 
         // Add to Solr the remaining documents
@@ -312,6 +318,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         logger.info("Counting all entries for Event, PhysicalEntities");
         total = schemaService.countEntries(Event.class);
         total += schemaService.countEntries(PhysicalEntity.class);
+        total += schemaService.countEntries(ReferenceEntity.class);
     }
 
     private void queryReleaseNumber() {
