@@ -91,6 +91,7 @@ class DocumentBuilder {
 
         document.setType(getType(databaseObject));
         document.setExactType(databaseObject.getSchemaClass());
+        document.setIsReferenceSummary(databaseObject instanceof ReferenceEntity);
 
         if (databaseObject instanceof PhysicalEntity) {
             PhysicalEntity physicalEntity = (PhysicalEntity) databaseObject;
@@ -129,7 +130,6 @@ class DocumentBuilder {
 
             setReferenceEntity(document, referenceEntity);
             document.setHasReferenceEntity(false); // Doesn't have a reference because it is a ReferenceEntity itself.
-            document.setIsReferenceSummary(true);
 
         } else if (databaseObject instanceof Event) {
             Event event = (Event) databaseObject;
