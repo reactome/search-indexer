@@ -71,7 +71,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
             initialiseXmlOutputFiles();
 
             cleanSolrIndex(solrCollection, solrClient);
-//            cleanSolrIndex(solrCollection, solrClient, "-physicalEntitiesDbId:[\"\" TO *]");
+//            cleanSolrIndex(solrCollection, solrClient, "isReferenceSummary:true");
 
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
             commitSolrServer(solrCollection, solrClient);

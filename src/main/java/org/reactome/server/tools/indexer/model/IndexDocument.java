@@ -33,6 +33,8 @@ public class IndexDocument {
     @Field
     private Boolean isDisease;
     @Field
+    private Boolean isReferenceSummary;
+    @Field
     private Boolean hasReferenceEntity;
     @Field
     private Boolean hasEHLD;
