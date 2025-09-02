@@ -1,6 +1,8 @@
 package org.reactome.server.tools.indexer.icon.model;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
+import lombok.Data;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -10,6 +12,7 @@ import java.util.Objects;
 
 @XmlRootElement(name = "metadata")
 @XmlType(propOrder={"categories","person","name","description","info","references","synonyms","skip"})
+@Data
 public class Icon {
     private String id;
     private String stId;
@@ -25,17 +28,9 @@ public class Icon {
     private List<Synonym> synonyms;
     private Boolean skip;
 
-    public String getId() {
-        return id;
-    }
-
     @XmlTransient
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getStId() {
-        return stId;
     }
 
     @XmlTransient
@@ -43,21 +38,9 @@ public class Icon {
         this.stId = stId;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @XmlTransient
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     @XmlTransient
@@ -65,30 +48,14 @@ public class Icon {
         return species;
     }
 
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     @XmlElement
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getInfo() {
-        return info;
-    }
-
     @XmlElement
     public void setInfo(String info) {
         this.info = info;
-    }
-
-    public List<Category> getCategories() {
-        return categories;
     }
 
     @XmlElementWrapper(name = "categories")
@@ -97,18 +64,10 @@ public class Icon {
         this.categories = categories;
     }
 
-    public List<Reference> getReferences() {
-        return references;
-    }
-
     @XmlElementWrapper(name = "references")
     @XmlElement(name = "reference")
     public void setReferences(List<Reference> references) {
         this.references = references;
-    }
-
-    public List<Person> getPerson() {
-        return person;
     }
 
     @XmlElement(name = "person")
@@ -121,14 +80,6 @@ public class Icon {
         return ehlds;
     }
 
-    public void setEhlds(List<String> ehlds) {
-        this.ehlds = ehlds;
-    }
-
-    public List<Synonym> getSynonyms() {
-        return synonyms;
-    }
-
     @XmlElementWrapper(name = "synonyms")
     @XmlElement(name = "synonym")
     public void setSynonyms(List<Synonym> synonyms) {
@@ -138,10 +89,6 @@ public class Icon {
     @XmlElement
     public Boolean isSkip() {
         return skip;
-    }
-
-    public void setSkip(Boolean skip) {
-        this.skip = skip;
     }
 
     @Override
