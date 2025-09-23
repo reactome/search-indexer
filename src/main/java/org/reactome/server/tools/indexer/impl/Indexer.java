@@ -77,15 +77,15 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
             commitSolrServer(solrCollection, solrClient);
             cleanNeo4jCache();
 
-            entriesCount += indexBySchemaClass(ReferenceEntity.class, entriesCount);
-            commitSolrServer(solrCollection, solrClient);
-            cleanNeo4jCache();
-
             entriesCount += indexBySchemaClass(Event.class, entriesCount);
             commitSolrServer(solrCollection, solrClient);
             cleanNeo4jCache();
 
             finaliseXmlOutputFiles(entriesCount, covidEntriesCount);
+
+            entriesCount += indexBySchemaClass(ReferenceEntity.class, entriesCount, false);
+            commitSolrServer(solrCollection, solrClient);
+            cleanNeo4jCache();
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
@@ -142,11 +142,16 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         }
     }
 
+
+    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount) throws IndexerException {
+        return indexBySchemaClass(clazz, previousCount, true);
+    }
+
     /**
      * @param clazz class to be Indexed
      * @return total of indexed items
      */
-    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount) throws IndexerException {
+    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount, boolean includeEBEYE) throws IndexerException {
         long start = System.currentTimeMillis();
 
         logger.info("Getting all simple objects of class " + clazz.getSimpleName());
@@ -163,10 +168,12 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
                 DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(dbId); // transactional
                 if (documentAndImport != null && documentAndImport.needsImport && documentAndImport.document != null) {
                     IndexDocument document = documentAndImport.document;
-                    if (ebeyeXml) marshaller.writeEntry(document);
-                    if (ebeyeCovidXml && document.isCovidRelated()) {
-                        covidMarshaller.writeEntry(document);
-                        covidEntriesCount++;
+                    if (includeEBEYE) {
+                        if (ebeyeXml) marshaller.writeEntry(document);
+                        if (ebeyeCovidXml && document.isCovidRelated()) {
+                            covidMarshaller.writeEntry(document);
+                            covidEntriesCount++;
+                        }
                     }
 
                     allDocuments.add(document);

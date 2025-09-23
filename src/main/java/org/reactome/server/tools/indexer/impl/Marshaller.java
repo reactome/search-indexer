@@ -71,6 +71,7 @@ class Marshaller {
     }
 
     void writeEntry(IndexDocument document) throws IndexerException {
+        if (this.writer == null) return; // Avoid writing after closing the writer.
         final String i = INDENT + INDENT;
         final String ii = INDENT + INDENT + INDENT;
         final String iii = INDENT + INDENT + INDENT + INDENT;
@@ -258,6 +259,7 @@ class Marshaller {
     private void closeIndex() throws IOException {
         writer.flush();
         writer.close();
+        writer = null;
     }
 
     private void writeRef(String db, String id, String indent) throws IOException {
