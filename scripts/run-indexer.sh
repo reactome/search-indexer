@@ -33,7 +33,7 @@ _NEO4J_PASSWORD=""
 
 _GITREPO="reactome"
 _GITPROJECT="search-indexer"
-_GITBRANCH="master"
+_GITBRANCH="feature/new-pwb"
 
 _TARGET="yes"
 _EBEYEXML="yes"
