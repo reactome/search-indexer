@@ -253,6 +253,7 @@ class Marshaller {
     }
 
     void flush() throws IOException {
+        if (writer == null) return;
         writer.flush();
     }
 
