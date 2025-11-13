@@ -9,6 +9,8 @@ import org.reactome.server.tools.indexer.icon.model.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,9 @@ class IconDocumentBuilder {
         document.setExactType(icon.getType());
         document.setSpecies(Collections.singletonList(icon.getSpecies()));
         document.setIconEhlds(icon.getEhlds());
+        document.setIsReferenceSummary(false);
+        document.setHasReferenceEntity(false);
+        document.setHasEHLD(false);
 
         if (icon.getSynonyms() != null) {
             document.setIconSynonyms(icon.getSynonyms().stream().map(Synonym::getName).collect(Collectors.toList()));

@@ -46,6 +46,7 @@ public class Main {
                         new FlaggedOption("neo4jHost", JSAP.STRING_PARSER, "bolt://localhost", JSAP.NOT_REQUIRED, 'a', "neo4jHost", "The neo4j host"),
                         new FlaggedOption("neo4jPort", JSAP.STRING_PARSER, "7687", JSAP.NOT_REQUIRED, 'b', "neo4jPort", "The neo4j port"),
                         new FlaggedOption("neo4jUser", JSAP.STRING_PARSER, "neo4j", JSAP.NOT_REQUIRED, 'c', "neo4jUser", "The neo4j user"),
+                        new FlaggedOption("neo4jName", JSAP.STRING_PARSER, "graph.db", JSAP.NOT_REQUIRED, 'u', "neo4jName", "The neo4j database name"),
                         new FlaggedOption("neo4jPw", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "neo4jPw", "The neo4j password"),
                         new FlaggedOption("solrUrl", JSAP.STRING_PARSER, DEF_SOLR_URL, JSAP.REQUIRED, 'e', "solrUrl", "Url of the running Solr server"),
                         new FlaggedOption("solrCollection", JSAP.STRING_PARSER, DEF_SOLR_COLLECTION, JSAP.REQUIRED, 'o', "solrCollection", "The Reactome solr collection"),
@@ -69,7 +70,7 @@ public class Main {
 
         //  Reactome Solr properties for solr connection ** Collection (core) has to be passed
         SolrClient solrClient = getSolrClient(config.getString("solrUser"), config.getString("solrPw"), config.getString("solrUrl"));
-        ReactomeGraphCore.initialise(config.getString("neo4jHost") + ":" + config.getString("neo4jPort"), config.getString("neo4jUser"), config.getString("neo4jPw"), IndexerNeo4jConfig.class);
+        ReactomeGraphCore.initialise(config.getString("neo4jHost") + ":" + config.getString("neo4jPort"), config.getString("neo4jUser"), config.getString("neo4jPw"), config.getString("neo4jName"), IndexerNeo4jConfig.class);
 
         String solrCollection = config.getString("solrCollection"); // for reactome normal search
         Optional<String> mailDest = Optional.ofNullable(config.getString("mailDest"));

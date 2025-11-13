@@ -1,8 +1,9 @@
 package org.reactome.server.tools.indexer.icon.parser;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,10 +13,27 @@ import org.reactome.server.tools.indexer.icon.model.Icon;
 import org.reactome.server.tools.indexer.icon.model.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
@@ -29,6 +47,7 @@ public class MetadataParser {
     private final String iconsDir;
     private final String ehldsDir;
     private final List<Icon> icons = new ArrayList<>();
+    private final Map<String, Set<Icon>> ehldToIcons = new ConcurrentHashMap<>();
 
     private MetadataParser(String iconsDir, String ehldsDir) {
         if (StringUtils.isEmpty(iconsDir) || StringUtils.isEmpty(ehldsDir))
@@ -79,6 +98,9 @@ public class MetadataParser {
         // Get EHLDs that the icon is in.
         icons.parallelStream().forEach(icon -> icon.setEhlds(getEhlds(icon)));
         logger.info("Parsing has finished and it took {}.", (System.currentTimeMillis() - startParse) + ".ms");
+        logger.info("Updating SVGs by adding classes to icons based on categories");
+        insertCategoriesAsClassesInSVG();
+        logger.info("Updating SVGs done");
         parserMessages.forEach(parserLogger::info);
     }
 
@@ -135,7 +157,12 @@ public class MetadataParser {
             BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String readline;
             while ((readline = reader.readLine()) != null) {
-                if (readline.startsWith("R-")) ehlds.add(readline.trim().replace(".svg", ""));
+                if (readline.startsWith("R-")) {
+                    String svgFile = readline.trim();
+                    ehlds.add(svgFile.replace(".svg", ""));
+                    // Adding icon to the EHLD listing to then modify it to add categories as classes
+                    ehldToIcons.computeIfAbsent(svgFile, k -> Collections.synchronizedSet(new HashSet<>())).add(icon);
+                }
             }
             p.destroyForcibly();
         } catch (IOException e) {
@@ -153,6 +180,67 @@ public class MetadataParser {
 
         return ehlds;
     }
+
+    public void insertCategoriesAsClassesInSVG() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Write the modified document back to the file
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+        // Parse the SVG file into a DOM document
+        this.ehldToIcons.entrySet().parallelStream().forEach((entry) -> {
+            try {
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                String svgPath = ehldsDir + "/" + entry.getKey();
+                Document document = builder.parse(svgPath);
+                ArrayList<Icon> iconsOfEhld = new ArrayList<>(entry.getValue());
+                iterateAndModify(document.getDocumentElement(), iconsOfEhld.stream()
+                        .collect(Collectors.toMap(
+                                icon -> Pattern.compile(icon.getStId() + "(_[0-9_]*)?"),
+                                icon -> icon.getCategories().stream()
+                                        .map(Category::getName)
+                                        .collect(Collectors.toList())
+                        ))
+                );
+                Transformer transformer = transformerFactory.newTransformer();
+                transformer.setOutputProperty(OutputKeys.INDENT, "no");
+                transformer.transform(new DOMSource(document), new StreamResult(svgPath));
+            } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    // Recursive method to iterate over all nodes
+    private static void iterateAndModify(Node node, Map<Pattern, List<String>> iconIdToClasses) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            Element element = (Element) node;
+
+            // Check for 'id' or 'data-name' attribute and match with regex
+            String id = element.getAttribute("id");
+            String dataName = element.getAttribute("data-name");
+
+            for (Map.Entry<Pattern, List<String>> entry : iconIdToClasses.entrySet()) {
+                Pattern pattern = entry.getKey();
+                List<String> newClasses = entry.getValue();
+
+                if (pattern.matcher(id).matches() || pattern.matcher(dataName).matches()) {
+                    Set<String> classes = Stream.of(element.getAttribute("class").trim().split(" "))
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toSet());
+                    classes.addAll(newClasses);
+                    element.setAttribute("class", String.join(" ", classes));
+                    break;
+                }
+            }
+
+            // Recurse through all child nodes
+            NodeList childNodes = node.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                iterateAndModify(childNodes.item(i), iconIdToClasses);
+            }
+        }
+    }
+
 
     /**
      * Also invoke the parser, if icons list is Empty.

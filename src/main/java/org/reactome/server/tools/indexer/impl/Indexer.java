@@ -1,18 +1,13 @@
 package org.reactome.server.tools.indexer.impl;
 
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.PersonAuthorReviewer;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.*;
-import org.reactome.server.tools.indexer.deleted.impl.DeletedDocumentBuilder;
-import org.reactome.server.tools.indexer.deleted.model.DeletedDocument;
 import org.reactome.server.tools.indexer.exception.IndexerException;
+import org.reactome.server.tools.indexer.model.DocumentAndImport;
 import org.reactome.server.tools.indexer.model.IndexDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +71,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
             initialiseXmlOutputFiles();
 
             cleanSolrIndex(solrCollection, solrClient);
+//            cleanSolrIndex(solrCollection, solrClient, "isReferenceSummary:true");
 
             entriesCount += indexBySchemaClass(PhysicalEntity.class, entriesCount);
             commitSolrServer(solrCollection, solrClient);
@@ -86,6 +82,10 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
             cleanNeo4jCache();
 
             finaliseXmlOutputFiles(entriesCount, covidEntriesCount);
+
+            entriesCount += indexBySchemaClass(ReferenceEntity.class, entriesCount, false);
+            commitSolrServer(solrCollection, solrClient);
+            cleanNeo4jCache();
 
             logger.info("Started importing Interactors data to SolR");
             entriesCount += indexInteractors();
@@ -142,11 +142,16 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         }
     }
 
+
+    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount) throws IndexerException {
+        return indexBySchemaClass(clazz, previousCount, true);
+    }
+
     /**
      * @param clazz class to be Indexed
      * @return total of indexed items
      */
-    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount) throws IndexerException {
+    private int indexBySchemaClass(Class<? extends DatabaseObject> clazz, int previousCount, boolean includeEBEYE) throws IndexerException {
         long start = System.currentTimeMillis();
 
         logger.info("Getting all simple objects of class " + clazz.getSimpleName());
@@ -159,31 +164,40 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         List<IndexDocument> allDocuments = new ArrayList<>();
         List<Long> missingDocuments = new ArrayList<>();
         for (Long dbId : allOfGivenClass) {
-            IndexDocument document = documentBuilder.createSolrDocument(dbId); // transactional
-            if (document != null) {
-                if (ebeyeXml) marshaller.writeEntry(document);
-                if (ebeyeCovidXml && document.isCovidRelated()) {
-                    covidMarshaller.writeEntry(document);
-                    covidEntriesCount++;
+            try {
+                DocumentAndImport documentAndImport = documentBuilder.createSolrDocument(dbId); // transactional
+                if (documentAndImport != null && documentAndImport.needsImport && documentAndImport.document != null) {
+                    IndexDocument document = documentAndImport.document;
+                    if (includeEBEYE) {
+                        if (ebeyeXml) marshaller.writeEntry(document);
+                        if (ebeyeCovidXml && document.isCovidRelated()) {
+                            covidMarshaller.writeEntry(document);
+                            covidEntriesCount++;
+                        }
+                    }
+
+                    allDocuments.add(document);
+                } else if (documentAndImport == null || documentAndImport.needsImport) {
+                    missingDocuments.add(dbId);
                 }
 
-                allDocuments.add(document);
-            } else {
+                numberOfDocuments++;
+                if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
+                    addDocumentsToSolrServer(allDocuments);
+                    allDocuments.clear();
+
+                    closeXmlFiles();
+                    logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
+                }
+
+                count = previousCount + numberOfDocuments;
+                if (count % 100 == 0) updateProgressBar(count);
+                if (numberOfDocuments % 10000 == 0) cleanNeo4jCache();
+            } catch (Exception e) {
+                logger.error("An error occurred when trying to index " + clazz.getSimpleName() + " with dbId " + dbId, e);
                 missingDocuments.add(dbId);
+                e.printStackTrace();
             }
-
-            numberOfDocuments++;
-            if (numberOfDocuments % addInterval == 0 && !allDocuments.isEmpty()) {
-                addDocumentsToSolrServer(allDocuments);
-                allDocuments.clear();
-
-                closeXmlFiles();
-                logger.info(numberOfDocuments + " " + clazz.getSimpleName() + " have now been added to SolR");
-            }
-
-            count = previousCount + numberOfDocuments;
-            if (count % 100 == 0) updateProgressBar(count);
-            if (numberOfDocuments % 10000 == 0) cleanNeo4jCache();
         }
 
         // Add to Solr the remaining documents
@@ -311,6 +325,7 @@ public class Indexer extends AbstractIndexer<IndexDocument> {
         logger.info("Counting all entries for Event, PhysicalEntities");
         total = schemaService.countEntries(Event.class);
         total += schemaService.countEntries(PhysicalEntity.class);
+        total += schemaService.countEntries(ReferenceEntity.class);
     }
 
     private void queryReleaseNumber() {

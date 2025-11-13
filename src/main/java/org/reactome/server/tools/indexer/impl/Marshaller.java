@@ -71,6 +71,7 @@ class Marshaller {
     }
 
     void writeEntry(IndexDocument document) throws IndexerException {
+        if (this.writer == null) return; // Avoid writing after closing the writer.
         final String i = INDENT + INDENT;
         final String ii = INDENT + INDENT + INDENT;
         final String iii = INDENT + INDENT + INDENT + INDENT;
@@ -110,15 +111,15 @@ class Marshaller {
                     }
                 }
             }
-            if (document.getGoCellularComponentAccession() != null) {
-                for (String accession : document.getGoCellularComponentAccession()) {
+            if (document.getGoCellularComponentAccessions() != null) {
+                for (String accession : document.getGoCellularComponentAccessions()) {
                     if (accession.contains("go:")) {
                         writeRef("GO", accession, iii);
                     }
                 }
             }
-            if (document.getGoBiologicalProcessAccession() != null) {
-                for (String accession : document.getGoBiologicalProcessAccession()) {
+            if (document.getGoBiologicalProcessAccessions() != null) {
+                for (String accession : document.getGoBiologicalProcessAccessions()) {
                     if (accession.contains("go:")) {
                         writeRef("GO", accession, iii);
                     }
@@ -252,12 +253,14 @@ class Marshaller {
     }
 
     void flush() throws IOException {
+        if (writer == null) return;
         writer.flush();
     }
 
     private void closeIndex() throws IOException {
         writer.flush();
         writer.close();
+        writer = null;
     }
 
     private void writeRef(String db, String id, String indent) throws IOException {
