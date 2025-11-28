@@ -207,19 +207,19 @@
         </fieldType>
         <fieldType name="underscore_field" class="solr.TextField" positionIncrementGap="100" omitNorms="false" >
             <analyzer type="index">
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/.:_ ]"/>
+                <tokenizer class="solr.KeywordTokenizerFactory" />
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
                 <filter class="solr.LowerCaseFilterFactory"/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_-]" replacement=" "/>
             </analyzer>
             <analyzer type="query">
-                <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9/.:_ ]"/>
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[/._:]+$" replacement=""/>
                 <filter class="solr.LowerCaseFilterFactory"/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^reactome_" replacement=""/>
-                <filter class="solr.PatternReplaceFilterFactory" pattern="[_]" replacement=" "/>
+                <filter class="solr.PatternReplaceFilterFactory" pattern="[_-]" replacement=" "/>
             </analyzer>
         </fieldType>
 
