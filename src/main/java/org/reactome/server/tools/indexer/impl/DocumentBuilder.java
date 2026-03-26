@@ -167,12 +167,8 @@ class DocumentBuilder {
         // Keyword uses the document.getName. Name is set in the document by calling setNameAndSynonyms
         setKeywords(document);
 
-        System.out.println("Many stuff");
-
-
         // A second file is generated for covid19portal containing Reactome data related to COVID
         document.setCovidRelated(covid19enties.contains(document.getStId()));
-        System.out.println("Covid stuff");
 
         return new DocumentAndImport(document, true);
     }
